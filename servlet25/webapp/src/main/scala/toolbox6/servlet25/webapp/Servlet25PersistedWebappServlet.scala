@@ -50,6 +50,8 @@ class Servlet25PersistedWebappServlet(
     try {
       initializer(jarCache)
 
+      jarTree.clear()
+
       import scala.concurrent.ExecutionContext.Implicits.global
 
       val result = Await.result(

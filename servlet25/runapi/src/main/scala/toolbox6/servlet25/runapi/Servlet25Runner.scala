@@ -1,9 +1,8 @@
 package toolbox6.servlet25.runapi
 
-import javax.servlet.ServletConfig
 import javax.servlet.http.HttpServlet
 
-import jartree.{JarTree, RunRequest}
+import jartree.{JarTreeRunner, RunRequest}
 import toolbox6.servlet25.singleapi.Servlet25SingleHandler
 
 /**
@@ -19,7 +18,7 @@ trait Servlet25Context {
 
   def servlet() : HttpServlet
 
-  def jarTree() : JarTree
+  def jarTree() : JarTreeRunner
 
   def setStartup(runRequest: RunRequest) : Unit
 

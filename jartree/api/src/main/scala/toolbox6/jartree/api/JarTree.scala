@@ -64,7 +64,7 @@ trait RunRequest {
 
 
 trait JarRunning {
-  def stop : Unit
+  def stop() : Unit
 }
 
 
@@ -72,7 +72,7 @@ trait JarContext[X <: AnyRef] {
 
   def deploy(jar: DeployableJar) : Unit
   def setStartup(startup: RunRequest) : Unit
-  def extension: X
+  def extension(): X
 
 }
 

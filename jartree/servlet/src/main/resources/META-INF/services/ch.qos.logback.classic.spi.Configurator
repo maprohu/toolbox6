@@ -1,1 +1,1 @@
-osgi6.logging.LogbackConfigurator
+toolbox6.jartree.servlet.LogbackConfigurator

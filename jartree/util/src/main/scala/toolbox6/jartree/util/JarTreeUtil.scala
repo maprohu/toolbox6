@@ -1,8 +1,11 @@
 package toolbox6.jartree.util
 
-import java.io.File
+import java.io.{File, FileInputStream, InputStream, OutputStream}
+import java.security.{DigestInputStream, MessageDigest}
 import java.util
 
+import org.apache.commons.codec.binary.Base64
+import org.apache.commons.io.IOUtils
 import toolbox6.jartree.api._
 
 import scala.collection.immutable._
@@ -42,6 +45,52 @@ object CaseJarKey {
 sealed case class ManagedJarKeyImpl(
   uniqueId: String
 ) extends ManagedJarKey with CaseJarKey
+
+object ManagedJarKeyImpl {
+  def apply(
+    file: File
+  ) : ManagedJarKeyImpl = {
+    apply(() => new FileInputStream(file))
+  }
+
+  def apply(
+    bytes: () => InputStream
+  ) : ManagedJarKeyImpl = {
+    apply(
+      hashToString(
+        calculateHash(
+          bytes()
+        )
+      )
+    )
+  }
+
+  def createDigest = {
+    MessageDigest.getInstance("SHA-256")
+  }
+
+  def createDigestInputStream(is: InputStream) = {
+    new DigestInputStream(is, createDigest)
+  }
+
+  def calculateHash(in: InputStream) : Array[Byte] = {
+    try {
+      val digestInputStream = createDigestInputStream(in)
+      IOUtils.copy(digestInputStream, new OutputStream {
+        override def write(i: Int): Unit = ()
+      })
+      digestInputStream.getMessageDigest.digest()
+    } finally {
+      IOUtils.closeQuietly(in)
+    }
+  }
+
+  def hashToString(hash: Array[Byte]) : String = {
+    Base64.encodeBase64URLSafeString(hash)
+  }
+
+
+}
 
 //case class HashJarKeyImpl(
 //  hashSeq : Seq[Byte]
@@ -98,8 +147,15 @@ case class RunRequestImpl(
 ) extends RunRequest
 
 object RunRequestImpl {
+  def apply(req: RunRequest) : RunRequestImpl = {
+    apply(
+      req.classLoader(),
+      req.className()
+    )
+  }
+
   def apply(
     classLoaderKey: ClassLoaderKey,
     className: String
-  ) = new RunRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
+  ) : RunRequestImpl = RunRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
 }

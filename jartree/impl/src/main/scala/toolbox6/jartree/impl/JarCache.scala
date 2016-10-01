@@ -78,7 +78,7 @@ class JarCache(
       case h : ManagedJarKey =>
         new File(
           root,
-          s"${URLEncoder.encode(h.uniqueId(), "UTF-8)")}.jar"
+          s"${URLEncoder.encode(h.uniqueId(), "UTF-8")}.jar"
         )
     }
 

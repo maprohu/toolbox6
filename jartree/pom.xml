@@ -19,5 +19,7 @@
         <module>impl</module>
         <module>servletapi</module>
         <module>servlet</module>
+        <module>framework</module>
+        <module>testing</module>
     </modules>
 </project>

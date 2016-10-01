@@ -1,12 +1,19 @@
 package toolbox6.modules
 
+import jartree.util.{CaseClassLoaderKey, MavenJarKeyImpl}
 import maven.modules.builder._
 
 
 /**
   * Created by martonpapp on 29/08/16.
   */
-object Toolbox6Modules {
+object Toolbox6Modules extends CaseClassLoaderKey(
+  MavenJarKeyImpl(
+    "toolbox6-modules",
+    "toolbox6-modules",
+    "1.0.0-SNAPSHOT"
+  )
+) {
 
   implicit val Root = RootModuleContainer("toolbox6")
 
@@ -25,7 +32,10 @@ object Toolbox6Modules {
   object Packaging extends ScalaModule(
     "packaging",
     "1.0.0-SNAPSHOT",
-    mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`
+    MavenModulesBuilder,
+    mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
+    mvn.`org.apache.maven.shared:maven-invoker:2.2`,
+    mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`
   )
 
 }
@@ -93,8 +103,16 @@ object JarTreeModules {
   object Packaging extends ScalaModule(
     "packaging",
     "1.0.0-SNAPSHOT",
+    Toolbox6Modules,
     Toolbox6Modules.Packaging,
+    Servlet,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M6`
   )
 }
+
+object MavenModulesBuilder extends MavenJarKeyImpl(
+  "maven-modules",
+  "maven-modules-builder",
+  "1.0.0-SNAPSHOT"
+)

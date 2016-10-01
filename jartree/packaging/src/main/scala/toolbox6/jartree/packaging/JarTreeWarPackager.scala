@@ -2,21 +2,33 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
+import jartree.util.CaseClassLoaderKey
+import maven.modules.builder.NamedModule
+import sbt.io.IO
+import toolbox6.jartree.servlet.{EmbeddedJar, JarTreeServletConfig}
+import toolbox6.jartree.util.RunRequestImpl
+import toolbox6.modules.JarTreeModules
+import toolbox6.packaging.HasMavenCoordinates._
+import toolbox6.packaging.{HasMavenCoordinates, MavenTools}
+
+import scala.xml.XML
+
 
 /**
   * Created by martonpapp on 01/10/16.
   */
 object JarTreeWarPackager {
 
-  def build = {
 
-  }
 
   def run(
     name: String,
     version : String = "1.0.0",
-    domainDir : String,
-    appsDir: String
+    dataPath : String,
+    logPath : String,
+    dataDirVersion : Int = 1,
+    startup: NamedModule,
+    startupClass: String
   ) = {
 
     val pom =
@@ -63,16 +75,16 @@ object JarTreeWarPackager {
                         <destFileName>felix.jar</destFileName>
                       </artifactItem>
                       {
-                      bundles.map({ bundle =>
-                        <artifactItem>
-                          {Module.asPomCoordinates(bundle)}
-                          <overWrite>true</overWrite>
-                          <destFileName>{bundle.artifactId}.jar</destFileName>
-                        </artifactItem>
-                      })
+//                      bundles.map({ bundle =>
+//                        <artifactItem>
+//                          {Module.asPomCoordinates(bundle)}
+//                          <overWrite>true</overWrite>
+//                          <destFileName>{bundle.artifactId}.jar</destFileName>
+//                        </artifactItem>
+//                      })
                       }
                     </artifactItems>
-                    <outputDirectory>target/classes/emsamg/lib6/runtimeimpl</outputDirectory>
+                    <outputDirectory>target/classes/jartreeservlet</outputDirectory>
                   </configuration>
                 </execution>
               </executions>
@@ -90,12 +102,14 @@ object JarTreeWarPackager {
           </dependencies>
         </dependencyManagement>
         <dependencies>
-          {Module.asPomDependency(Lib6Modules.RuntimeImpl)}
+          {
+          JarTreeModules.Servlet.asPomDependency
+          }
         </dependencies>
 
       </project>
 
-    OsgiDeployer.runMaven(
+    MavenTools.runMaven(
       pom,
       "install",
       preBuild = { dir =>
@@ -105,12 +119,12 @@ object JarTreeWarPackager {
                    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
                    version="2.5">
             <servlet>
-              <servlet-name>felix</servlet-name>
-              <servlet-class>emsamg.lib6.runtimeimpl.OsgiServlet</servlet-class>
+              <servlet-name>jartree</servlet-name>
+              <servlet-class>{classOf[toolbox6.jartree.servlet.JarTreeServlet]}</servlet-class>
               <load-on-startup>1</load-on-startup>
             </servlet>
             <servlet-mapping>
-              <servlet-name>felix</servlet-name>
+              <servlet-name>jartree</servlet-name>
               <url-pattern>/*</url-pattern>
             </servlet-mapping>
           </web-app>
@@ -125,17 +139,25 @@ object JarTreeWarPackager {
         )
 
         val runtimeDir =
-          new File(dir, "target/classes/emsamg/lib6/runtimeimpl")
+          new File(dir, s"target/classes")
+
+        val runRequest = RunRequestImpl(
+          CaseClassLoaderKey(startup),
+          startupClass
+
+        )
 
         runtimeDir.mkdirs()
         import upickle.default._
         IO.write(
-          new File(runtimeDir, OsgiServlet.RuntimeConfigFileName),
+          new File(runtimeDir, JarTreeServletConfig.StartupFile),
           write(
-            OsgiRuntime.config(
-              dirPath = s"/wl_domains/${domainDir}/${appsDir}",
-              app = name,
-              bundles = bundles.map(b => s"${b.artifactId}.jar")
+            JarTreeServletConfig(
+              name = name,
+              dataPath = dataPath,
+              logPath = logPath,
+              version = dataDirVersion,
+              embeddedJars = embeddedJars
             )
           )
         )

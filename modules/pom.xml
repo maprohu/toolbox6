@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6-modules</groupId>
     <artifactId>toolbox6-modules</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <build>
         <finalName>product</finalName>

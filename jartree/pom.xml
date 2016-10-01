@@ -1,7 +1,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6</groupId>
-    <artifactId>toolbox6-scalajs-facades</artifactId>
+    <artifactId>toolbox6-jartree</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <build>
@@ -14,6 +14,10 @@
         </plugins>
     </build>
     <modules>
-        <module>vis</module>
+        <module>api</module>
+        <module>util</module>
+        <module>impl</module>
+        <module>servletapi</module>
+        <module>servlet</module>
     </modules>
 </project>

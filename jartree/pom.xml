@@ -21,5 +21,6 @@
         <module>servlet</module>
         <module>framework</module>
         <module>testing</module>
+        <module>packaging</module>
     </modules>
 </project>

@@ -19,5 +19,6 @@
         <module>scalajs</module>
         <module>common</module>
         <module>logging</module>
+        <module>packaging</module>
     </modules>
 </project>

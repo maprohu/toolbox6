@@ -9,16 +9,20 @@ import java.io.InputStream
 
 trait JarKey
 
-trait HashJarKey extends JarKey {
-  def hash() : Array[Byte]
+trait ManagedJarKey extends JarKey {
+  def uniqueId() : String
 }
 
-trait MavenJarKey extends JarKey {
-  def groupId() : String
-  def artifactId() : String
-  def version() : String
-  def classifier() : String
-}
+//trait HashJarKey extends JarKey {
+//  def hash() : Array[Byte]
+//}
+//
+//trait MavenJarKey extends JarKey {
+//  def groupId() : String
+//  def artifactId() : String
+//  def version() : String
+//  def classifier() : String
+//}
 
 trait DeployableJar {
   def key: JarKey

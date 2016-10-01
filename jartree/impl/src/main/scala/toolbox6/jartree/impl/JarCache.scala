@@ -1,11 +1,13 @@
 package toolbox6.jartree.impl
 
 import java.io.{File, FileOutputStream, InputStream, OutputStream}
+import java.net.URLEncoder
 import java.security.{DigestInputStream, MessageDigest}
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
-import toolbox6.jartree.util.{CaseJarKey, HashJarKeyImpl, MavenJarKeyImpl}
+import toolbox6.jartree.api.ManagedJarKey
+import toolbox6.jartree.util.CaseJarKey
 
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -22,10 +24,10 @@ class JarCache(
 
   root.mkdirs()
 
-  val hashDir = new File(root, "hash")
-  val mavenDir = new File(root, "maven")
+//  val hashDir = new File(root, "hash")
+//  val mavenDir = new File(root, "maven")
 
-  var locked = Map.empty[File, Future[File]]
+//  var locked = Map.empty[File, Future[File]]
 
   def delete(file: File) = synchronized {
     file.delete()
@@ -57,21 +59,26 @@ class JarCache(
 
   def toJarFile(hash: CaseJarKey) : File = {
     val file = hash match {
-      case h : HashJarKeyImpl =>
+//      case h : HashJarKeyImpl =>
+//        new File(
+//          hashDir,
+//          s"${hashToString(h.hash)}.jar"
+//        )
+//      case m : MavenJarKeyImpl =>
+//        new File(
+//          new File(
+//            new File(
+//              mavenDir,
+//              m.groupId
+//            ),
+//            m.artifactId
+//          ),
+//          s"${m.version}${m.classifierOpt.map(c => s"-${c}")}.jar"
+//        )
+      case h : ManagedJarKey =>
         new File(
-          hashDir,
-          s"${hashToString(h.hash)}.jar"
-        )
-      case m : MavenJarKeyImpl =>
-        new File(
-          new File(
-            new File(
-              mavenDir,
-              m.groupId
-            ),
-            m.artifactId
-          ),
-          s"${m.version}${m.classifierOpt.map(c => s"-${c}")}.jar"
+          root,
+          s"${URLEncoder.encode(h.uniqueId(), "UTF-8)")}.jar"
         )
     }
 
@@ -79,94 +86,110 @@ class JarCache(
     file
   }
 
-
-  def put(
+  def putStream(
     hash: CaseJarKey,
-    sourceFuture: Future[Source]
-  )(implicit
-    executionContext: ExecutionContext
-  ) : Unit = {
+    stream: () => InputStream
+  ) = {
     val jarFile = toJarFile(hash)
 
     synchronized {
-      if (!locked.contains(jarFile) && !jarFile.exists()) {
-        locked = locked.updated(
+      if (!jarFile.exists()) {
+        copyToCache(
           jarFile,
-          sourceFuture
-            .map({ source =>
-              copyToCache(
-                jarFile,
-                source
-              )
-
-              jarFile
-            })
+          stream()
         )
-      } else {
-        sourceFuture.onSuccess({
-          case source =>
-            try {
-              while (source.read() != -1) {}
-            } finally {
-              source.close()
-            }
-        })
       }
     }
 
   }
 
-  def get(hash: CaseJarKey, source: Source) : Future[File] = {
-    val jarFile = toJarFile(hash)
-
-    val producer = synchronized {
-      locked
-        .get(jarFile)
-        .map(future => () => future)
-        .getOrElse({
-          if (jarFile.exists()) {
-            () => Future.successful(jarFile)
-          } else {
-            val promise = Promise[File]()
-
-            locked = locked.updated(jarFile, promise.future)
-
-            { () =>
-              promise.complete(
-                Try {
-                  copyToCache(
-                    jarFile,
-                    source
-                  )
-                }
-              )
-
-              Future.successful(jarFile)
-            }
-
-          }
-        })
-    }
-
-    producer()
-
-  }
-
-  def maybeGet(hash: CaseJarKey) : Option[Future[File]] = {
-    val jarFile = toJarFile(hash)
-
-    synchronized {
-      locked
-        .get(jarFile)
-        .orElse({
-          if (jarFile.exists()) {
-            Some(Future.successful(jarFile))
-          } else {
-            None
-          }
-        })
-    }
-  }
+//  def put(
+//    hash: CaseJarKey,
+//    sourceFuture: Future[Source]
+//  )(implicit
+//    executionContext: ExecutionContext
+//  ) : Unit = {
+//    val jarFile = toJarFile(hash)
+//
+//    synchronized {
+//      if (!locked.contains(jarFile) && !jarFile.exists()) {
+//        locked = locked.updated(
+//          jarFile,
+//          sourceFuture
+//            .map({ source =>
+//              copyToCache(
+//                jarFile,
+//                source
+//              )
+//
+//              jarFile
+//            })
+//        )
+//      } else {
+//        sourceFuture.onSuccess({
+//          case source =>
+//            try {
+//              while (source.read() != -1) {}
+//            } finally {
+//              source.close()
+//            }
+//        })
+//      }
+//    }
+//
+//  }
+//
+//  def get(hash: CaseJarKey, source: Source) : Future[File] = {
+//    val jarFile = toJarFile(hash)
+//
+//    val producer = synchronized {
+//      locked
+//        .get(jarFile)
+//        .map(future => () => future)
+//        .getOrElse({
+//          if (jarFile.exists()) {
+//            () => Future.successful(jarFile)
+//          } else {
+//            val promise = Promise[File]()
+//
+//            locked = locked.updated(jarFile, promise.future)
+//
+//            { () =>
+//              promise.complete(
+//                Try {
+//                  copyToCache(
+//                    jarFile,
+//                    source
+//                  )
+//                }
+//              )
+//
+//              Future.successful(jarFile)
+//            }
+//
+//          }
+//        })
+//    }
+//
+//    producer()
+//
+//  }
+//
+//  def maybeGet(hash: CaseJarKey) : Option[Future[File]] = {
+//    val jarFile = toJarFile(hash)
+//
+//    synchronized {
+//      locked
+//        .get(jarFile)
+//        .orElse({
+//          if (jarFile.exists()) {
+//            Some(Future.successful(jarFile))
+//          } else {
+//            None
+//          }
+//        })
+//    }
+//  }
 
 }
 

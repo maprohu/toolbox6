@@ -4,7 +4,6 @@ import java.io.File
 import java.util
 
 import toolbox6.jartree.api._
-import org.jboss.shrinkwrap.resolver.api.maven.coordinate.MavenCoordinates
 
 import scala.collection.immutable._
 import scala.collection.JavaConversions._
@@ -20,51 +19,59 @@ object CaseJarKey {
     jarKey: JarKey
   ) : CaseJarKey = {
     jarKey match {
-      case k : HashJarKey =>
-        HashJarKeyImpl(
-          k.hash().to[Seq]
-        )
-      case k : MavenJarKey =>
-        MavenJarKeyImpl(
-          k.groupId(),
-          k.artifactId(),
-          k.version(),
-          Option(k.classifier()).filterNot(_.isEmpty)
+//      case k : HashJarKey =>
+//        HashJarKeyImpl(
+//          k.hash().to[Seq]
+//        )
+//      case k : MavenJarKey =>
+//        MavenJarKeyImpl(
+//          k.groupId(),
+//          k.artifactId(),
+//          k.version(),
+//          Option(k.classifier()).filterNot(_.isEmpty)
+//        )
+      case k : ManagedJarKey =>
+        ManagedJarKeyImpl(
+          k.uniqueId()
         )
       case _ => ???
     }
   }
 }
 
-case class HashJarKeyImpl(
-  hashSeq : Seq[Byte]
-) extends CaseJarKey with HashJarKey {
-  override val hash: Array[Byte] = hashSeq.toArray
-}
+sealed case class ManagedJarKeyImpl(
+  uniqueId: String
+) extends ManagedJarKey with CaseJarKey
 
-case class MavenJarKeyImpl(
-  groupId: String,
-  artifactId: String,
-  version: String,
-  classifierOpt: Option[String]
-) extends CaseJarKey with MavenJarKey {
-  override def classifier(): String = classifierOpt.getOrElse("")
-}
+//case class HashJarKeyImpl(
+//  hashSeq : Seq[Byte]
+//) extends CaseJarKey with HashJarKey {
+//  override val hash: Array[Byte] = hashSeq.toArray
+//}
 
-object MavenJarKeyImpl {
-
-  def apply(canonical: String) : MavenJarKeyImpl = {
-    val mc = MavenCoordinates.createCoordinate(canonical)
-
-    MavenJarKeyImpl(
-      mc.getGroupId,
-      mc.getArtifactId,
-      mc.getVersion,
-      Option(mc.getClassifier).filterNot(_.isEmpty)
-    )
-  }
-
-}
+//case class MavenJarKeyImpl(
+//  groupId: String,
+//  artifactId: String,
+//  version: String,
+//  classifierOpt: Option[String]
+//) extends CaseJarKey with MavenJarKey {
+//  override def classifier(): String = classifierOpt.getOrElse("")
+//}
+//
+//object MavenJarKeyImpl {
+//
+//  def apply(canonical: String) : MavenJarKeyImpl = {
+//    val mc = MavenCoordinates.createCoordinate(canonical)
+//
+//    MavenJarKeyImpl(
+//      mc.getGroupId,
+//      mc.getArtifactId,
+//      mc.getVersion,
+//      Option(mc.getClassifier).filterNot(_.isEmpty)
+//    )
+//  }
+//
+//}
 
 //case class FileJarKeyImpl(
 //  file: File

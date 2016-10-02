@@ -1,7 +1,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6</groupId>
-    <artifactId>toolbox6-scalajs-facades-vis-raw</artifactId>
+    <artifactId>toolbox6-jartree-managementapi</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <build>
@@ -93,14 +93,16 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.scala-js</groupId>
-            <artifactId>scalajs-library_2.11</artifactId>
-            <version>0.6.12</version>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.8</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.11.8</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

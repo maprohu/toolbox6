@@ -147,6 +147,14 @@ case class RunRequestImpl(
 ) extends RunRequest
 
 object RunRequestImpl {
+  def fromString(str: String) : RunRequestImpl = {
+    upickle.default.read[RunRequestImpl](str)
+  }
+
+  def toString(req: RunRequestImpl) : String = {
+    upickle.default.write(req, 2)
+  }
+
   def apply(req: RunRequest) : RunRequestImpl = {
     apply(
       req.classLoader(),

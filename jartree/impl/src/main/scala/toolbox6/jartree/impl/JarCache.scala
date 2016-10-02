@@ -57,6 +57,14 @@ class JarCache(
 
   }
 
+  def toManagedFile(uniqueId: String) = {
+    new File(
+      root,
+      s"${URLEncoder.encode(uniqueId, "UTF-8")}.jar"
+    )
+  }
+
+
   def toJarFile(hash: CaseJarKey) : File = {
     val file = hash match {
 //      case h : HashJarKeyImpl =>
@@ -76,10 +84,7 @@ class JarCache(
 //          s"${m.version}${m.classifierOpt.map(c => s"-${c}")}.jar"
 //        )
       case h : ManagedJarKey =>
-        new File(
-          root,
-          s"${URLEncoder.encode(h.uniqueId(), "UTF-8")}.jar"
-        )
+        toManagedFile(h.uniqueId())
     }
 
     file.getParentFile.mkdirs()
@@ -101,6 +106,10 @@ class JarCache(
       }
     }
 
+  }
+
+  def contains(id: String) : Boolean = synchronized {
+    toManagedFile(id).exists()
   }
 
 //  def put(

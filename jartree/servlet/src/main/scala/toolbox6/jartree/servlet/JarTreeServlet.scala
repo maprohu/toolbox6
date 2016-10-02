@@ -1,6 +1,7 @@
 package toolbox6.jartree.servlet
 
-import java.io.{File, InputStream, PrintWriter}
+import java.io.{ByteArrayInputStream, File, InputStream, PrintWriter}
+import java.rmi.RemoteException
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
@@ -8,8 +9,11 @@ import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
 import monix.execution.cancelables.{AssignableCancelable, CompositeCancelable}
 import org.apache.commons.io.{FileUtils, IOUtils}
+import toolbox6.common.ManagementTools
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.{JarCache, JarTree}
+import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener, Registration}
+import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util.{CaseJarKey, ManagedJarKeyImpl, RunRequestImpl}
 import toolbox6.logging.LogTools
@@ -168,6 +172,69 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     val running = runnable.run(jarContext)
 
     stopper += Cancelable(() => running.stop())
+
+    stopper += setupManagement(
+      name,
+      cache,
+      jarTree,
+      jarContext
+    )
+  }
+
+  def setupManagement(
+    name: String,
+    cache: JarCache,
+    jarTree: JarTree,
+    ctx: JarContext[JarTreeServletContext]
+  ) = {
+    ManagementTools.bind(
+      JarTreeManagementUtils.bindingName(
+        name
+      ),
+      new JarTreeManagement {
+        @throws(classOf[RemoteException])
+        override def sayHello(): String = "hello"
+
+        @throws(classOf[RemoteException])
+        override def registerLogListener(listener: LogListener): Registration = {
+          listener.entry("one")
+          listener.entry("two")
+          listener.entry("three")
+
+          new Registration {
+            @throws(classOf[RemoteException])
+            override def unregister(): Unit = ()
+          }
+        }
+
+        @throws(classOf[RemoteException])
+        override def verifyCache(ids: Array[String]): Array[Int] = {
+          ids
+            .zipWithIndex
+            .collect({
+              case (id, idx) if !cache.contains(id) => idx
+            })
+        }
+
+        @throws(classOf[RemoteException])
+        override def putCache(id: String, data: Array[Byte]): Unit = {
+          cache.putStream(
+            ManagedJarKeyImpl(id),
+            () => new ByteArrayInputStream(data)
+          )
+        }
+
+        @throws(classOf[RemoteException])
+        override def executeByteArray(classLoaderJson: String, input: Array[Byte]): Array[Byte] = {
+          jarTree
+            .resolve[JarRunnableByteArray[JarTreeServletContext]](
+              RunRequestImpl.fromString(classLoaderJson)
+            )
+            .run(input, ctx)
+        }
+      }
+    )
+
   }
 
 

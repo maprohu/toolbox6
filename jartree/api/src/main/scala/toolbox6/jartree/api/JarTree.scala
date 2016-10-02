@@ -83,3 +83,7 @@ trait JarRunnable[X <: AnyRef] {
   def run(ctx: JarContext[X]) : JarRunning
 
 }
+
+trait JarRunnableByteArray[X <: AnyRef] {
+  def run(data: Array[Byte], ctx: JarContext[X]) : Array[Byte]
+}

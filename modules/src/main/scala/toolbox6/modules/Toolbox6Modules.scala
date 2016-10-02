@@ -2,6 +2,7 @@ package toolbox6.modules
 
 import jartree.util.{CaseClassLoaderKey, MavenJarKeyImpl}
 import maven.modules.builder._
+import toolbox6.modules.Toolbox6Modules.Common
 
 
 /**
@@ -20,7 +21,8 @@ object Toolbox6Modules extends CaseClassLoaderKey(
   object Common extends ScalaModule(
     "common",
     "1.0.0-SNAPSHOT",
-    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
+    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
+    mvn.`io.monix:monix_2.11:jar:2.0.2`
   )
 
   object Logging extends ScalaModule(
@@ -56,7 +58,8 @@ object JarTreeModules {
     "1.0.0-SNAPSHOT",
     Api,
     mvn.`commons-io:commons-io:jar:2.5`,
-    mvn.`commons-codec:commons-codec:jar:1.10`
+    mvn.`commons-codec:commons-codec:jar:1.10`,
+    mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
 //    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven:jar:2.2.2`
   )
 
@@ -81,6 +84,8 @@ object JarTreeModules {
     Impl,
     ServletApi,
     Toolbox6Modules.Logging,
+    ManagementApi,
+    ManagementUtils,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
@@ -92,6 +97,32 @@ object JarTreeModules {
     Api,
     ServletApi
   )
+
+  object ManagementApi extends JavaModule(
+    "managementapi",
+    "1.0.0-SNAPSHOT",
+    Module.provided(
+      mvn.`org.scala-lang:scala-library:jar:2.11.8`
+    )
+  )
+
+  object ManagementUtils extends ScalaModule(
+    "managementutils",
+    "1.0.0-SNAPSHOT",
+    ManagementApi,
+    Common
+  )
+
+  object Client extends ScalaModule(
+    "client",
+    "1.0.0-SNAPSHOT",
+    ManagementUtils,
+    mvn.`com.oracle:wlfullclient:jar:10.3.6.0`,
+    Toolbox6Modules,
+    Packaging,
+    Framework
+  )
+
 
   object Testing extends ScalaModule(
     "testing",
@@ -114,7 +145,9 @@ object JarTreeModules {
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.2`,
     mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
   )
+
 }
+
 
 object MavenModulesBuilder extends MavenJarKeyImpl(
   "maven-modules",

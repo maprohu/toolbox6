@@ -39,6 +39,13 @@ object JarTreeWarPackager {
       .map(p => p:MavenHierarchy)
       .flatMap(_.jars)
 
+  def filteredHierarchy(
+    namedModule: NamedModule
+  ) : MavenHierarchy = {
+    MavenHierarchy
+      .moduleToHierarchy(namedModule)
+      .filter(m => !modulesInParent.contains(m))
+  }
 
 
   def run[T](
@@ -53,9 +60,7 @@ object JarTreeWarPackager {
     postProcessor: File => T
   ) : T = {
     val hierarchy =
-      MavenHierarchy
-        .moduleToHierarchy(startup)
-        .filter(m => !modulesInParent.contains(m))
+      filteredHierarchy(startup)
 
     val embeddedJars =
       hierarchy

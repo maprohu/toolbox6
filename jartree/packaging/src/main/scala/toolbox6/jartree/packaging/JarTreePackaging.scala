@@ -1,13 +1,18 @@
 package toolbox6.jartree.packaging
 
+import java.io.FileInputStream
+import java.nio.charset.Charset
+import java.util.jar.JarFile
+
 import maven.modules.builder.NamedModule
 import monix.execution.atomic.Atomic
 import org.apache.commons.codec.binary.Base64
+import org.apache.commons.io.IOUtils
 import org.jboss.shrinkwrap.resolver.api.maven.Maven
 import toolbox6.jartree.api.ManagedJarKey
 import toolbox6.jartree.impl.JarCache
 import toolbox6.jartree.util.{CaseClassLoaderKey, ManagedJarKeyImpl}
-import toolbox6.packaging.{MavenCoordinatesImpl, MavenHierarchy}
+import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy}
 
 /**
   * Created by martonpapp on 02/10/16.
@@ -19,6 +24,24 @@ object JarTreePackaging {
 
   }
 
+  def resolveInputStream(maven: HasMavenCoordinates) = {
+    Maven
+      .resolver()
+      .resolve(maven.toCanonical)
+      .withoutTransitivity()
+      .asSingleInputStream()
+  }
+
+  def resolveFile(maven: HasMavenCoordinates) = {
+    Maven
+      .resolver()
+      .resolve(maven.toCanonical)
+      .withoutTransitivity()
+      .asSingleFile()
+  }
+
+
+
   private val ManagedIdMap = Atomic(Map[MavenCoordinatesImpl, ManagedJarKeyImpl]())
 
   def getId(maven: MavenCoordinatesImpl) : ManagedJarKeyImpl = {
@@ -29,15 +52,27 @@ object JarTreePackaging {
         .getOrElse({
           val id = ManagedJarKeyImpl(
             if (maven.isSnapshot) {
-              val hash = Base64.encodeBase64String(
-                JarCache.calculateHash(
-                  Maven
-                    .resolver()
-                    .resolve(maven.toCanonical)
-                    .withoutTransitivity()
-                    .asSingleInputStream()
-                )
-              )
+              val file = resolveFile(maven)
+
+              val jf = new JarFile(file)
+              val entry = jf.getJarEntry("META-INF/build.timestamp")
+
+              val hash =
+                Option(entry)
+                  .map({ e =>
+                    IOUtils.toString(jf.getInputStream(e), Charset.defaultCharset())
+                  })
+                  .getOrElse(
+                    Base64.encodeBase64String(
+                      JarCache.calculateHash(
+                        new FileInputStream(file)
+                      )
+                    )
+                  )
+
+              jf.close()
+
+
               s"${maven.toCanonical}:${hash}"
             } else {
               maven.toCanonical

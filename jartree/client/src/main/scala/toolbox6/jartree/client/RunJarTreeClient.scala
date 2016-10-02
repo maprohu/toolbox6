@@ -2,7 +2,6 @@ package toolbox6.jartree.client
 
 import java.rmi.RemoteException
 
-import jartree.util.MavenJarKeyImpl
 import org.apache.commons.io.IOUtils
 import toolbox6.jartree.framework.HelloByteArray
 import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener}

@@ -111,7 +111,8 @@ object JarTreeModules {
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,
-    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.2`
+    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.2`,
+    mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
   )
 }
 

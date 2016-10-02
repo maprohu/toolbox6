@@ -181,19 +181,29 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
 
 object JarTreeServletConfig {
 
-  val jconfig = Try {
-    upickle.default.read[JarTreeServletConfig](
-      Source.fromInputStream(
-        getClass.getClassLoader.getResourceAsStream(
-          JarTreeServletConfig.ClassPathResource
-        )
-      ).mkString
-    )
-  }.toOption
-
-  val ClassPathResource = "/jartreeservlet.conf"
+  val ConfigFile = "jartreeservlet.conf.json"
   val VersionFile = "jartreeservlet.version"
   val StartupFile = "jartreeservlet.startup.json"
+
+  lazy val jconfig =
+    try {
+      Some {
+        val is =
+          JarTreeServletConfig.getClass.getClassLoader.getResourceAsStream(
+            ConfigFile
+          )
+        upickle.default.read[JarTreeServletConfig](
+          Source.fromInputStream(
+            is
+          ).mkString
+        )
+      }
+    } catch {
+      case ex : Throwable =>
+        ex.printStackTrace()
+        None
+    }
+
 
 }
 
@@ -207,9 +217,9 @@ case class JarTreeServletConfig(
   name: String,
   dataPath: String,
   logPath: String,
-  version : Int = 1,
+  version : Int,
   embeddedJars: Seq[EmbeddedJar],
   startup : RunRequestImpl,
-  stdout: Boolean = false,
-  debug: Boolean = false
+  stdout: Boolean,
+  debug: Boolean
 )

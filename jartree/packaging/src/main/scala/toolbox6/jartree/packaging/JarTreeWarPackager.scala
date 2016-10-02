@@ -41,7 +41,7 @@ object JarTreeWarPackager {
 
 
 
-  def run(
+  def run[T](
     name: String,
     version : String = "1.0.0",
     dataPath : String,
@@ -49,7 +49,9 @@ object JarTreeWarPackager {
     dataDirVersion : Int = 1,
     startup: NamedModule,
     startupClass: String
-  ) = {
+  )(
+    postProcessor: File => T
+  ) : T = {
     val hierarchy =
       MavenHierarchy
         .moduleToHierarchy(startup)
@@ -146,7 +148,7 @@ object JarTreeWarPackager {
                    version="2.5">
             <servlet>
               <servlet-name>jartree</servlet-name>
-              <servlet-class>{classOf[toolbox6.jartree.servlet.JarTreeServlet]}</servlet-class>
+              <servlet-class>{classOf[toolbox6.jartree.servlet.JarTreeServlet].getName}</servlet-class>
               <load-on-startup>1</load-on-startup>
             </servlet>
             <servlet-mapping>
@@ -164,6 +166,23 @@ object JarTreeWarPackager {
           webXml
         )
 
+        val weblogicXML =
+          <wls:weblogic-web-app
+          xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-web-app"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.2/weblogic-web-app.xsd">
+            <wls:container-descriptor>
+              <wls:prefer-application-packages>
+                <wls:package-name>org.*</wls:package-name>
+              </wls:prefer-application-packages>
+            </wls:container-descriptor>
+          </wls:weblogic-web-app>
+
+        XML.save(
+          new File(webInfDir, "weblogic.xml").getAbsolutePath,
+          weblogicXML
+        )
+
         val runtimeDir =
           new File(dir, s"target/classes")
 
@@ -177,7 +196,7 @@ object JarTreeWarPackager {
         runtimeDir.mkdirs()
         import upickle.default._
         IO.write(
-          new File(runtimeDir, JarTreeServletConfig.StartupFile),
+          new File(runtimeDir, JarTreeServletConfig.ConfigFile),
           write(
             JarTreeServletConfig(
               name = name,
@@ -190,13 +209,16 @@ object JarTreeWarPackager {
                   JarTreePackaging.getId(coords)
                 )
               }),
-              startup = runRequest
+              startup = runRequest,
+              stdout = false,
+              debug = false
             ),
             2
           )
         )
       }
     ){ dir =>
+      postProcessor(new File(dir, s"target/${name}.war"))
     }
   }
 }

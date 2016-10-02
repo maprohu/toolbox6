@@ -19,7 +19,7 @@ object RunWarPackager {
       1,
       JarTreeModules.Framework,
       "toolbox6.jartree.framework.Framework"
-    )
+    )(_ => ())
 
     StdIn.readLine("enter...")
   }

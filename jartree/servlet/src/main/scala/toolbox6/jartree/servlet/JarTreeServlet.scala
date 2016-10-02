@@ -103,9 +103,10 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
         .toOption
         .forall(_ < version)
     ) {
-      logger.info("creating new data directory: {}", dataPath)
       Try(FileUtils.deleteDirectory(dir))
       dir.mkdirs()
+
+      logger.info("creating new data directory: {}", dataPath)
 
       val cache = JarCache(cacheDir)
 
@@ -134,6 +135,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       logger.info("using existing data directory: {}", dataPath)
       JarCache(cacheDir)
     }
+
+//    logger.info("starting {}", name)
 
 
     val jarTree = new JarTree(

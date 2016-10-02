@@ -94,7 +94,22 @@
         <dependency>
             <groupId>org.scala-sbt</groupId>
             <artifactId>io_2.11</artifactId>
-            <version>1.0.0-M6</version>
+            <version>1.0.0-M3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-spi-maven</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-spi-maven</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <version>2.2.2</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

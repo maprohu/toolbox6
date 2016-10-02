@@ -3,6 +3,7 @@ package toolbox6.modules
 import java.io.File
 
 import maven.modules.builder.{Module, ModuleContainer, NamedModule, PlacedRoot}
+import scala.collection.immutable._
 
 /**
   * Created by pappmar on 29/08/2016.

@@ -97,7 +97,8 @@ object JarTreeModules {
     "testing",
     "1.0.0-SNAPSHOT",
     Api,
-    ServletApi
+    ServletApi,
+    Packaging
   )
 
   object Packaging extends ScalaModule(
@@ -107,7 +108,10 @@ object JarTreeModules {
     Toolbox6Modules.Packaging,
     Servlet,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
-    mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M6`
+    mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
+    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,
+    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,
+    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.2`
   )
 }
 

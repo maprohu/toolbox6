@@ -5,7 +5,6 @@ import java.nio.file.Files
 
 import org.apache.maven.shared.invoker.{DefaultInvocationRequest, DefaultInvoker}
 import sbt.io.IO
-import sbt.io.Path._
 import scala.collection.immutable._
 import scala.collection.JavaConversions._
 
@@ -51,7 +50,7 @@ object MavenTools {
     try {
       inTempDir { dir =>
         try {
-          val pomFile = dir / "pom.xml"
+          val pomFile = new File(dir, "pom.xml")
 
           XML.save(pomFile.getAbsolutePath, pomFileString)
 
@@ -80,7 +79,7 @@ object MavenTools {
   }
 
   def runMavenProject(dir: File, goals : Seq[String]) = {
-    val pomFile = dir / "pom.xml"
+    val pomFile = new File(dir, "pom.xml")
 
     val request = new DefaultInvocationRequest
     request.setPomFile(pomFile)

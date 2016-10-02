@@ -42,7 +42,7 @@ object CaseJarKey {
   }
 }
 
-sealed case class ManagedJarKeyImpl(
+case class ManagedJarKeyImpl(
   uniqueId: String
 ) extends ManagedJarKey with CaseJarKey
 

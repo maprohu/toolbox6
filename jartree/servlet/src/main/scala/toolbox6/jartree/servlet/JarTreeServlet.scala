@@ -193,17 +193,17 @@ object JarTreeServletConfig {
 
   val ClassPathResource = "/jartreeservlet.conf"
   val VersionFile = "jartreeservlet.version"
-  val StartupFile = "jartreeservlet.startup"
+  val StartupFile = "jartreeservlet.startup.json"
 
 }
 
-sealed case class EmbeddedJar(
+case class EmbeddedJar(
   classpathResource: String,
   key: ManagedJarKeyImpl
 
 )
 
-sealed case class JarTreeServletConfig(
+case class JarTreeServletConfig(
   name: String,
   dataPath: String,
   logPath: String,

@@ -2,22 +2,42 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
-import jartree.util.CaseClassLoaderKey
 import maven.modules.builder.NamedModule
 import sbt.io.IO
 import toolbox6.jartree.servlet.{EmbeddedJar, JarTreeServletConfig}
 import toolbox6.jartree.util.RunRequestImpl
 import toolbox6.modules.JarTreeModules
-import toolbox6.packaging.HasMavenCoordinates._
-import toolbox6.packaging.{HasMavenCoordinates, MavenTools}
+import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy, MavenTools}
 
 import scala.xml.XML
+import toolbox6.packaging.PackagingTools.Implicits._
+import JarTreePackaging.Implicits._
 
 
 /**
   * Created by martonpapp on 01/10/16.
   */
 object JarTreeWarPackager {
+
+  val PackagesFromContainer = Seq(
+    mvn.`javax.servlet:servlet-api:jar:2.5`,
+    mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
+    mvn.`com.oracle:wlthint3client:jar:10.3.6.0`,
+    mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
+  )
+
+  val WarClassPathModules = Seq(
+    JarTreeModules.Servlet
+  )
+
+  val modulesInParent =
+    PackagesFromContainer
+      .map(p => p:MavenHierarchy)
+      .flatMap(_.jars)
+      .to[Set] ++
+    WarClassPathModules
+      .map(p => p:MavenHierarchy)
+      .flatMap(_.jars)
 
 
 
@@ -30,6 +50,15 @@ object JarTreeWarPackager {
     startup: NamedModule,
     startupClass: String
   ) = {
+    val hierarchy =
+      MavenHierarchy
+        .moduleToHierarchy(startup)
+        .filter(m => !modulesInParent.contains(m))
+
+    val embeddedJars =
+      hierarchy
+        .jars
+        .distinct
 
     val pom =
       <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -67,21 +96,14 @@ object JarTreeWarPackager {
                   </goals>
                   <configuration>
                     <artifactItems>
-                      <artifactItem>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>org.apache.felix.framework</artifactId>
-                        <version>5.4.0</version>
-                        <overWrite>true</overWrite>
-                        <destFileName>felix.jar</destFileName>
-                      </artifactItem>
                       {
-//                      bundles.map({ bundle =>
-//                        <artifactItem>
-//                          {Module.asPomCoordinates(bundle)}
-//                          <overWrite>true</overWrite>
-//                          <destFileName>{bundle.artifactId}.jar</destFileName>
-//                        </artifactItem>
-//                      })
+                      embeddedJars.map({ jar =>
+                        <artifactItem>
+                          {jar.asPomCoordinates}
+                          <overWrite>true</overWrite>
+                          <destFileName>{jar.toFileName}</destFileName>
+                        </artifactItem>
+                      })
                       }
                     </artifactItems>
                     <outputDirectory>target/classes/jartreeservlet</outputDirectory>
@@ -93,17 +115,21 @@ object JarTreeWarPackager {
         </build>
         <dependencyManagement>
           <dependencies>
-            <dependency>
-              <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-              <version>2.5</version>
-              <scope>provided</scope>
-            </dependency>
+            {
+            PackagesFromContainer.map({ p =>
+              <dependency>
+                {p.asPomCoordinates}
+                <scope>provided</scope>
+              </dependency>
+            })
+            }
           </dependencies>
         </dependencyManagement>
         <dependencies>
           {
-          JarTreeModules.Servlet.asPomDependency
+          WarClassPathModules.map({ m =>
+            m.asPomDependency
+          })
           }
         </dependencies>
 
@@ -125,7 +151,7 @@ object JarTreeWarPackager {
             </servlet>
             <servlet-mapping>
               <servlet-name>jartree</servlet-name>
-              <url-pattern>/*</url-pattern>
+              <url-pattern>{"/*"}</url-pattern>
             </servlet-mapping>
           </web-app>
 
@@ -142,9 +168,10 @@ object JarTreeWarPackager {
           new File(dir, s"target/classes")
 
         val runRequest = RunRequestImpl(
-          CaseClassLoaderKey(startup),
+          JarTreePackaging.hierarchyToClassLoader(
+            hierarchy
+          ),
           startupClass
-
         )
 
         runtimeDir.mkdirs()
@@ -157,8 +184,15 @@ object JarTreeWarPackager {
               dataPath = dataPath,
               logPath = logPath,
               version = dataDirVersion,
-              embeddedJars = embeddedJars
-            )
+              embeddedJars = embeddedJars.map({ coords =>
+                EmbeddedJar(
+                  s"/jartreeservlet/${coords.toFileName}",
+                  JarTreePackaging.getId(coords)
+                )
+              }),
+              startup = runRequest
+            ),
+            2
           )
         )
       }

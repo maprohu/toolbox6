@@ -10,4 +10,5 @@ trait JarTreeServletContext {
 
 trait Processor {
   def service(req: HttpServletRequest, resp: HttpServletResponse): Unit
+  def close() : Unit
 }

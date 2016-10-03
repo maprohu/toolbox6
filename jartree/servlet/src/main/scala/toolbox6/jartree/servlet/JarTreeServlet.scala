@@ -7,6 +7,7 @@ import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
+import monix.execution.atomic.Atomic
 import monix.execution.cancelables.{AssignableCancelable, CompositeCancelable}
 import org.apache.commons.io.{FileUtils, IOUtils}
 import toolbox6.common.ManagementTools
@@ -60,9 +61,10 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
 
 class JarTreeServletImpl extends LazyLogging with LogTools {
 
-  @volatile var processor : Processor = new Processor {
+  val processor : Atomic[Processor] = Atomic(new Processor {
     override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
-  }
+    override def close(): Unit = ()
+  })
 
   implicit val codec = Codec.UTF8
 
@@ -79,8 +81,14 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     logger.info("starting {}", name)
 
     val context = new JarTreeServletContext {
-      override def setProcessor(p: Processor): Unit = {
-        processor = p
+      override def setProcessor(newProcessor: Processor): Unit = {
+        val oldProcessor = processor.transformAndExtract({ previous =>
+          (previous, newProcessor)
+        })
+
+        quietly {
+          oldProcessor.close()
+        }
       }
       override def servletConfig(): ServletConfig = config
     }
@@ -245,7 +253,7 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
   }
 
   def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    processor.service(req, resp)
+    processor.get.service(req, resp)
   }
 }
 

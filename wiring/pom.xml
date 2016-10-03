@@ -1,7 +1,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6</groupId>
-    <artifactId>toolbox6</artifactId>
+    <artifactId>toolbox6-wiring</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <build>
@@ -14,12 +14,6 @@
         </plugins>
     </build>
     <modules>
-        <module>jartree</module>
-        <module>servlet25</module>
-        <module>wiring</module>
-        <module>scalajs</module>
-        <module>common</module>
-        <module>logging</module>
-        <module>packaging</module>
+        <module>single</module>
     </modules>
 </project>

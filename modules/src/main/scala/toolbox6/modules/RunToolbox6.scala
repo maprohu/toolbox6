@@ -2,7 +2,9 @@ package toolbox6.modules
 
 import java.io.File
 
+import maven.modules.builder.Module.ConfiguredModule
 import maven.modules.builder.{Module, ModuleContainer, NamedModule, PlacedRoot}
+
 import scala.collection.immutable._
 
 /**
@@ -16,7 +18,7 @@ object RunToolbox6 {
     Toolbox6Modules.Root -> RootDir
   )
 
-  val Modules = Seq(
+  val Modules = Seq[ConfiguredModule](
     Toolbox6Modules.Common,
     Toolbox6Modules.Logging,
     Toolbox6Modules.Packaging,

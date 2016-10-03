@@ -6,6 +6,7 @@ import jartree.util.{CaseClassLoaderKey, CaseJarKey, MavenJarKeyImpl}
 import maven.modules.builder.{MavenModuleVersion, Module, NamedModule}
 
 import scala.collection.immutable._
+import scala.xml.NodeBuffer
 
 /**
   * Created by martonpapp on 01/10/16.
@@ -24,7 +25,8 @@ object PackagingTools {
 case class MavenCoordinatesImpl(
   groupId: String,
   artifactId: String,
-  version: String
+  version: String,
+  override val classifier : Option[String] = None
 ) extends HasMavenCoordinates {
 
 }
@@ -146,11 +148,16 @@ trait HasMavenCoordinates {
   def groupId: String
   def artifactId : String
   def version: String
+  def classifier : Option[String] = None
 
-  def asPomCoordinates = {
-    <groupId>{groupId}</groupId>
-    <artifactId>{artifactId}</artifactId>
-    <version>{version}</version>
+  def asPomCoordinates : NodeBuffer = {
+    val gav =
+      <groupId>{groupId}</groupId>
+      <artifactId>{artifactId}</artifactId>
+      <version>{version}</version>
+
+    gav &+
+      classifier.map(c => <classifier>{c}</classifier>).getOrElse()
   }
 
   def asPomDependency = {

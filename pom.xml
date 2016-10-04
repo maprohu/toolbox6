@@ -16,7 +16,6 @@
     <modules>
         <module>jartree</module>
         <module>servlet25</module>
-        <module>wiring</module>
         <module>scalajs</module>
         <module>common</module>
         <module>logging</module>

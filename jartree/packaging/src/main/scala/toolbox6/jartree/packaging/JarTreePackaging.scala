@@ -9,9 +9,9 @@ import monix.execution.atomic.Atomic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import org.jboss.shrinkwrap.resolver.api.maven.Maven
-import toolbox6.jartree.api.ManagedJarKey
+import toolbox6.jartree.api.JarKey
 import toolbox6.jartree.impl.JarCache
-import toolbox6.jartree.util.{CaseClassLoaderKey, ManagedJarKeyImpl}
+import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey}
 import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy}
 
 /**
@@ -42,15 +42,15 @@ object JarTreePackaging {
 
 
 
-  private val ManagedIdMap = Atomic(Map[MavenCoordinatesImpl, ManagedJarKeyImpl]())
+  private val ManagedIdMap = Atomic(Map[MavenCoordinatesImpl, CaseJarKey]())
 
-  def getId(maven: MavenCoordinatesImpl) : ManagedJarKeyImpl = {
+  def getId(maven: MavenCoordinatesImpl) : CaseJarKey = {
     ManagedIdMap.transformAndExtract({ map =>
       map
         .get(maven)
         .map({ id => (id, map)})
         .getOrElse({
-          val id = ManagedJarKeyImpl(
+          val id = CaseJarKey(
             if (maven.isSnapshot) {
               val file = resolveFile(maven)
 

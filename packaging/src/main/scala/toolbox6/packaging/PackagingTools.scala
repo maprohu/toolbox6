@@ -2,8 +2,8 @@ package toolbox6.packaging
 
 import java.net.URLEncoder
 
-import jartree.util.{CaseClassLoaderKey, CaseJarKey, MavenJarKeyImpl}
-import maven.modules.builder.{MavenModuleVersion, Module, NamedModule}
+import maven.modules.builder.{ModuleVersion, Module, NamedModule}
+import maven.modules.utils.MavenCentralModule
 
 import scala.collection.immutable._
 import scala.xml.NodeBuffer
@@ -75,10 +75,10 @@ object MavenHierarchy {
     )
   }
 
-  implicit def fromCLK(clk: CaseClassLoaderKey) : MavenHierarchy = {
+  implicit def fromCLK(clk: MavenCentralModule) : MavenHierarchy = {
     MavenHierarchy(
-      HasMavenCoordinates.cjk2maven(clk.jar),
-      clk.dependenciesSeq.map(fromCLK)
+      HasMavenCoordinates.key2maven(clk),
+      clk.dependencies.map(fromCLK)
     )
   }
 }
@@ -98,15 +98,8 @@ trait HasMavenCoordinatesImplicits {
     )
   }
 
-  implicit def key2coords(module: MavenJarKeyImpl) : MavenCoordinatesImpl = {
-    MavenCoordinatesImpl(
-      module.groupId,
-      module.artifactId,
-      module.version
-    )
-  }
 
-  implicit def mavenModuleVersion2coords(module: MavenModuleVersion) : MavenCoordinatesImpl = {
+  implicit def mavenModuleVersion2coords(module: ModuleVersion) : MavenCoordinatesImpl = {
     MavenCoordinatesImpl(
       module.mavenModuleId.groupId,
       module.mavenModuleId.artifactId,
@@ -116,7 +109,7 @@ trait HasMavenCoordinatesImplicits {
 
   implicit def module2coords(module: Module) : MavenCoordinatesImpl = {
     module.version match {
-      case m : MavenModuleVersion =>
+      case m : ModuleVersion =>
         m
       case _ => ???
     }
@@ -130,16 +123,12 @@ trait HasMavenCoordinatesImplicits {
     )
   }
 
-  implicit def key2maven(key: CaseClassLoaderKey) : MavenCoordinatesImpl = {
-    key.jar
-  }
-
-  implicit def cjk2maven(key: CaseJarKey) : MavenCoordinatesImpl = {
-    key match {
-      case m : MavenJarKeyImpl =>
-        m
-      case _ => ???
-    }
+  implicit def key2maven(module: MavenCentralModule) : MavenCoordinatesImpl = {
+    MavenCoordinatesImpl(
+      module.groupId,
+      module.artifactId,
+      module.version
+    )
   }
 
 }

@@ -1,19 +1,17 @@
 package toolbox6.modules
 
-import jartree.util.{CaseClassLoaderKey, MavenJarKeyImpl}
 import maven.modules.builder._
+import maven.modules.utils.MavenCentralModule
 import toolbox6.modules.Toolbox6Modules.Common
 
 
 /**
   * Created by martonpapp on 29/08/16.
   */
-object Toolbox6Modules extends CaseClassLoaderKey(
-  MavenJarKeyImpl(
-    "toolbox6-modules",
-    "toolbox6-modules",
-    "1.0.0-SNAPSHOT"
-  )
+object Toolbox6Modules extends MavenCentralModule(
+  "toolbox6-modules",
+  "toolbox6-modules",
+  "1.0.0-SNAPSHOT"
 ) {
 
   implicit val Root = RootModuleContainer("toolbox6")
@@ -98,6 +96,15 @@ object JarTreeModules {
     ServletApi
   )
 
+  object Wiring extends ScalaModule(
+    "wiring",
+    "1.0.0-SNAPSHOT",
+    Api,
+    ServletApi,
+    Util
+  )
+
+
   object ManagementApi extends JavaModule(
     "managementapi",
     "1.0.0-SNAPSHOT",
@@ -149,7 +156,7 @@ object JarTreeModules {
 }
 
 
-object MavenModulesBuilder extends MavenJarKeyImpl(
+object MavenModulesBuilder extends MavenCentralModule(
   "maven-modules",
   "maven-modules-builder",
   "1.0.0-SNAPSHOT"

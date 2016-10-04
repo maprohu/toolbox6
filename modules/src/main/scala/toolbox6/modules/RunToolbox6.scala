@@ -28,6 +28,7 @@ object RunToolbox6 {
     JarTreeModules.ServletApi,
     JarTreeModules.Servlet,
     JarTreeModules.Framework,
+    JarTreeModules.Wiring,
     JarTreeModules.ManagementApi,
     JarTreeModules.ManagementUtils,
     JarTreeModules.Client,
@@ -37,7 +38,6 @@ object RunToolbox6 {
     Servlet25Modules.RunApi,
     Servlet25Modules.SampleRunner,
     Servlet25Modules.Webapp,
-    WiringModules.Single,
     VisModules.Raw
 
   )

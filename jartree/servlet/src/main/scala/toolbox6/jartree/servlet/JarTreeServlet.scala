@@ -16,7 +16,7 @@ import toolbox6.jartree.impl.{JarCache, JarTree}
 import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener, Registration}
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
-import toolbox6.jartree.util.{CaseJarKey, ManagedJarKeyImpl, RunRequestImpl}
+import toolbox6.jartree.util.{CaseJarKey, RunRequestImpl}
 import toolbox6.logging.LogTools
 
 import scala.io.{Codec, Source}
@@ -41,7 +41,7 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
           .map({ jar =>
             (
               jar.key,
-              () => getClass.getClassLoader.getResourceAsStream(jar.classpathResource)
+              () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
             )
           }),
         jconfig.startup
@@ -61,10 +61,12 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
 
 class JarTreeServletImpl extends LazyLogging with LogTools {
 
-  val processor : Atomic[Processor] = Atomic(new Processor {
+  val VoidProcessor : Processor = new Processor {
     override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
     override def close(): Unit = ()
-  })
+  }
+
+  val processor : Atomic[Processor] = Atomic(VoidProcessor)
 
   implicit val codec = Codec.UTF8
 
@@ -75,7 +77,7 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     name: String,
     dataPath: String,
     version : Int = 1,
-    embeddedJars: Seq[(ManagedJarKeyImpl, () => InputStream)],
+    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
     initialStartup : RunRequestImpl
   ): Unit = {
     logger.info("starting {}", name)
@@ -102,7 +104,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       new PrintWriter(startupFile) {
         write(
           upickle.default.write(
-            startup
+            startup,
+            2
           )
         )
         close
@@ -177,9 +180,11 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     }
     val runnable = jarTree.resolve[JarRunnable[JarTreeServletContext]](startup)
 
-    val running = runnable.run(jarContext)
+    runnable.run(jarContext, startup.classLoader)
 
-    stopper += Cancelable(() => running.stop())
+    stopper += Cancelable({
+      () => context.setProcessor(VoidProcessor)
+    })
 
     stopper += setupManagement(
       name,
@@ -227,18 +232,21 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
         @throws(classOf[RemoteException])
         override def putCache(id: String, data: Array[Byte]): Unit = {
           cache.putStream(
-            ManagedJarKeyImpl(id),
+            CaseJarKey(id),
             () => new ByteArrayInputStream(data)
           )
         }
 
         @throws(classOf[RemoteException])
         override def executeByteArray(classLoaderJson: String, input: Array[Byte]): Array[Byte] = {
+          val request =
+            RunRequestImpl.fromString(classLoaderJson)
+
           jarTree
             .resolve[JarRunnableByteArray[JarTreeServletContext]](
-              RunRequestImpl.fromString(classLoaderJson)
+              request
             )
-            .run(input, ctx)
+            .run(input, ctx, request.classLoader)
         }
       }
     )
@@ -287,7 +295,7 @@ object JarTreeServletConfig {
 
 case class EmbeddedJar(
   classpathResource: String,
-  key: ManagedJarKeyImpl
+  key: CaseJarKey
 
 )
 

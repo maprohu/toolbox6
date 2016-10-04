@@ -20,6 +20,7 @@
         <module>servletapi</module>
         <module>servlet</module>
         <module>framework</module>
+        <module>wiring</module>
         <module>managementapi</module>
         <module>managementutils</module>
         <module>client</module>

@@ -2,13 +2,14 @@ package toolbox6.jartree.client
 
 import java.rmi.RemoteException
 
+import maven.modules.builder.NamedModule
 import org.apache.commons.io.IOUtils
 import toolbox6.jartree.framework.HelloByteArray
 import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener}
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.packaging.{JarTreePackaging, JarTreeWarPackager}
-import toolbox6.jartree.util.{CaseClassLoaderKey,  RunRequestImpl}
-import toolbox6.modules.{JarTreeModules, Toolbox6Modules}
+import toolbox6.jartree.util.{CaseClassLoaderKey, RunRequestImpl}
+import toolbox6.modules.JarTreeModules
 import toolbox6.packaging.MavenHierarchy
 import weblogic.jndi.Environment
 
@@ -18,16 +19,22 @@ import scala.io.StdIn
 /**
   * Created by martonpapp on 02/10/16.
   */
-object RunJarTreeClient {
-  def main(args: Array[String]): Unit = {
+object JarTreeClient {
+  def deploy(
+    adminUrl: String = "t3://localhost:7003",
+    app: String,
+    namedModule: NamedModule,
+    runClassName: String
+
+  ) : Unit = {
     val env = new Environment()
-    env.setProviderURL("t3://localhost:7002")
+    env.setProviderURL(adminUrl)
     val ctx = env.getInitialContext
     val management =
       ctx
         .lookup(
           JarTreeManagementUtils.bindingName(
-            "ftx-core"
+            app
           )
         )
         .asInstanceOf[JarTreeManagement]
@@ -43,13 +50,13 @@ object RunJarTreeClient {
 
     val reg = management.registerLogListener(cb)
 
-    val module : MavenHierarchy =
+    val mavenHierarchy : MavenHierarchy =
       JarTreeWarPackager.filteredHierarchy(
-        JarTreeModules.Framework
+        namedModule
       )
 
     val jars : IndexedSeq[(String, () => Array[Byte])] =
-      module
+      mavenHierarchy
         .jars
         .distinct
         .map({ h =>
@@ -87,19 +94,16 @@ object RunJarTreeClient {
       .executeByteArray(
         RunRequestImpl.toString(
           RunRequestImpl(
-            CaseClassLoaderKey(
-              JarTreePackaging.getId(module.jar),
-              Seq()
+            JarTreePackaging.hierarchyToClassLoader(
+              mavenHierarchy
             ),
-            classOf[HelloByteArray].getName
+            runClassName
           )
         ),
-        "client".getBytes
+        "deploy".getBytes
       )
 
     println(new String(bytes))
-
-    StdIn.readLine("enter...")
 
     reg.unregister()
   }

@@ -6,7 +6,7 @@ import java.security.{DigestInputStream, MessageDigest}
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
-import toolbox6.jartree.api.ManagedJarKey
+import toolbox6.jartree.api.JarKey
 import toolbox6.jartree.util.CaseJarKey
 
 import scala.collection.immutable._
@@ -66,27 +66,7 @@ class JarCache(
 
 
   def toJarFile(hash: CaseJarKey) : File = {
-    val file = hash match {
-//      case h : HashJarKeyImpl =>
-//        new File(
-//          hashDir,
-//          s"${hashToString(h.hash)}.jar"
-//        )
-//      case m : MavenJarKeyImpl =>
-//        new File(
-//          new File(
-//            new File(
-//              mavenDir,
-//              m.groupId
-//            ),
-//            m.artifactId
-//          ),
-//          s"${m.version}${m.classifierOpt.map(c => s"-${c}")}.jar"
-//        )
-      case h : ManagedJarKey =>
-        toManagedFile(h.uniqueId())
-    }
-
+    val file = toManagedFile(hash.uniqueId)
     file.getParentFile.mkdirs()
     file
   }

@@ -3,7 +3,7 @@ package toolbox6.jartree.servlet
 import java.io.{File, FileInputStream}
 
 import org.apache.commons.io.{FileUtils, IOUtils}
-import toolbox6.jartree.util.{CaseClassLoaderKey, ManagedJarKeyImpl, RunRequestImpl}
+import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey, RunRequestImpl}
 
 import scala.collection.immutable._
 
@@ -17,7 +17,7 @@ object RunJarTreeServlet {
     val frameworkJar =
       new File("../toolbox6/jartree/framework/target/product.jar")
 
-    val frameworkId = ManagedJarKeyImpl(frameworkJar)
+    val frameworkId = CaseJarKey(frameworkJar)
 
     val impl = new JarTreeServletImpl()
 

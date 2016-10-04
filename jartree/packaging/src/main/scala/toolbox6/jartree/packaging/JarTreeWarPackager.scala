@@ -47,6 +47,7 @@ object JarTreeWarPackager {
       .filter(m => !modulesInParent.contains(m))
   }
 
+  val JarsDirName = "jars"
 
   def run[T](
     name: String,
@@ -66,6 +67,12 @@ object JarTreeWarPackager {
       hierarchy
         .jars
         .distinct
+        .zipWithIndex
+        .map({ case (maven, idx) =>
+          (maven, s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar")
+        })
+
+
 
     val pom =
       <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -104,16 +111,16 @@ object JarTreeWarPackager {
                   <configuration>
                     <artifactItems>
                       {
-                      embeddedJars.map({ jar =>
+                      embeddedJars.map({ case (jar, fn) =>
                         <artifactItem>
                           {jar.asPomCoordinates}
                           <overWrite>true</overWrite>
-                          <destFileName>{jar.toFileName}</destFileName>
+                          <destFileName>{fn}</destFileName>
                         </artifactItem>
                       })
                       }
                     </artifactItems>
-                    <outputDirectory>target/classes/jartreeservlet</outputDirectory>
+                    <outputDirectory>target/classes/{JarsDirName}</outputDirectory>
                   </configuration>
                 </execution>
               </executions>
@@ -177,9 +184,15 @@ object JarTreeWarPackager {
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.2/weblogic-web-app.xsd">
             <wls:container-descriptor>
+              <wls:prefer-web-inf-classes>false</wls:prefer-web-inf-classes>
               <wls:prefer-application-packages>
-                <wls:package-name>org.*</wls:package-name>
+                <wls:package-name>org.slf4j</wls:package-name>
+                <wls:package-name>org.slf4j.*</wls:package-name>
+                <wls:package-name>org.apache.commons.*</wls:package-name>
               </wls:prefer-application-packages>
+              <wls:prefer-application-resources>
+                <wls:resource-name>org.slf4j.impl.*</wls:resource-name>
+              </wls:prefer-application-resources>
             </wls:container-descriptor>
           </wls:weblogic-web-app>
 
@@ -208,9 +221,9 @@ object JarTreeWarPackager {
               dataPath = dataPath,
               logPath = logPath,
               version = dataDirVersion,
-              embeddedJars = embeddedJars.map({ coords =>
+              embeddedJars = embeddedJars.map({ case (coords, fn) =>
                 EmbeddedJar(
-                  s"/jartreeservlet/${coords.toFileName}",
+                  s"${JarsDirName}/${fn}",
                   JarTreePackaging.getId(coords)
                 )
               }),

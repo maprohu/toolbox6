@@ -5,10 +5,11 @@ import java.nio.file.Files
 
 import org.apache.maven.shared.invoker.{DefaultInvocationRequest, DefaultInvoker}
 import sbt.io.IO
+
 import scala.collection.immutable._
 import scala.collection.JavaConversions._
-
-import scala.xml.{Node, XML}
+import scala.collection.mutable.ArrayBuffer
+import scala.xml._
 
 /**
   * Created by martonpapp on 01/10/16.
@@ -91,7 +92,11 @@ object MavenTools {
     require(result.getExitCode == 0)
   }
 
-  def pom(content: Node*) = {
+//  def pom(content: Node) : Elem = {
+//    pom(content:NodeBuffer)
+//  }
+//
+  def pom(content: NodeSeq) : Elem = {
     <project xmlns="http://maven.apache.org/POM/4.0.0"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">

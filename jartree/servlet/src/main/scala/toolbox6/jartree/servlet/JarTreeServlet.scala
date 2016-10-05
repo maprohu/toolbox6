@@ -179,24 +179,6 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       startup
     )
 
-//    val jarContext = new JarContext[JarTreeServletContext] {
-//      override def deploy(jar: DeployableJar): Unit = {
-//        cache.putStream(
-//          CaseJarKey(jar.key),
-//          () => jar.data
-//        )
-//      }
-//      override def setStartup(startup: ClassRequest): Unit = {
-//        writeStartup(
-//          ClassRequestImpl(startup)
-//        )
-//      }
-//      override def extension(): JarTreeServletContext = context
-//    }
-//    val runnable = jarTree.resolve[JarRunnable[JarTreeServletContext]](startup)
-//
-//    runnable.run(jarContext, startup.classLoader)
-
     stopper += Cancelable({
       () => processorSocket.clear()
     })

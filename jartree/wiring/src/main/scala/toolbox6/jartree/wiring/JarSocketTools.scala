@@ -22,7 +22,7 @@ class SimpleJarSocket[T, C](
 
   private val rxVar = Var(initPlugged)
 
-  val current : Rx[Plugged[T, C]] = rxVar
+  val dynamic : Rx[Plugged[T, C]] = rxVar
 
   private val atomic = Atomic(
     initPlugged

@@ -96,7 +96,8 @@ case class ClassRequestImpl[+T](
 
 object ClassRequestImpl {
   def fromString[T](str: String) : ClassRequestImpl[T] = {
-    upickle.default.read[ClassRequestImpl[T]](str)
+    upickle.default.read[ClassRequestImpl[Any]](str)
+      .asInstanceOf[ClassRequestImpl[T]]
   }
 
   def toString[T](req: ClassRequestImpl[T]) : String = {

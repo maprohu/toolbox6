@@ -23,6 +23,11 @@ trait JarTreeManagement extends java.rmi.Remote {
   ) : Unit
 
   @throws(classOf[RemoteException])
+  def plug(
+    jarPluggerClassRequestJson: String
+  ) : Array[Byte]
+
+  @throws(classOf[RemoteException])
   def executeByteArray(
     runRequestImplJson: String,
     input: Array[Byte]

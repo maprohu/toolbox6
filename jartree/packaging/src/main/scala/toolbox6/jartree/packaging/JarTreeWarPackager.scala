@@ -5,13 +5,15 @@ import java.io.File
 import maven.modules.builder.NamedModule
 import sbt.io.IO
 import toolbox6.jartree.servlet.{EmbeddedJar, JarTreeServletConfig}
-import toolbox6.jartree.util.ClassRequestImpl$
 import toolbox6.modules.JarTreeModules
 import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy, MavenTools}
 
 import scala.xml.XML
 import toolbox6.packaging.PackagingTools.Implicits._
 import JarTreePackaging.Implicits._
+import toolbox6.jartree.api.JarPlugger
+import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
+import toolbox6.jartree.util.ClassRequestImpl
 
 
 /**
@@ -204,7 +206,7 @@ object JarTreeWarPackager {
         val runtimeDir =
           new File(dir, s"target/classes")
 
-        val runRequest = ClassRequestImpl(
+        val runRequest = ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]](
           JarTreePackaging.hierarchyToClassLoader(
             hierarchy
           ),

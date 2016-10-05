@@ -17,7 +17,7 @@ import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener, Registrat
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.servlet.JarTreeServletConfig.Plugger
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
-import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl}
+import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, RunTools}
 import toolbox6.jartree.wiring.{Plugged, SimpleJarSocket}
 import toolbox6.logging.LogTools
 
@@ -46,7 +46,7 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
               () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
             )
           }),
-        jconfig.startup
+        jconfig.plugger
       )
     })
   }
@@ -68,7 +68,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     override def close(): Unit = ()
   }
 
-  val processor : Atomic[Processor] = Atomic(VoidProcessor)
+//  val processor : Atomic[Processor] = Atomic(VoidProcessor)
+  var processor : () => Processor = null
 
   implicit val codec = Codec.UTF8
 
@@ -89,9 +90,9 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     }
 
     def read = synchronized {
-      upickle.default.read[ClassRequestImpl[Plugger]](
+      upickle.default.read[ClassRequestImpl[Any]](
         Source.fromFile(startupFile).mkString
-      )
+      ).asInstanceOf[ClassRequestImpl[Plugger]]
     }
 
   }
@@ -172,6 +173,14 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       context,
       new ClosableJarCleaner(VoidProcessor)
     )
+    processor = () => processorSocket.get()
+
+    import rx.Ctx.Owner.Unsafe._
+    val obs = processorSocket.dynamic.foreach({ p =>
+      p.request.foreach(startupIO.writeStartup)
+    })
+    stopper += Cancelable(() => obs.kill())
+
 
     val startup = startupIO.read
 
@@ -187,7 +196,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       name,
       cache,
       jarTree,
-      context
+      context,
+      processorSocket
     )
   }
 
@@ -195,7 +205,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     name: String,
     cache: JarCache,
     jarTree: JarTree,
-    ctx: JarTreeServletContext
+    ctx: JarTreeServletContext,
+    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext]
   ) = {
     ManagementTools.bind(
       JarTreeManagementUtils.bindingName(
@@ -243,6 +254,19 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
             .resolve(request)
             .run(input, ctx, request)
         }
+
+        @throws(classOf[RemoteException])
+        override def plug(jarPluggerClassRequestJson: String): Array[Byte] = {
+          val request =
+            ClassRequestImpl.fromString[JarPlugger[Processor, JarTreeServletContext]](jarPluggerClassRequestJson)
+
+          RunTools.runBytes {
+            processorSocket.plug(
+              request
+            )
+            "plugged"
+          }
+        }
       }
     )
 
@@ -256,7 +280,7 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
   }
 
   def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    processor.get.service(req, resp)
+    processor().service(req, resp)
   }
 }
 
@@ -302,7 +326,10 @@ case class JarTreeServletConfig(
   logPath: String,
   version : Int,
   embeddedJars: Seq[EmbeddedJar],
-  startup : ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]],
+  startup : ClassRequestImpl[Any],
   stdout: Boolean,
   debug: Boolean
-)
+) {
+  def plugger =
+    startup.asInstanceOf[ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]]]
+}

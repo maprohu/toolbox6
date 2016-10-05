@@ -73,6 +73,7 @@ object JarTreeModules {
   object ServletApi extends ScalaModule(
     "servletapi",
     "1.0.0-SNAPSHOT",
+    Api,
     mvn.`javax.servlet:servlet-api:jar:2.5`
   )
 
@@ -84,6 +85,7 @@ object JarTreeModules {
     Toolbox6Modules.Logging,
     ManagementApi,
     ManagementUtils,
+    Wiring,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
@@ -101,7 +103,9 @@ object JarTreeModules {
     "1.0.0-SNAPSHOT",
     Api,
     ServletApi,
-    Util
+    Util,
+    mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
+    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
   )
 
 

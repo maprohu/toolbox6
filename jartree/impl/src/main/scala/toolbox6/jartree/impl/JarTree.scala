@@ -89,7 +89,7 @@ object JarTree {
 class JarTree(
   val parentClassLoader: ClassLoader,
   val cache: JarCache
-) {
+) extends InstanceResolver {
 
   val classLoaderMap = mutable.WeakHashMap.empty[CaseClassLoaderKey, JarTreeClassLoader]
 
@@ -122,7 +122,7 @@ class JarTree(
 
 
   def resolve[T](
-    request: RunRequest
+    request: ClassRequest[T]
   ) : T = {
     val cl = get(CaseClassLoaderKey(request.classLoader))
     val runClass = cl.loadClass(request.className)

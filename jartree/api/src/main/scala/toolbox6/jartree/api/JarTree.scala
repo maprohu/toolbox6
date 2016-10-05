@@ -23,25 +23,73 @@ trait  ClassLoaderKey {
   def dependencies(): java.util.Collection[ClassLoaderKey]
 }
 
-trait RunRequest {
+trait ClassRequest[+T] {
   def classLoader(): ClassLoaderKey
   def className(): String
 }
 
-trait JarContext[X <: AnyRef] {
+//trait JarContext[X <: AnyRef] {
+//
+//  def deploy(jar: DeployableJar) : Unit
+//  def setStartup(startup: ClassRequest[JarRunnable[X]]) : Unit
+//  def extension(): X
+//
+//}
 
-  def deploy(jar: DeployableJar) : Unit
-  def setStartup(startup: RunRequest) : Unit
-  def extension(): X
+trait JarRunnable[C <: AnyRef] {
+
+  def run(ctx: C, self: ClassRequest[JarRunnable[C]]) : Unit
 
 }
 
-trait JarRunnable[X <: AnyRef] {
-
-  def run(ctx: JarContext[X], self: ClassLoaderKey) : Unit
-
+trait InstanceResolver {
+  def resolve[T](request: ClassRequest[T]) : T
 }
 
-trait JarRunnableByteArray[X <: AnyRef] {
-  def run(data: Array[Byte], ctx: JarContext[X], self: ClassLoaderKey) : Array[Byte]
+trait JarRunnableByteArray[C <: AnyRef] {
+  def run(data: Array[Byte], ctx: C, self: ClassRequest[JarRunnableByteArray[C]]) : Array[Byte]
+}
+
+trait JarPlugResponse[T] {
+  def instance() : T
+  def andThen() : Unit
+}
+
+trait JarPlugger[T, -C] {
+  def pull(
+    previous: T,
+    context: C
+  ) : JarPlugResponse[T]
+}
+
+
+
+trait JarSocket[T, C] {
+  def plug(
+    request: ClassRequest[JarPlugger[T, C]]
+  ) : Unit
+
+  def get() : T
+}
+
+trait Closable {
+  def close() : Unit
+}
+
+trait ClosableJarPlugger[T <: Closable, C] extends JarPlugger[T, C] { self : T =>
+  override def pull(previous: T, context: C): JarPlugResponse[T] = {
+    new JarPlugResponse[T] {
+      override def instance(): T = self
+      override def andThen(): Unit = previous.close()
+    }
+  }
+}
+
+class ClosableJarCleaner[T <: Closable](init: T) extends JarPlugger[T, Any] {
+  override def pull(previous: T, context: Any): JarPlugResponse[T] = {
+    new JarPlugResponse[T] {
+      override def instance(): T = init
+      override def andThen(): Unit = previous.close()
+    }
+  }
 }

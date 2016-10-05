@@ -5,7 +5,7 @@ import java.io.File
 import maven.modules.builder.NamedModule
 import sbt.io.IO
 import toolbox6.jartree.servlet.{EmbeddedJar, JarTreeServletConfig}
-import toolbox6.jartree.util.RunRequestImpl
+import toolbox6.jartree.util.ClassRequestImpl$
 import toolbox6.modules.JarTreeModules
 import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy, MavenTools}
 
@@ -204,7 +204,7 @@ object JarTreeWarPackager {
         val runtimeDir =
           new File(dir, s"target/classes")
 
-        val runRequest = RunRequestImpl(
+        val runRequest = ClassRequestImpl(
           JarTreePackaging.hierarchyToClassLoader(
             hierarchy
           ),

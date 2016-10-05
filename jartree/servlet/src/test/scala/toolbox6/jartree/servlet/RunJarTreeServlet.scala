@@ -3,7 +3,7 @@ package toolbox6.jartree.servlet
 import java.io.{File, FileInputStream}
 
 import org.apache.commons.io.{FileUtils, IOUtils}
-import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey, RunRequestImpl}
+import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey, ClassRequestImpl$}
 
 import scala.collection.immutable._
 
@@ -29,7 +29,7 @@ object RunJarTreeServlet {
       Seq(
         (frameworkId, () => new FileInputStream(frameworkJar))
       ),
-      RunRequestImpl(
+      ClassRequestImpl(
         CaseClassLoaderKey(
           frameworkId,
           Seq()

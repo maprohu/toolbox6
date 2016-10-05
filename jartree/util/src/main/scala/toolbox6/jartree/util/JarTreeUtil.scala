@@ -89,29 +89,29 @@ object CaseClassLoaderKey {
   )
 }
 
-case class RunRequestImpl(
+case class ClassRequestImpl[+T](
   classLoader: CaseClassLoaderKey,
   className: String
-) extends RunRequest
+) extends ClassRequest[T]
 
-object RunRequestImpl {
-  def fromString(str: String) : RunRequestImpl = {
-    upickle.default.read[RunRequestImpl](str)
+object ClassRequestImpl {
+  def fromString[T](str: String) : ClassRequestImpl[T] = {
+    upickle.default.read[ClassRequestImpl[T]](str)
   }
 
-  def toString(req: RunRequestImpl) : String = {
+  def toString[T](req: ClassRequestImpl[T]) : String = {
     upickle.default.write(req, 2)
   }
 
-  def apply(req: RunRequest) : RunRequestImpl = {
-    apply(
+  def apply[T](req: ClassRequest[T]) : ClassRequestImpl[T] = {
+    apply[T](
       req.classLoader(),
       req.className()
     )
   }
 
-  def apply(
+  def apply[T](
     classLoaderKey: ClassLoaderKey,
     className: String
-  ) : RunRequestImpl = RunRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
+  ) : ClassRequestImpl[T] = ClassRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
 }

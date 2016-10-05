@@ -2,20 +2,24 @@ package toolbox6.jartree.wiring
 
 import toolbox6.jartree.api._
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
-import toolbox6.jartree.util.{RunRequestImpl, RunTools}
+import toolbox6.jartree.util.{ClassRequestImpl, RunTools}
 
 /**
   * Created by pappmar on 04/10/2016.
   */
 abstract class ServletInstaller
-  extends JarRunnable[JarTreeServletContext]
-    with JarRunnableByteArray[JarTreeServletContext]
+  extends ClosableJarPlugger[Processor]
     with Processor
 {
 
-  override def run(ctx: JarContext[JarTreeServletContext], self: ClassLoaderKey): Unit = {
+
+  override def run(ctx: JarContext[JarTreeServletContext], self: ClassRequest[ServletInstaller]): Unit = {
     ctx
       .extension()
+        .processor()
+        .plug(
+
+        )
       .setProcessor(
         this
       )
@@ -25,7 +29,7 @@ abstract class ServletInstaller
     RunTools.runBytesAll(
       { () =>
         ctx.setStartup(
-          RunRequestImpl(
+          ClassRequestImpl[JarRunnable[JarTreeServletContext]](
             self,
             getClass.getName
           )

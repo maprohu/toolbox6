@@ -7,7 +7,7 @@ import toolbox6.jartree.framework.HelloByteArray
 import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener}
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.packaging.{JarTreePackaging, JarTreeWarPackager}
-import toolbox6.jartree.util.{CaseClassLoaderKey,  RunRequestImpl}
+import toolbox6.jartree.util.{CaseClassLoaderKey,  ClassRequestImpl$}
 import toolbox6.modules.{JarTreeModules, Toolbox6Modules}
 import toolbox6.packaging.MavenHierarchy
 import weblogic.jndi.Environment
@@ -85,8 +85,8 @@ object RunJarTreeClient {
 
     val bytes = management
       .executeByteArray(
-        RunRequestImpl.toString(
-          RunRequestImpl(
+        ClassRequestImpl.toString(
+          ClassRequestImpl(
             CaseClassLoaderKey(
               JarTreePackaging.getId(module.jar),
               Seq()

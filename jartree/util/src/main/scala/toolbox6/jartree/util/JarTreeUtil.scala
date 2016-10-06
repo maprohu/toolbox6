@@ -3,6 +3,7 @@ package toolbox6.jartree.util
 import java.io.{File, FileInputStream, InputStream, OutputStream}
 import java.security.{DigestInputStream, MessageDigest}
 import java.util
+import javax.json.JsonObject
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
@@ -98,6 +99,12 @@ object ClassRequestImpl {
   def fromString[T](str: String) : ClassRequestImpl[T] = {
     upickle.default.read[ClassRequestImpl[Any]](str)
       .asInstanceOf[ClassRequestImpl[T]]
+  }
+
+  def fromJavax[T](o: JsonObject) : ClassRequestImpl[T] = {
+    upickle.default.readJs[ClassRequestImpl[Any]](
+      JsonTools.fromJavax(o)
+    ).asInstanceOf[ClassRequestImpl[T]]
   }
 
   def toString[T](req: ClassRequestImpl[T]) : String = {

@@ -5,7 +5,9 @@ import javax.json.{JsonObject, JsonValue}
 import monix.execution.atomic.Atomic
 import rx.{Rx, Var}
 import toolbox6.jartree.api._
-import toolbox6.jartree.util.ClassRequestImpl
+import toolbox6.jartree.util.{ClassRequestImpl, JarTreeTools, JsonTools}
+
+import scala.collection.immutable.Seq
 
 
 case class Plugged[T <: JarUpdatable, C](
@@ -111,4 +113,66 @@ class SimpleJarSocket[T <: JarUpdatable, C](
 
 }
 
+object SimpleJarSocket {
 
+  def noCleaner[T <: JarUpdatable, C](
+    init: T,
+    resolver: InstanceResolver,
+    context: C
+  ) : SimpleJarSocket[T, C] = new SimpleJarSocket[T, C](
+    init,
+    resolver,
+    context,
+    JarTreeTools.noopCleaner[T, C](init)
+  )
+
+}
+
+
+case class NamedSocket[T <: JarUpdatable, C, S <: JarSocket[T, C]](
+  name: String,
+  socket: JarSocket[T, C]
+)
+
+object NamedSocket {
+
+  def noopClean[T <: JarUpdatable, C](
+    name: String,
+    init: T
+  )(implicit
+    resolver: InstanceResolver,
+    context: C
+  ) : NamedSocket[T, C, SimpleJarSocket[T, C]] =
+    NamedSocket(
+      name,
+      SimpleJarSocket.noCleaner(
+        init,
+        resolver,
+        context
+      )
+    )
+
+
+
+}
+
+object JarSocketTools {
+
+  def multiUpdate[T <: JarUpdatable, C, S <: JarSocket[T, C]](
+    param: JsonObject,
+    sockets: Seq[NamedSocket[JarUpdatable, C, S]]
+  ): Unit = {
+    sockets.foreach({ ns =>
+      val (request, p) =
+        JsonTools.readUpdate(
+          param.getJsonObject(ns.name)
+        )
+
+      ns.socket.plug(
+        request,
+        p
+      )
+    })
+  }
+
+}

@@ -94,4 +94,11 @@ object JsonTools {
       parser.close()
     }
   }
+
+  def readUpdate[T](o: JsonObject) : (ClassRequestImpl[T], JsonObject) = {
+    (
+      ClassRequestImpl.fromJavax[T](o.getJsonObject(RequestAttribute)),
+      o.getJsonObject(ParamAttribute)
+    )
+  }
 }

@@ -22,6 +22,7 @@ import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
 import toolbox6.jartree.wiring.{Plugged, SimpleJarSocket}
 import toolbox6.logging.LogTools
+import upickle.Js
 
 import scala.io.{Codec, Source}
 import scala.util.Try
@@ -34,7 +35,7 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
 
   override def init(config: ServletConfig): Unit = {
     super.init(config)
-    JarTreeServletConfig.jconfig.map({ jconfig =>
+    JarTreeServletConfig.jconfig.map({ case (jconfig, param) =>
       impl.init(
         config,
         jconfig.name,
@@ -48,7 +49,8 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
               () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
             )
           }),
-        jconfig.plugger
+        jconfig.plugger,
+        param
       )
     })
   }
@@ -81,11 +83,18 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
 
   class StartupIO(startupFile: File) {
 
-    def writeStartup(startup: ClassRequestImpl[Plugger]) : Unit = synchronized {
+    def writeStartup(startup: ClassRequestImpl[Plugger], jsonObject: JsonObject) : Unit = synchronized {
+      val jsObj = Js.Obj(
+        JsonTools.RequestAttribute ->
+          ClassRequestImpl.toJsObj(startup),
+        JsonTools.ParamAttribute ->
+          JsonTools.fromJavax(jsonObject)
+      )
+
       new PrintWriter(startupFile) {
         write(
-          upickle.default.write(
-            startup,
+          upickle.json.write(
+            jsObj,
             2
           )
         )
@@ -113,7 +122,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup : ClassRequestImpl[Plugger]
+    initialStartup : ClassRequestImpl[Plugger],
+    initialParam: JsonObject
   ): Unit = {
     logger.info("starting {}", name)
 
@@ -152,7 +162,7 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
         })
 
       quietly {
-        startupIO.writeStartup(initialStartup)
+        startupIO.writeStartup(initialStartup, initialParam)
       }
 
       new PrintWriter(versionFile) {
@@ -188,7 +198,10 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
 
     import rx.Ctx.Owner.Unsafe._
     val obs = processorSocket.dynamic.foreach({ p =>
-      p.request.foreach(startupIO.writeStartup)
+      p.request.foreach({
+        case (req, param) =>
+          startupIO.writeStartup(req, param)
+      })
     })
     stopper += Cancelable(() => obs.kill())
 
@@ -307,19 +320,34 @@ object JarTreeServletConfig {
   val VersionFile = "jartreeservlet.version"
   val StartupFile = "jartreeservlet.startup.json"
 
-  lazy val jconfig =
+  val ConfigAttribute = "config"
+  val ParamAttribute = "param"
+
+  lazy val jconfig : Option[(JarTreeServletConfig, JsonObject)] =
     try {
-      Some {
-        val is =
-          JarTreeServletConfig.getClass.getClassLoader.getResourceAsStream(
-            ConfigFile
-          )
-        upickle.default.read[JarTreeServletConfig](
-          Source.fromInputStream(
-            is
-          ).mkString
+      val is =
+        JarTreeServletConfig.getClass.getClassLoader.getResourceAsStream(
+          ConfigFile
         )
-      }
+
+//      val str =
+
+      val reader = JsonProvider
+        .provider()
+        .createReader(new InputStreamReader(is))
+
+      val obj = reader.readObject()
+
+      Some(
+        (
+          upickle.default.readJs[JarTreeServletConfig](
+            JsonTools.fromJavax(
+              obj.getJsonObject(ConfigAttribute)
+            )
+          ),
+          obj.getJsonObject(ParamAttribute)
+        )
+      )
     } catch {
       case ex : Throwable =>
         ex.printStackTrace()

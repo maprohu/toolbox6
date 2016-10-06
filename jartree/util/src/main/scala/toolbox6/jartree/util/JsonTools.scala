@@ -1,6 +1,7 @@
 package toolbox6.jartree.util
 
 import java.io.{File, FileInputStream, StringReader}
+import javax.json.JsonValue.ValueType
 import javax.json._
 import javax.json.spi.JsonProvider
 
@@ -62,6 +63,12 @@ object JsonTools {
               .getValuesAs(classOf[JsonValue])
               .map(fromJavax):_*
           )
+        case v : JsonValue if v.getValueType == ValueType.FALSE =>
+          Js.False
+        case v : JsonValue if v.getValueType == ValueType.TRUE =>
+          Js.True
+        case v : JsonValue if v.getValueType == ValueType.NULL =>
+          Js.Null
 
       }
     )

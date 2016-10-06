@@ -12,7 +12,7 @@ import scala.collection.immutable.Seq
 
 case class Plugged[T <: JarUpdatable, C](
   instance: T,
-  request: Option[ClassRequestImpl[JarPlugger[T, C]]]
+  request: Option[(ClassRequestImpl[JarPlugger[T, C]], JsonObject)]
 )
 
 class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
@@ -41,7 +41,7 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
   private def plugInternal2(
     plugged: Plugged[T, C],
     plugger: JarPlugger[T, C],
-    request: Option[ClassRequestImpl[JarPlugger[T, C]]],
+    request: Option[(ClassRequestImpl[JarPlugger[T, C]], JsonObject)],
     param: JsonObject
   ): PlugTransform = {
     val response = plugger.pull(
@@ -79,9 +79,9 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
     param: JsonObject
   ): Unit = {
     plugInternal1({ plugged =>
-      val r = Some(ClassRequestImpl(request))
+      val r = Some(ClassRequestImpl(request), param)
 
-      if (plugged.request != r) {
+      if (plugged.request.map(_._1) != r.map(_._1)) {
         val plugger = context.resolve(request)
 
         plugInternal2(
@@ -93,7 +93,7 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
       } else {
         plugged.instance.update(param)
 
-        (Noop, plugged)
+        (Noop, plugged.copy(request = r))
       }
     })
   }

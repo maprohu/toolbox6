@@ -34,7 +34,7 @@ class LogbackConfigurator extends ContextAwareBase with Configurator {
 
     JarTreeServletConfig
       .jconfig
-      .map({ jconfig =>
+      .map({ case (jconfig, _) =>
         val logdir = new File(jconfig.logPath)
         val appname = jconfig.name
 

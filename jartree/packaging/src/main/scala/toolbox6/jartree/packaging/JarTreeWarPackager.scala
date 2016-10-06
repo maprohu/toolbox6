@@ -2,7 +2,7 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
-import maven.modules.builder.NamedModule
+import maven.modules.builder.{Module, NamedModule}
 import sbt.io.IO
 import toolbox6.jartree.servlet.{EmbeddedJar, JarTreeServletConfig}
 import toolbox6.modules.JarTreeModules
@@ -12,8 +12,10 @@ import scala.xml.XML
 import toolbox6.packaging.PackagingTools.Implicits._
 import JarTreePackaging.Implicits._
 import toolbox6.jartree.api.JarPlugger
+import toolbox6.jartree.packaging.JarTreePackaging.RunHierarchy
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util.ClassRequestImpl
+import upickle.Js
 
 
 /**
@@ -42,10 +44,10 @@ object JarTreeWarPackager {
       .flatMap(_.jars)
 
   def filteredHierarchy(
-    namedModule: NamedModule
+    module: Module
   ) : MavenHierarchy = {
     MavenHierarchy
-      .moduleToHierarchy(namedModule)
+      .moduleToHierarchy(module)
       .filter(m => !modulesInParent.contains(m))
   }
 
@@ -57,18 +59,16 @@ object JarTreeWarPackager {
     dataPath : String,
     logPath : String,
     dataDirVersion : Int = 1,
-    startup: NamedModule,
-    startupClass: String
+    startup: RunHierarchy
   )(
     postProcessor: File => T
   ) : T = {
+
     val hierarchy =
-      filteredHierarchy(startup)
+      startup.toMaven
 
     val embeddedJars =
-      hierarchy
-        .jars
-        .distinct
+      hierarchy.jars
         .zipWithIndex
         .map({ case (maven, idx) =>
           (maven, s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar")
@@ -206,33 +206,37 @@ object JarTreeWarPackager {
         val runtimeDir =
           new File(dir, s"target/classes")
 
-        val runRequest = ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]](
-          JarTreePackaging.hierarchyToClassLoader(
-            hierarchy
-          ),
-          startupClass
+        val runRequest = hierarchy.request
+
+        val configObj = Js.Obj(
+          JarTreeServletConfig.ConfigAttribute ->
+            upickle.default.writeJs(
+              JarTreeServletConfig(
+                name = name,
+                dataPath = dataPath,
+                logPath = logPath,
+                version = dataDirVersion,
+                embeddedJars = embeddedJars.map({ case (coords, fn) =>
+                  EmbeddedJar(
+                    s"${JarsDirName}/${fn}",
+                    JarTreePackaging.getId(coords)
+                  )
+                }),
+                startup = runRequest,
+                stdout = false,
+                debug = false
+              )
+            ),
+          JarTreeServletConfig.ParamAttribute ->
+            hierarchy.childrenJs
+
         )
 
         runtimeDir.mkdirs()
-        import upickle.default._
         IO.write(
           new File(runtimeDir, JarTreeServletConfig.ConfigFile),
-          write(
-            JarTreeServletConfig(
-              name = name,
-              dataPath = dataPath,
-              logPath = logPath,
-              version = dataDirVersion,
-              embeddedJars = embeddedJars.map({ case (coords, fn) =>
-                EmbeddedJar(
-                  s"${JarsDirName}/${fn}",
-                  JarTreePackaging.getId(coords)
-                )
-              }),
-              startup = runRequest,
-              stdout = false,
-              debug = false
-            ),
+          upickle.json.write(
+            configObj,
             2
           )
         )

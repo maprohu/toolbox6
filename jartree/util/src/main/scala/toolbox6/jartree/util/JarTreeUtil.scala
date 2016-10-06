@@ -8,6 +8,8 @@ import javax.json.JsonObject
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import toolbox6.jartree.api._
+import upickle.Js
+import upickle.Js.Obj
 
 import scala.collection.immutable._
 import scala.collection.JavaConversions._
@@ -109,6 +111,10 @@ object ClassRequestImpl {
 
   def toString[T](req: ClassRequestImpl[T]) : String = {
     upickle.default.write(req, 2)
+  }
+
+  def toJsObj[T](req: ClassRequestImpl[T]) : Js.Obj = {
+    upickle.default.writeJs(req).asInstanceOf[Js.Obj]
   }
 
   def apply[T](req: ClassRequest[T]) : ClassRequestImpl[T] = {

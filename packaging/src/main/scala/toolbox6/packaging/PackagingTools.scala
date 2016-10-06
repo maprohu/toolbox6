@@ -71,7 +71,10 @@ object MavenHierarchy {
   implicit def moduleToHierarchy(module: Module) : MavenHierarchy = {
     MavenHierarchy(
       HasMavenCoordinates.module2coords(module),
-      module.deps.map(moduleToHierarchy)
+      module
+        .deps
+        .filterNot(_.provided)
+        .map(moduleToHierarchy)
     )
   }
 

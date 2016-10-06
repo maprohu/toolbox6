@@ -48,7 +48,7 @@ object JarTreeModules {
     Container,
     "api",
     "1.0.0-SNAPSHOT",
-    mvn.`javax.json:javax.json-api:jar:1.0`,
+    mvn.`org.glassfish:javax.json:jar:1.0.4`,
     (mvn.`org.scala-lang:scala-library:jar:2.11.8`:Module).copy(provided = true)
   )
 
@@ -106,8 +106,7 @@ object JarTreeModules {
     ServletApi,
     Util,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
-    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
-    mvn.`org.glassfish:javax.json:jar:1.0.4`
+    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
   )
 
 

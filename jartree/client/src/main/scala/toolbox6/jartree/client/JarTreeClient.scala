@@ -7,10 +7,12 @@ import org.apache.commons.io.IOUtils
 import toolbox6.jartree.framework.HelloByteArray
 import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener}
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
+import toolbox6.jartree.packaging.JarTreePackaging.{RunHierarchy, RunMavenHierarchy}
 import toolbox6.jartree.packaging.{JarTreePackaging, JarTreeWarPackager}
-import toolbox6.jartree.util.{CaseClassLoaderKey, ClassRequestImpl, ClassRequestImpl$}
+import toolbox6.jartree.util.{CaseClassLoaderKey, ClassRequestImpl, JsonTools}
 import toolbox6.modules.JarTreeModules
 import toolbox6.packaging.MavenHierarchy
+import upickle.Js
 import weblogic.jndi.Environment
 
 import scala.collection.immutable._
@@ -20,12 +22,14 @@ import scala.io.StdIn
   * Created by martonpapp on 02/10/16.
   */
 object JarTreeClient {
+
+
+
+
   def deploy(
     adminUrl: String = "t3://localhost:7003",
     app: String,
-    namedModule: NamedModule,
-    runClassName: String
-
+    runHierarchy: RunHierarchy
   ) : Unit = {
     val env = new Environment()
     env.setProviderURL(adminUrl)
@@ -50,24 +54,18 @@ object JarTreeClient {
 
     val reg = management.registerLogListener(cb)
 
-    val mavenHierarchy : MavenHierarchy =
-      JarTreeWarPackager.filteredHierarchy(
-        namedModule
-      )
+    val runMavenHierarchy : RunMavenHierarchy =
+      runHierarchy.toMaven
 
-    val jars : IndexedSeq[(String, () => Array[Byte])] =
-      mavenHierarchy
-        .jars
-        .distinct
-        .map({ h =>
+    val jars = runMavenHierarchy.jars
+      .map({ h =>
 
-          val id = JarTreePackaging.getId(h)
-          val data = () => IOUtils.toByteArray(JarTreePackaging.resolveInputStream(h))
+        val id = JarTreePackaging.getId(h)
+        val data = () => IOUtils.toByteArray(JarTreePackaging.resolveInputStream(h))
 
-          (id.uniqueId, data)
-        })
-        .toIndexedSeq
-
+        (id.uniqueId, data)
+      })
+      .toIndexedSeq
 
 
     val ids = jars.map(_._1).toArray
@@ -93,12 +91,11 @@ object JarTreeClient {
     val bytes = management
       .plug(
         ClassRequestImpl.toString(
-          ClassRequestImpl(
-            JarTreePackaging.hierarchyToClassLoader(
-              mavenHierarchy
-            ),
-            runClassName
-          )
+          runMavenHierarchy.request
+        ),
+        upickle.json.write(
+          runMavenHierarchy.childrenJs,
+          2
         )
       )
 

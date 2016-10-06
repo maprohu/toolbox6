@@ -15,9 +15,8 @@ case class Plugged[T <: JarUpdatable, C](
   request: Option[ClassRequestImpl[JarPlugger[T, C]]]
 )
 
-class SimpleJarSocket[T <: JarUpdatable, C](
+class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
   init: T,
-  resolver: InstanceResolver,
   context: C,
   cleaner: JarPlugger[T, C]
 ) extends JarSocket[T, C] {
@@ -83,7 +82,7 @@ class SimpleJarSocket[T <: JarUpdatable, C](
       val r = Some(ClassRequestImpl(request))
 
       if (plugged.request != r) {
-        val plugger = resolver.resolve(request)
+        val plugger = context.resolve(request)
 
         plugInternal2(
           plugged,
@@ -115,13 +114,11 @@ class SimpleJarSocket[T <: JarUpdatable, C](
 
 object SimpleJarSocket {
 
-  def noCleaner[T <: JarUpdatable, C](
+  def noCleaner[T <: JarUpdatable, C <: InstanceResolver](
     init: T,
-    resolver: InstanceResolver,
     context: C
   ) : SimpleJarSocket[T, C] = new SimpleJarSocket[T, C](
     init,
-    resolver,
     context,
     JarTreeTools.noopCleaner[T, C](init)
   )
@@ -137,8 +134,7 @@ case class NamedSocket[T <: JarUpdatable, C, S <: JarSocket[T, C]](
 
 object NamedSocket {
 
-  case class Input[C](
-    resolver: InstanceResolver,
+  case class Input[C <: InstanceResolver](
     context: C
   )
 
@@ -153,7 +149,6 @@ object NamedSocket {
       name,
       SimpleJarSocket.noCleaner(
         init,
-        resolver,
         context
       )
     )

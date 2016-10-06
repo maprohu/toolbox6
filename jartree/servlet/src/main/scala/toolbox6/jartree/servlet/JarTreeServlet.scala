@@ -117,9 +117,6 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
   ): Unit = {
     logger.info("starting {}", name)
 
-    val context : JarTreeServletContext = new JarTreeServletContext {
-      override def servletConfig(): ServletConfig = config
-    }
 
 
 
@@ -177,9 +174,13 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       cache
     )
 
+    val context : JarTreeServletContext = new JarTreeServletContext {
+      override def servletConfig(): ServletConfig = config
+      override def resolve[T](request: ClassRequest[T]): T = jarTree.resolve(request)
+    }
+
     val processorSocket = new SimpleJarSocket[Processor, JarTreeServletContext](
       VoidProcessor,
-      jarTree,
       context,
       new ClosableJarCleaner(VoidProcessor)
     )

@@ -9,12 +9,19 @@ import toolbox6.jartree.api.{JarPlugResponse, JarPlugger, JarUpdatable}
   */
 object JarTreeTools {
 
-  def noopCleaner[T <: JarUpdatable, C](init: T) = new JarPlugger[T, C] {
-    val response = new JarPlugResponse[T] {
-      override def instance(): T = init
+  def noopResponse[T <: JarUpdatable](o: => T) = {
+    new JarPlugResponse[T] {
+      override def instance(): T = o
       override def andThen(): Unit = ()
     }
-    override def pull(previous: T, param: JsonObject, context: C): JarPlugResponse[T] = response
+  }
+
+  def noopCleaner[T <: JarUpdatable, C](init: T) = {
+    val response = noopResponse(init)
+
+    new JarPlugger[T, C] {
+      override def pull(previous: T, param: JsonObject, context: C): JarPlugResponse[T] = response
+    }
   }
 
 }

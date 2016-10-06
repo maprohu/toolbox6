@@ -51,7 +51,7 @@ trait JarRunnableByteArray[C <: AnyRef] {
   def run(data: Array[Byte], ctx: C, self: ClassRequest[JarRunnableByteArray[C]]) : Array[Byte]
 }
 
-trait JarPlugResponse[T] {
+trait JarPlugResponse[+T] {
   def instance() : T
   def andThen() : Unit
 }

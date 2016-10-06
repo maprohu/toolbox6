@@ -1,6 +1,7 @@
 package toolbox6.jartree.api
 
 import java.io.InputStream
+import javax.json.{JsonObject, JsonValue}
 
 
 /**
@@ -55,9 +56,14 @@ trait JarPlugResponse[T] {
   def andThen() : Unit
 }
 
-trait JarPlugger[T, -C] {
+trait JarUpdatable {
+  def update(param: JsonObject) : Unit
+}
+
+trait JarPlugger[T <: JarUpdatable, -C] {
   def pull(
     previous: T,
+    param: JsonObject,
     context: C
   ) : JarPlugResponse[T]
 }
@@ -66,7 +72,8 @@ trait JarPlugger[T, -C] {
 
 trait JarSocket[T, C] {
   def plug(
-    request: ClassRequest[JarPlugger[T, C]]
+    request: ClassRequest[JarPlugger[T, C]],
+    param: JsonObject
   ) : Unit
 
   def get() : T
@@ -77,16 +84,17 @@ trait Closable {
 }
 
 trait ClosableJarPlugger[T <: Closable, C] extends JarPlugger[T, C] { self : T =>
-  override def pull(previous: T, context: C): JarPlugResponse[T] = {
+  override def pull(previous: T, param: JsonObject, context: C): JarPlugResponse[T] = {
     new JarPlugResponse[T] {
       override def instance(): T = self
       override def andThen(): Unit = previous.close()
     }
   }
+
 }
 
 class ClosableJarCleaner[T <: Closable](init: T) extends JarPlugger[T, Any] {
-  override def pull(previous: T, context: Any): JarPlugResponse[T] = {
+  override def pull(previous: T, param: JsonObject, context: Any): JarPlugResponse[T] = {
     new JarPlugResponse[T] {
       override def instance(): T = init
       override def andThen(): Unit = previous.close()

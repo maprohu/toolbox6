@@ -1,5 +1,6 @@
 package toolbox6.jartree.wiring
 
+import javax.json.JsonValue
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
 import toolbox6.jartree.api._

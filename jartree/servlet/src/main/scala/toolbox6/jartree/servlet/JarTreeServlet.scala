@@ -1,7 +1,9 @@
 package toolbox6.jartree.servlet
 
-import java.io.{ByteArrayInputStream, File, InputStream, PrintWriter}
+import java.io._
 import java.rmi.RemoteException
+import javax.json.spi.JsonProvider
+import javax.json.{Json, JsonValue}
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
@@ -89,7 +91,13 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       }
     }
 
-    def read = synchronized {
+    def read : (ClassRequestImpl[Plugger], JsonValue) = synchronized {
+      val parser = JsonProvider.provider().createReader(
+        new FileInputStream(startupFile)
+      )
+
+      parser.readObject()
+
       upickle.default.read[ClassRequestImpl[Any]](
         Source.fromFile(startupFile).mkString
       ).asInstanceOf[ClassRequestImpl[Plugger]]

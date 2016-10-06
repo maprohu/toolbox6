@@ -48,6 +48,7 @@ object JarTreeModules {
     Container,
     "api",
     "1.0.0-SNAPSHOT",
+    mvn.`javax.json:javax.json-api:jar:1.0`,
     (mvn.`org.scala-lang:scala-library:jar:2.11.8`:Module).copy(provided = true)
   )
 

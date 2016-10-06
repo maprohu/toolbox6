@@ -135,7 +135,7 @@ object JarTreePackaging {
 
     def toJsObj : Js.Obj = {
       Js.Obj(
-        JsonTools.ParamAttribute ->
+        JsonTools.RequestAttribute ->
           ClassRequestImpl.toJsObj(
             request
           ),

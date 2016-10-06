@@ -70,7 +70,7 @@ trait JarPlugger[T <: JarUpdatable, -C] {
 
 
 
-trait JarSocket[T, C] {
+trait JarSocket[T <: JarUpdatable, C] {
   def plug(
     request: ClassRequest[JarPlugger[T, C]],
     param: JsonObject
@@ -83,7 +83,7 @@ trait Closable {
   def close() : Unit
 }
 
-trait ClosableJarPlugger[T <: Closable, C] extends JarPlugger[T, C] { self : T =>
+trait ClosableJarPlugger[T <: JarUpdatable with Closable, C] extends JarPlugger[T, C] { self : T =>
   override def pull(previous: T, param: JsonObject, context: C): JarPlugResponse[T] = {
     new JarPlugResponse[T] {
       override def instance(): T = self
@@ -93,7 +93,7 @@ trait ClosableJarPlugger[T <: Closable, C] extends JarPlugger[T, C] { self : T =
 
 }
 
-class ClosableJarCleaner[T <: Closable](init: T) extends JarPlugger[T, Any] {
+class ClosableJarCleaner[T <: JarUpdatable with Closable](init: T) extends JarPlugger[T, Any] {
   override def pull(previous: T, param: JsonObject, context: Any): JarPlugResponse[T] = {
     new JarPlugResponse[T] {
       override def instance(): T = init

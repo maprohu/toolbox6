@@ -1,6 +1,8 @@
 package toolbox6.jartree.util
 
+import java.io.{File, FileInputStream, StringReader}
 import javax.json._
+import javax.json.spi.JsonProvider
 
 import upickle.Js
 
@@ -66,4 +68,30 @@ object JsonTools {
 
   }
 
+  val RequestAttribute = "request"
+  val ParamAttribute = "param"
+
+  def readJavax(file: File) : JsonObject = {
+    val parser = JsonProvider.provider().createReader(
+      new FileInputStream(file)
+    )
+
+    try {
+      parser.readObject()
+    } finally {
+      parser.close()
+    }
+  }
+
+  def readJavax(str: String) : JsonObject = {
+    val parser = JsonProvider.provider().createReader(
+      new StringReader(str)
+    )
+
+    try {
+      parser.readObject()
+    } finally {
+      parser.close()
+    }
+  }
 }

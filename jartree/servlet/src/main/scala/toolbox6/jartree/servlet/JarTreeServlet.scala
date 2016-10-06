@@ -3,7 +3,7 @@ package toolbox6.jartree.servlet
 import java.io._
 import java.rmi.RemoteException
 import javax.json.spi.JsonProvider
-import javax.json.{Json, JsonValue}
+import javax.json.{Json, JsonObject, JsonValue}
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
@@ -19,7 +19,7 @@ import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener, Registrat
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.servlet.JarTreeServletConfig.Plugger
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
-import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, RunTools}
+import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
 import toolbox6.jartree.wiring.{Plugged, SimpleJarSocket}
 import toolbox6.logging.LogTools
 
@@ -68,6 +68,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
   val VoidProcessor : Processor = new Processor {
     override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
     override def close(): Unit = ()
+
+    override def update(param: JsonObject): Unit = ()
   }
 
 //  val processor : Atomic[Processor] = Atomic(VoidProcessor)
@@ -91,16 +93,16 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       }
     }
 
-    def read : (ClassRequestImpl[Plugger], JsonValue) = synchronized {
-      val parser = JsonProvider.provider().createReader(
-        new FileInputStream(startupFile)
-      )
+    def read : (ClassRequestImpl[Plugger], JsonObject) = synchronized {
+      val json = JsonTools.readJavax(startupFile)
 
-      parser.readObject()
-
-      upickle.default.read[ClassRequestImpl[Any]](
-        Source.fromFile(startupFile).mkString
+      val request = upickle.default.readJs[ClassRequestImpl[Any]](
+        JsonTools.fromJavax(
+          json.get(JsonTools.RequestAttribute)
+        )
       ).asInstanceOf[ClassRequestImpl[Plugger]]
+
+      (request, json.getJsonObject(JsonTools.ParamAttribute))
     }
 
   }
@@ -190,10 +192,11 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     stopper += Cancelable(() => obs.kill())
 
 
-    val startup = startupIO.read
+    val (startupRequest, startupParam) = startupIO.read
 
     processorSocket.plug(
-      startup
+      startupRequest,
+      startupParam
     )
 
     stopper += Cancelable({
@@ -264,13 +267,16 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
         }
 
         @throws(classOf[RemoteException])
-        override def plug(jarPluggerClassRequestJson: String): Array[Byte] = {
+        override def plug(jarPluggerClassRequestJson: String, param: String): Array[Byte] = {
           val request =
             ClassRequestImpl.fromString[JarPlugger[Processor, JarTreeServletContext]](jarPluggerClassRequestJson)
 
+          val paramJson = JsonTools.readJavax(param)
+
           RunTools.runBytes {
             processorSocket.plug(
-              request
+              request,
+              paramJson
             )
             "plugged"
           }

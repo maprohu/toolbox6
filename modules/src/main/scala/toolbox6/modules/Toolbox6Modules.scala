@@ -106,7 +106,8 @@ object JarTreeModules {
     ServletApi,
     Util,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
-    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
+    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
+    mvn.`org.glassfish:javax.json:jar:1.0.4`
   )
 
 

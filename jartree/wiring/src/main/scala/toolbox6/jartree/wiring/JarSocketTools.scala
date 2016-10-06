@@ -134,15 +134,21 @@ case class NamedSocket[T <: JarUpdatable, C, S <: JarSocket[T, C]](
   socket: JarSocket[T, C]
 )
 
+
 object NamedSocket {
+
+  case class Input[C](
+    resolver: InstanceResolver,
+    context: C
+  )
 
   def noopClean[T <: JarUpdatable, C](
     name: String,
     init: T
   )(implicit
-    resolver: InstanceResolver,
-    context: C
-  ) : NamedSocket[T, C, SimpleJarSocket[T, C]] =
+    input: Input[C]
+  ) : NamedSocket[T , C, SimpleJarSocket[T, C]] = {
+    import input._
     NamedSocket(
       name,
       SimpleJarSocket.noCleaner(
@@ -151,6 +157,7 @@ object NamedSocket {
         context
       )
     )
+  }
 
 
 
@@ -160,7 +167,7 @@ object JarSocketTools {
 
   def multiUpdate[T <: JarUpdatable, C, S <: JarSocket[T, C]](
     param: JsonObject,
-    sockets: Seq[NamedSocket[JarUpdatable, C, S]]
+    sockets: NamedSocket[T, C, S]*
   ): Unit = {
     sockets.foreach({ ns =>
       val (request, p) =

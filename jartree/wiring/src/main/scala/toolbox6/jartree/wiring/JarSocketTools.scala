@@ -138,7 +138,7 @@ object NamedSocket {
     context: C
   )
 
-  def noopClean[T <: JarUpdatable, C](
+  def noopClean[T <: JarUpdatable, C <: InstanceResolver](
     name: String,
     init: T
   )(implicit

@@ -89,7 +89,7 @@ case class CaseClassLoaderKey(
 object CaseClassLoaderKey {
   def apply(clk: ClassLoaderKey) : CaseClassLoaderKey = apply(
     jarsSeq = clk.jars().to[Seq].map(CaseJarKey.apply),
-    parentOpt = Option(CaseClassLoaderKey(clk.parent()))
+    parentOpt = Option(clk.parent()).map(CaseClassLoaderKey.apply)
   )
 }
 

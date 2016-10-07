@@ -319,6 +319,7 @@ object JarTreeServletConfig {
   val ConfigFile = "jartreeservlet.conf.json"
   val VersionFile = "jartreeservlet.version"
   val StartupFile = "jartreeservlet.startup.json"
+  val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
 
   val ConfigAttribute = "config"
   val ParamAttribute = "param"
@@ -350,7 +351,9 @@ object JarTreeServletConfig {
       )
     } catch {
       case ex : Throwable =>
-        ex.printStackTrace()
+        if (System.getProperty(SuppressInitErrorSystemPropertyName) == null) {
+          ex.printStackTrace()
+        }
         None
     }
 

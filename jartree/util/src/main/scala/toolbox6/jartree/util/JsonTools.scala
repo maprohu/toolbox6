@@ -102,6 +102,10 @@ object JsonTools {
     }
   }
 
+  def emptyJavaxObject : JsonObject = {
+    JsonProvider.provider().createObjectBuilder().build()
+  }
+
   def readUpdate[T](o: JsonObject) : (ClassRequestImpl[T], JsonObject) = {
     (
       ClassRequestImpl.fromJavax[T](o.getJsonObject(RequestAttribute)),

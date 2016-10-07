@@ -16,6 +16,7 @@ import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHiera
 import upickle.Js
 
 import scala.collection.immutable.{IndexedSeq, Map, Seq}
+import scala.io.Source
 
 /**
   * Created by martonpapp on 02/10/16.
@@ -63,7 +64,8 @@ object JarTreePackaging {
               val hash =
                 Option(entry)
                   .map({ e =>
-                    IOUtils.toString(jf.getInputStream(e), Charset.defaultCharset())
+                    Source.fromInputStream(jf.getInputStream(e), "UTF-8")
+//                    IOUtils.toString(jf.getInputStream(e), Charset.defaultCharset())
                   })
                   .getOrElse(
                     Base64.encodeBase64String(

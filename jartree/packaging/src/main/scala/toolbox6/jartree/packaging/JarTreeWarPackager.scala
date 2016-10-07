@@ -31,7 +31,7 @@ object JarTreeWarPackager {
   )
 
   val WarClassPathModules = Seq(
-    JarTreeModules.Servlet
+    JarTreeModules.Webapp
   )
 
   val modulesInParent =

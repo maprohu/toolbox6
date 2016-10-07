@@ -1,4 +1,4 @@
-package toolbox6.jartree.servlet
+package toolbox6.jartree.webapp
 
 import java.io.File
 
@@ -10,6 +10,7 @@ import ch.qos.logback.core.encoder.LayoutWrappingEncoder
 import ch.qos.logback.core.rolling.{FixedWindowRollingPolicy, RollingFileAppender, SizeBasedTriggeringPolicy}
 import ch.qos.logback.core.spi.ContextAwareBase
 import org.slf4j.Logger
+import toolbox6.jartree.servlet.JarTreeServletConfig
 
 /**
   * Created by martonpapp on 26/06/16.

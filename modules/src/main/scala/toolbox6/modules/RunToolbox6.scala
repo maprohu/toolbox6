@@ -27,6 +27,7 @@ object RunToolbox6 {
     JarTreeModules.Impl,
     JarTreeModules.ServletApi,
     JarTreeModules.Servlet,
+    JarTreeModules.Webapp,
     JarTreeModules.Framework,
     JarTreeModules.Wiring,
     JarTreeModules.ManagementApi,

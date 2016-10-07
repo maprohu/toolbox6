@@ -88,7 +88,13 @@ object JarTreeModules {
     ManagementUtils,
     Wiring,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
-    mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
+    mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
+  )
+
+  object Webapp extends ScalaModule(
+    "webapp",
+    "1.0.0-SNAPSHOT",
+    Servlet,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
   )
 
@@ -149,7 +155,7 @@ object JarTreeModules {
     "1.0.0-SNAPSHOT",
     Toolbox6Modules,
     Toolbox6Modules.Packaging,
-    Servlet,
+    Webapp,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,

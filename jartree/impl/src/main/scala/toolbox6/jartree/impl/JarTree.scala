@@ -43,11 +43,11 @@ object JarTree {
 //  ): JarTree = new JarTree(parentClassLoader, resolver)
 
 
-  def collectMavenParents(cl: CaseClassLoaderKey) : Seq[CaseClassLoaderKey] = {
-    cl.dependenciesSeq.flatMap({ p =>
-      p +: collectMavenParents(p)
-    })
-  }
+//  def collectMavenParents(cl: CaseClassLoaderKey) : Seq[CaseClassLoaderKey] = {
+//    cl.dependenciesSeq.flatMap({ p =>
+//      p +: collectMavenParents(p)
+//    })
+//  }
 
 //  def flatten(cl: CaseClassLoaderKey) : CaseClassLoaderKey = {
 //    val sch = new org.eclipse.aether.util.version.GenericVersionScheme()
@@ -91,7 +91,8 @@ class JarTree(
   val cache: JarCache
 ) extends InstanceResolver {
 
-  val classLoaderMap = mutable.WeakHashMap.empty[CaseClassLoaderKey, JarTreeClassLoader]
+  val classLoaderMap = mutable.WeakHashMap.empty[CaseClassLoaderKey, ClassLoader]
+//  val classLoaderMap = mutable.WeakHashMap.empty[CaseClassLoaderKey, JarTreeClassLoader]
 
   def clear() = synchronized {
     classLoaderMap.clear()
@@ -99,19 +100,22 @@ class JarTree(
 
   def get(
     key: CaseClassLoaderKey
-  ) : JarTreeClassLoader = synchronized {
+  ) : ClassLoader = synchronized {
     classLoaderMap
       .get(key)
       .getOrElse {
-        val parents =
+        val parent =
           key
-            .dependenciesSeq
+            .parentOpt
             .map(get)
+            .getOrElse(parentClassLoader)
 
-        val cl = new JarTreeClassLoader(
-          cache.toJarFile(key.jar).toURI.toURL,
-          parents,
-          parentClassLoader
+
+        val cl = new ParentLastUrlClassloader(
+          key.jarsSeq.map({ jar =>
+            cache.toJarFile(jar).toURI.toURL
+          }),
+          parent
         )
 
         classLoaderMap.put(key, cl)
@@ -119,6 +123,28 @@ class JarTree(
         cl
       }
   }
+//  def get(
+//    key: CaseClassLoaderKey
+//  ) : JarTreeClassLoader = synchronized {
+//    classLoaderMap
+//      .get(key)
+//      .getOrElse {
+//        val parents =
+//          key
+//            .dependenciesSeq
+//            .map(get)
+//
+//        val cl = new JarTreeClassLoader(
+//          cache.toJarFile(key.jar).toURI.toURL,
+//          parents,
+//          parentClassLoader
+//        )
+//
+//        classLoaderMap.put(key, cl)
+//
+//        cl
+//      }
+//  }
 
 
   def resolve[T](

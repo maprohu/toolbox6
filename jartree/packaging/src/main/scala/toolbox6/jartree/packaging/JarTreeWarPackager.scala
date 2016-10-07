@@ -233,12 +233,15 @@ object JarTreeWarPackager {
         )
 
         runtimeDir.mkdirs()
-        IO.write(
-          new File(runtimeDir, JarTreeServletConfig.ConfigFile),
+        val configString =
           upickle.json.write(
             configObj,
             2
           )
+        println(configString)
+        IO.write(
+          new File(runtimeDir, JarTreeServletConfig.ConfigFile),
+          configString
         )
       }
     ){ dir =>

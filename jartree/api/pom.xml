@@ -91,11 +91,15 @@
             </plugin>
         </plugins>
     </build>
+    <dependencyManagement>
+        <dependencies> </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>1.0.4</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

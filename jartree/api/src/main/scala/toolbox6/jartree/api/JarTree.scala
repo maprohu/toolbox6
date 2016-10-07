@@ -20,8 +20,8 @@ trait DeployableJar {
 }
 
 trait  ClassLoaderKey {
-  def jar(): JarKey
-  def dependencies(): java.util.Collection[ClassLoaderKey]
+  def jars(): java.util.Collection[JarKey]
+  def parent(): ClassLoaderKey
 }
 
 trait ClassRequest[+T] {

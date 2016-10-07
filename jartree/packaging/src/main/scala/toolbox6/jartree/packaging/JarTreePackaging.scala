@@ -88,17 +88,38 @@ object JarTreePackaging {
 
   }
 
-  def hierarchyToClassLoader(hierarchy: MavenHierarchy) : CaseClassLoaderKey = {
+  lazy val rootJars = JarTreeWarPackager.modulesInParent.map(getId)
+
+  def getJars(clk: Option[CaseClassLoaderKey]) : Set[CaseJarKey] = {
+    clk
+      .map(c => getJars(c.parentOpt) ++ c.jarsSeq)
+      .getOrElse(rootJars)
+  }
+
+  def hierarchyToClassLoader(
+    hierarchy: MavenHierarchy,
+    parent: Option[CaseClassLoaderKey]
+  ) : CaseClassLoaderKey = {
+    val parentJars = getJars(parent)
+
+    val jars =
+      hierarchy
+        .jars
+        .map(getId)
+        .filterNot(parentJars.contains)
+        .distinct
+
     CaseClassLoaderKey(
-      getId(hierarchy.jar),
-      hierarchy.dependencies.map(hierarchyToClassLoader)
+      jars,
+      parent
     )
   }
 
   case class RunHierarchy(
     namedModule: Module,
+    parent: Option[CaseClassLoaderKey],
     runClassName: String,
-    children: Map[String, RunHierarchy] = Map()
+    children: CaseClassLoaderKey => Map[String, RunHierarchy] = _ => Map()
   ) {
     def toMaven : RunMavenHierarchy = {
       val mavenHierarchy : MavenHierarchy =
@@ -109,26 +130,33 @@ object JarTreePackaging {
 
       RunMavenHierarchy(
         mavenHierarchy,
+        parent,
         runClassName,
-        children.mapValues(_.toMaven)
+        cl => children(cl).mapValues(_.toMaven)
       )
     }
   }
 
   case class RunMavenHierarchy(
     mavenHierarchy: MavenHierarchy,
+    parent: Option[CaseClassLoaderKey],
     runClassName: String,
-    children: Map[String, RunMavenHierarchy] = Map()
+    children: CaseClassLoaderKey => Map[String, RunMavenHierarchy] = _ => Map()
   ) {
     def hierarchies : Seq[MavenHierarchy] = {
-      mavenHierarchy +: children.values.to[Seq].flatMap(_.hierarchies)
+      mavenHierarchy +: children(classLoader).values.to[Seq].flatMap(_.hierarchies)
+    }
+
+    def classLoader : CaseClassLoaderKey = {
+      JarTreePackaging.hierarchyToClassLoader(
+        mavenHierarchy,
+        parent
+      )
     }
 
     def request = {
       ClassRequestImpl(
-        JarTreePackaging.hierarchyToClassLoader(
-          mavenHierarchy
-        ),
+        classLoader,
         runClassName
       )
     }
@@ -146,7 +174,7 @@ object JarTreePackaging {
 
     def childrenJs : Js.Obj = {
       Js.Obj(
-        children
+        children(classLoader)
           .to[Seq]
           .map({
             case (key, value) =>

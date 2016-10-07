@@ -9,6 +9,38 @@ import java.util
   */
 
 
+class ParentLastUrlClassloader(
+  urls: Seq[URL],
+  parent: ClassLoader
+) extends ClassLoader(parent) { self =>
+
+  object realParent extends ClassLoader(self.getParent) {
+    override def findClass(s: String): Class[_] = super.findClass(s)
+  }
+
+  object childClassLoader extends URLClassLoader(
+    urls.toArray,
+    realParent
+  ) {
+    override def findClass(s: String): Class[_] = {
+      try {
+        super.findClass(s)
+      } catch {
+        case _ : ClassNotFoundException =>
+          realParent.findClass(s)
+      }
+    }
+  }
+
+  override def loadClass(s: String, b: Boolean): Class[_] = {
+    try {
+      childClassLoader.findClass(s)
+    } catch {
+      case _ : ClassNotFoundException =>
+        super.loadClass(s, b)
+    }
+  }
+}
 
 class JarTreeClassLoader(
   val url: URL,

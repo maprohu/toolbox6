@@ -79,16 +79,17 @@ object CaseJarKey {
 }
 
 case class CaseClassLoaderKey(
-  jar: CaseJarKey,
-  dependenciesSeq: Seq[CaseClassLoaderKey]
+  jarsSeq: Seq[CaseJarKey],
+  parentOpt: Option[CaseClassLoaderKey]
 ) extends ClassLoaderKey {
-  override def dependencies(): util.Collection[ClassLoaderKey] = dependenciesSeq
+  override val jars: util.Collection[JarKey] = jarsSeq
+  override val parent: ClassLoaderKey = parentOpt.orNull
 }
 
 object CaseClassLoaderKey {
   def apply(clk: ClassLoaderKey) : CaseClassLoaderKey = apply(
-    CaseJarKey(clk.jar),
-    clk.dependencies.map(clk => CaseClassLoaderKey(clk)).to[Seq]
+    jarsSeq = clk.jars().to[Seq].map(CaseJarKey.apply),
+    parentOpt = Option(CaseClassLoaderKey(clk.parent()))
   )
 }
 

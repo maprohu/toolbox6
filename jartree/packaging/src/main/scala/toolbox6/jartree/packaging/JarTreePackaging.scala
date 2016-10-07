@@ -1,6 +1,6 @@
 package toolbox6.jartree.packaging
 
-import java.io.FileInputStream
+import java.io.{FileInputStream, InputStream}
 import java.nio.charset.Charset
 import java.util.jar.JarFile
 
@@ -64,7 +64,17 @@ object JarTreePackaging {
               val hash =
                 Option(entry)
                   .map({ e =>
-                    Source.fromInputStream(jf.getInputStream(e), "UTF-8")
+
+//                    val is =
+//                      jf.getInputStream(e)
+                    Source.fromInputStream(
+                      jf.getInputStream(e),
+//                      new InputStream {
+//                        override def read(): Int = is.read()
+//                      },
+                      "UTF-8"
+                    ).mkString
+
 //                    IOUtils.toString(jf.getInputStream(e), Charset.defaultCharset())
                   })
                   .getOrElse(

@@ -65,7 +65,14 @@ object JarTreeWarPackager {
     postProcessor: File => T
   ) : T = {
 
+    val (runRequest, paramObject, hierarchyJars) = requestAndParamAndJars(startup)
 
+    val embeddedJars =
+      hierarchyJars
+        .zipWithIndex
+        .map({ case (maven, idx) =>
+          (maven, s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar")
+        })
 
 
 
@@ -200,7 +207,6 @@ object JarTreeWarPackager {
           new File(dir, s"target/classes")
 
 
-        val (runRequest, paramObject) = requestAndParam
 
         val configObj = Js.Obj(
           JarTreeServletConfig.ConfigAttribute ->
@@ -245,20 +251,17 @@ object JarTreeWarPackager {
 
   def requestAndParamAndJars(
     startup: RunHierarchy
-  ) : (ClassRequestImpl[_], Js.Obj, Seq[MavenCoordinatesImpl]) = {
-
+  ) = {
     val hierarchy =
       startup.toMaven
 
     val embeddedJars =
       hierarchy.jars
-        .zipWithIndex
-        .map({ case (maven, idx) =>
-          (maven, s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar")
-        })
 
     val runRequest = hierarchy.request
 
-    hierarchy.childrenJs
+    val param = hierarchy.childrenJs
+
+    (runRequest, param, embeddedJars)
   }
 }

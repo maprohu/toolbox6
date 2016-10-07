@@ -15,6 +15,14 @@ import scala.collection.immutable._
   */
 object JsonTools {
 
+  def toJavax(
+    v: Js.Obj
+  ) = {
+    readJavax(
+      upickle.json.write(v)
+    )
+  }
+
   def fromJavax(
     o: JsonObject
   ) : Js.Value = {

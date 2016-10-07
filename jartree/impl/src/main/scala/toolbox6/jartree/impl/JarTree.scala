@@ -104,10 +104,14 @@ class JarTree(
     classLoaderMap
       .get(key)
       .getOrElse {
+        println(key.jarsSeq.head)
+
         val parent =
           key
             .parentOpt
-            .map(get)
+            .map({ p =>
+              get(p)
+            })
             .getOrElse(parentClassLoader)
 
 

@@ -16,6 +16,7 @@
     <modules>
         <module>jartree</module>
         <module>scalajs</module>
+        <module>macros</module>
         <module>common</module>
         <module>logging</module>
         <module>packaging</module>

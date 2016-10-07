@@ -38,6 +38,12 @@ object Toolbox6Modules extends MavenCentralModule(
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`
   )
 
+  object Macros extends ScalaModule(
+    "macros",
+    "1.0.0-SNAPSHOT",
+    mvn.`org.scala-lang:scala-reflect:jar:2.11.8`
+  )
+
 }
 
 object JarTreeModules {

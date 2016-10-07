@@ -9,6 +9,7 @@ import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey}
 import scala.collection.immutable._
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.ref.WeakReference
 
 /**
   * Created by martonpapp on 27/08/16.
@@ -90,8 +91,9 @@ class JarTree(
   val parentClassLoader: ClassLoader,
   val cache: JarCache
 ) extends InstanceResolver {
+//  println("JT")
 
-  val classLoaderMap = mutable.WeakHashMap.empty[CaseClassLoaderKey, ClassLoader]
+  private val classLoaderMap = mutable.Map.empty[CaseClassLoaderKey, WeakReference[ClassLoader]]
 //  val classLoaderMap = mutable.WeakHashMap.empty[CaseClassLoaderKey, JarTreeClassLoader]
 
   def clear() = synchronized {
@@ -103,8 +105,10 @@ class JarTree(
   ) : ClassLoader = synchronized {
     classLoaderMap
       .get(key)
+      .flatMap(_.get)
       .getOrElse {
-        println(key.jarsSeq.head)
+//        println(key.jarsSeq.head)
+//        new Exception().printStackTrace()
 
         val parent =
           key
@@ -122,7 +126,7 @@ class JarTree(
           parent
         )
 
-        classLoaderMap.put(key, cl)
+        classLoaderMap.put(key, WeakReference(cl))
 
         cl
       }

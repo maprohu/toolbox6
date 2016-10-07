@@ -29,6 +29,14 @@ object Toolbox6Modules extends MavenCentralModule(
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
   )
 
+  object Jms extends ScalaModule(
+    "jms",
+    "1.0.0-SNAPSHOT",
+    Logging,
+    mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
+    mvn.`io.monix:monix_2.11:jar:2.0.2`
+  )
+
   object Packaging extends ScalaModule(
     "packaging",
     "1.0.0-SNAPSHOT",

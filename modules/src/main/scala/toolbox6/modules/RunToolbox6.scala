@@ -21,6 +21,7 @@ object RunToolbox6 {
   val Modules = Seq[ConfiguredModule](
     Toolbox6Modules.Macros,
     Toolbox6Modules.Common,
+    Toolbox6Modules.Jms,
     Toolbox6Modules.Logging,
     Toolbox6Modules.Packaging,
     JarTreeModules.Api,

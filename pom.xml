@@ -18,6 +18,7 @@
         <module>scalajs</module>
         <module>macros</module>
         <module>common</module>
+        <module>jms</module>
         <module>logging</module>
         <module>packaging</module>
     </modules>

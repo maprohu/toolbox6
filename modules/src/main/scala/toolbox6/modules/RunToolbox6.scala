@@ -36,12 +36,12 @@ object RunToolbox6 {
     JarTreeModules.ManagementUtils,
     JarTreeModules.Client,
     JarTreeModules.Testing,
-    JarTreeModules.Packaging,
+    JarTreeModules.Packaging
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,
 //    Servlet25Modules.SampleRunner,
 //    Servlet25Modules.Webapp,
-    VisModules.Raw
+//    VisModules.Raw
 
   )
 

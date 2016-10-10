@@ -11,17 +11,17 @@ import scala.io.StdIn
 object RunWarPackager {
 
   def main(args: Array[String]): Unit = {
-    JarTreeWarPackager.run(
-      "testing",
-      "1.0.0",
-      "/wl_domains/testing/data",
-      "/wl_domains/testing/log",
-      1,
-      JarTreeModules.Framework,
-      "toolbox6.jartree.framework.Framework"
-    )(_ => ())
-
-    StdIn.readLine("enter...")
+//    JarTreeWarPackager.run(
+//      "testing",
+//      "1.0.0",
+//      "/wl_domains/testing/data",
+//      "/wl_domains/testing/log",
+//      1,
+//      JarTreeModules.Framework,
+//      "toolbox6.jartree.framework.Framework"
+//    )(_ => ())
+//
+//    StdIn.readLine("enter...")
   }
 
 }

@@ -15,7 +15,6 @@
     </build>
     <modules>
         <module>jartree</module>
-        <module>scalajs</module>
         <module>macros</module>
         <module>common</module>
         <module>jms</module>

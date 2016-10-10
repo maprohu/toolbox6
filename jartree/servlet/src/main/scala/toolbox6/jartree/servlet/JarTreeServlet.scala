@@ -314,6 +314,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
 
 object JarTreeServletConfig {
 
+  var verbose = true
+
   type Plugger = JarPlugger[Processor, JarTreeServletContext]
 
   val ConfigFile = "jartreeservlet.conf.json"
@@ -351,7 +353,7 @@ object JarTreeServletConfig {
       )
     } catch {
       case ex : Throwable =>
-        if (System.getProperty(SuppressInitErrorSystemPropertyName) == null) {
+        if (verbose && System.getProperty(SuppressInitErrorSystemPropertyName) == null) {
           ex.printStackTrace()
         }
         None

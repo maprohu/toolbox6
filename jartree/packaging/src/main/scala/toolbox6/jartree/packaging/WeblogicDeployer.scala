@@ -22,7 +22,8 @@ object WeblogicDeployer {
   )
 
   case class DeployConfig(
-    war: File
+    war: File,
+    targets: Option[Seq[String]] = None
   )
 
   def run(
@@ -46,7 +47,11 @@ object WeblogicDeployer {
         "-password", connectionConfig.password,
         "-deploy", deployConfig.war.getAbsolutePath,
         "-upload"
-      )
+      ) ++
+        deployConfig
+          .targets
+          .toSeq
+          .flatMap(t => Seq("-targets", t.mkString(",")))
     ).run()
 
 

@@ -14,11 +14,12 @@ import scala.concurrent.duration._
   * Created by pappmar on 21/09/2016.
   */
 object JmsObservable extends LazyLogging with LogTools {
+  type JmsCoordinates = (ConnectionFactory, Destination)
 
   def create[E](
     endpoints: E*
   )(
-    connecter: E => (ConnectionFactory, Destination),
+    connecter: E => JmsCoordinates,
     stopper: SerialCancelable,
     bufferSize : Int = 1000,
     logDropped : Boolean = true
@@ -116,5 +117,13 @@ object JmsObservable extends LazyLogging with LogTools {
 
 
   }
+
+
+  trait Implicits {
+    implicit class Ops(c: JmsCoordinates) {
+      def observable(implicit scheduler: Scheduler) = JmsObservable.create(c)(identity, SerialCancelable())
+    }
+  }
+  object Implicits extends Implicits
 
 }

@@ -6,7 +6,6 @@ import java.nio.file.Files
 import org.apache.maven.shared.invoker.{DefaultInvocationRequest, DefaultInvoker}
 import sbt.io.IO
 
-import scala.collection.immutable._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 import scala.xml._
@@ -48,6 +47,20 @@ object MavenTools {
     goal : String,
     preBuild: File => Unit = _ => ()
   )( andThen : File => T ) : T = {
+    runMavens(
+      pomFileString,
+      Seq(goal),
+      preBuild
+    )(
+      andThen
+    )
+  }
+
+  def runMavens[T](
+    pomFileString: Node,
+    goals : Seq[String],
+    preBuild: File => Unit = _ => ()
+  )( andThen : File => T ) : T = {
     try {
       inTempDir { dir =>
         try {
@@ -59,7 +72,7 @@ object MavenTools {
 
           val request = new DefaultInvocationRequest
           request.setPomFile(pomFile)
-          request.setGoals( Seq( goal ) )
+          request.setGoals( goals )
           val invoker = new DefaultInvoker
 
           val result = invoker.execute(request)

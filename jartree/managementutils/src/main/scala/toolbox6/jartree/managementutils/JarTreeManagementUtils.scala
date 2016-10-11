@@ -8,7 +8,7 @@ object JarTreeManagementUtils {
   def bindingName(
     app: String
   ) = {
-    s"${app}.management"
+    s"${app}.monitoring"
   }
 
 }

@@ -48,6 +48,10 @@ object JarTreePackaging {
 
   private val ManagedIdMap = Atomic(Map[MavenCoordinatesImpl, CaseJarKey]())
 
+  def clear() = {
+    ManagedIdMap.set(Map())
+  }
+
   def getId(maven: MavenCoordinatesImpl) : CaseJarKey = {
     ManagedIdMap.transformAndExtract({ map =>
       map

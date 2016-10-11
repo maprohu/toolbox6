@@ -2,7 +2,7 @@ package toolbox6.jartree.util
 
 import javax.json.JsonObject
 
-import toolbox6.jartree.api.{JarPlugResponse, JarPlugger, JarUpdatable}
+import toolbox6.jartree.api.{Closable, JarPlugResponse, JarPlugger, JarUpdatable}
 
 /**
   * Created by Student on 06/10/2016.
@@ -13,6 +13,13 @@ object JarTreeTools {
     new JarPlugResponse[T] {
       override def instance(): T = o
       override def andThen(): Unit = ()
+    }
+  }
+
+  def closableResponse[T <: JarUpdatable with Closable](o: => T, previous: T) = {
+    new JarPlugResponse[T] {
+      override def instance(): T = o
+      override def andThen(): Unit = previous.close()
     }
   }
 

@@ -129,7 +129,7 @@ object JarTreePackaging {
 
   case class RunHierarchy(
     namedModule: Module,
-    parent: Option[CaseClassLoaderKey],
+    parent: Option[CaseClassLoaderKey] = None,
     runClassName: String,
     children: CaseClassLoaderKey => Map[String, RunHierarchy] = _ => Map()
   ) {

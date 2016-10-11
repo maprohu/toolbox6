@@ -35,8 +35,11 @@ object RunToolbox6 {
     JarTreeModules.ManagementApi,
     JarTreeModules.ManagementUtils,
     JarTreeModules.Client,
+    JarTreeModules.Akka,
     JarTreeModules.Testing,
-    JarTreeModules.Packaging
+    JarTreeModules.Packaging,
+    AkkaModules.Http,
+    AkkaModules.Json4s
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,
 //    Servlet25Modules.SampleRunner,

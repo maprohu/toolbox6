@@ -25,6 +25,7 @@
         <module>managementapi</module>
         <module>managementutils</module>
         <module>client</module>
+        <module>akka</module>
         <module>testing</module>
         <module>packaging</module>
     </modules>

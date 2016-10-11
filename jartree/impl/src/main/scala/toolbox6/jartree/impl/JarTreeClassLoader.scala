@@ -17,22 +17,19 @@ class ParentLastUrlClassloader(
 ) extends URLClassLoader(urls.toArray, parent) { self =>
 
   override def loadClass(name: String, resolve: Boolean): Class[_] = {
-
-    getClassLoadingLock(name).synchronized {
-      Option(findLoadedClass(name))
-        .orElse(
-          Try(findClass(name)).toOption
-        )
-        .map({ c =>
-          if (resolve) {
-            resolveClass(c)
-          }
-          c
-        })
-        .getOrElse(
-          super.loadClass(name, resolve)
-        )
-    }
+    Option(findLoadedClass(name))
+      .orElse(
+        Try(findClass(name)).toOption
+      )
+      .map({ c =>
+        if (resolve) {
+          resolveClass(c)
+        }
+        c
+      })
+      .getOrElse(
+        super.loadClass(name, resolve)
+      )
   }
 
 

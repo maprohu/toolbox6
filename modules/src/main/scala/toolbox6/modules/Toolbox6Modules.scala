@@ -155,6 +155,13 @@ object JarTreeModules {
     Framework
   )
 
+  object Akka extends ScalaModule(
+    "akka",
+    "1.0.0-SNAPSHOT",
+    ServletApi,
+    AkkaModules.Http
+  )
+
 
   object Testing extends ScalaModule(
     "testing",

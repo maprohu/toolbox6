@@ -18,9 +18,10 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Common extends ScalaModule(
     "common",
-    "1.0.0-SNAPSHOT",
+    "1.0.1-SNAPSHOT",
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
-    mvn.`io.monix:monix_2.11:jar:2.0.2`
+    mvn.`io.monix:monix_2.11:jar:2.0.4`,
+    mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
   )
 
   object Logging extends ScalaModule(

@@ -16,7 +16,7 @@ object Macros {
       if (enc.isTerm) {
         val t = enc.asTerm
         if (t.isVal) {
-          c.literal(t.name.toString)
+          c.Expr(Literal(Constant(t.name.decodedName.toString.trim)))
         } else {
           call(enc.owner)
         }

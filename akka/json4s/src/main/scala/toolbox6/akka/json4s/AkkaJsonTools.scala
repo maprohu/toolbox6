@@ -14,11 +14,14 @@ import scala.concurrent.Future
   */
 object AkkaJsonTools {
 
+
+
   trait Api extends Json4sSupport {
     import org.json4s._
     implicit val serialization = Serialization
     implicit val formats = Serialization.formats(NoTypeHints)
   }
+  object Api extends Api
 
   object Implicits {
 

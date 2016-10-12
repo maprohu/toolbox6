@@ -2,6 +2,7 @@ package toolbox6.akka.http
 
 import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.http.scaladsl.model.Uri.Path
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,6 +32,20 @@ object AkkaHttpTools {
           r.copy(entity = s)
         }
       }
+
+      def asString(implicit
+        materializer: Materializer
+      ) : Future[String] = {
+        import materializer.executionContext
+        for {
+          r <- fr
+          s <- Unmarshal(r).to[String]
+        } yield {
+          s
+        }
+      }
+
+
     }
 
   }

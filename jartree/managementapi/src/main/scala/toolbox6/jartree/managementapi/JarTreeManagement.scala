@@ -5,11 +5,11 @@ import java.rmi.RemoteException
 
 trait JarTreeManagement extends java.rmi.Remote {
 
-  @throws(classOf[RemoteException])
-  def sayHello() : String
-
-  @throws(classOf[RemoteException])
-  def registerLogListener(listener: LogListener) : Registration
+//  @throws(classOf[RemoteException])
+//  def sayHello() : String
+//
+//  @throws(classOf[RemoteException])
+//  def registerLogListener(listener: LogListener) : Registration
 
   @throws(classOf[RemoteException])
   def verifyCache(
@@ -29,25 +29,28 @@ trait JarTreeManagement extends java.rmi.Remote {
   ) : Array[Byte]
 
   @throws(classOf[RemoteException])
-  def executeByteArray(
-    runRequestImplJson: String,
-    input: Array[Byte]
-  ) : Array[Byte]
+  def query() : String
+
+//  @throws(classOf[RemoteException])
+//  def executeByteArray(
+//    runRequestImplJson: String,
+//    input: Array[Byte]
+//  ) : Array[Byte]
 
 }
 
-trait LogListener extends java.rmi.Remote {
+//trait LogListener extends java.rmi.Remote {
+//
+//  @throws(classOf[RemoteException])
+//  def entry(msg: String)
+//
+//}
 
-  @throws(classOf[RemoteException])
-  def entry(msg: String)
-
-}
-
-trait Registration extends java.rmi.Remote {
-
-  @throws(classOf[RemoteException])
-  def unregister() : Unit
-
-}
+//trait Registration extends java.rmi.Remote {
+//
+//  @throws(classOf[RemoteException])
+//  def unregister() : Unit
+//
+//}
 
 

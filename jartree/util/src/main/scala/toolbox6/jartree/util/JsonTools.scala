@@ -1,6 +1,6 @@
 package toolbox6.jartree.util
 
-import java.io.{File, FileInputStream, StringReader}
+import java.io.{File, FileInputStream, StringReader, StringWriter}
 import javax.json.JsonValue.ValueType
 import javax.json._
 import javax.json.spi.JsonProvider
@@ -107,6 +107,20 @@ object JsonTools {
       parser.readObject()
     } finally {
       parser.close()
+    }
+  }
+
+  def writeJavax(o: JsonStructure) : String = {
+    val sw = new StringWriter()
+    val writer = JsonProvider.provider().createWriter(
+      sw
+    )
+
+    try {
+      writer.write(o)
+      sw.toString
+    } finally {
+      writer.close()
     }
   }
 

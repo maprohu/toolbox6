@@ -15,7 +15,7 @@ import org.apache.commons.io.{FileUtils, IOUtils}
 import toolbox6.common.ManagementTools
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.{JarCache, JarTree}
-import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener, Registration}
+import toolbox6.jartree.managementapi.JarTreeManagement
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.servlet.JarTreeServletConfig.Plugger
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
@@ -30,7 +30,7 @@ import scala.util.Try
 /**
   * Created by martonpapp on 01/10/16.
   */
-class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
+class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
   val impl = new JarTreeServletImpl
 
   override def init(config: ServletConfig): Unit = {
@@ -50,7 +50,8 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools {
             )
           }),
         jconfig.plugger,
-        param
+        param,
+        self.getClass.getPackage.getImplementationVersion
       )
     })
   }
@@ -123,7 +124,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
     initialStartup : ClassRequestImpl[Plugger],
-    initialParam: JsonObject
+    initialParam: JsonObject,
+    webappVersion: String
   ): Unit = {
     logger.info("starting {}", name)
 
@@ -222,7 +224,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       cache,
       jarTree,
       context,
-      processorSocket
+      processorSocket,
+      webappVersion
     )
   }
 
@@ -231,27 +234,28 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     cache: JarCache,
     jarTree: JarTree,
     ctx: JarTreeServletContext,
-    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext]
+    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext],
+    webappVersion: String
   ) = {
     ManagementTools.bind(
       JarTreeManagementUtils.bindingName(
         name
       ),
       new JarTreeManagement {
-        @throws(classOf[RemoteException])
-        override def sayHello(): String = "hello"
-
-        @throws(classOf[RemoteException])
-        override def registerLogListener(listener: LogListener): Registration = {
-          listener.entry("one")
-          listener.entry("two")
-          listener.entry("three")
-
-          new Registration {
-            @throws(classOf[RemoteException])
-            override def unregister(): Unit = ()
-          }
-        }
+//        @throws(classOf[RemoteException])
+//        override def sayHello(): String = "hello"
+//
+//        @throws(classOf[RemoteException])
+//        override def registerLogListener(listener: LogListener): Registration = {
+//          listener.entry("one")
+//          listener.entry("two")
+//          listener.entry("three")
+//
+//          new Registration {
+//            @throws(classOf[RemoteException])
+//            override def unregister(): Unit = ()
+//          }
+//        }
 
         @throws(classOf[RemoteException])
         override def verifyCache(ids: Array[String]): Array[Int] = {
@@ -270,15 +274,15 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
           )
         }
 
-        @throws(classOf[RemoteException])
-        override def executeByteArray(classLoaderJson: String, input: Array[Byte]): Array[Byte] = {
-          val request =
-            ClassRequestImpl.fromString[JarRunnableByteArray[JarTreeServletContext]](classLoaderJson)
-
-          jarTree
-            .resolve(request)
-            .run(input, ctx, request)
-        }
+//        @throws(classOf[RemoteException])
+//        override def executeByteArray(classLoaderJson: String, input: Array[Byte]): Array[Byte] = {
+//          val request =
+//            ClassRequestImpl.fromString[JarRunnableByteArray[JarTreeServletContext]](classLoaderJson)
+//
+//          jarTree
+//            .resolve(request)
+//            .run(input, ctx, request)
+//        }
 
         @throws(classOf[RemoteException])
         override def plug(jarPluggerClassRequestJson: String, param: String): Array[Byte] = {
@@ -294,6 +298,49 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
             )
             "plugged"
           }
+        }
+
+        @throws(classOf[RemoteException])
+        override def query(): String = {
+          val v = processorSocket.query()
+
+          val o1 = JsonProvider
+            .provider()
+            .createArrayBuilder()
+
+          val o2 =
+            v
+              .map({
+                case (cr, o) =>
+                  o1
+                    .add(
+                      JsonProvider
+                        .provider()
+                        .createObjectBuilder()
+                        .add(
+                          JarTreeServletConfig.ConfigAttribute,
+                          JsonTools.toJavax(
+                            upickle.default.writeJs(cr).asInstanceOf[Js.Obj]
+                          )
+                        )
+                        .add(
+                          JarTreeServletConfig.ParamAttribute,
+                          o
+                        )
+                        .add(
+                          JarTreeServletConfig.WebappVersionAttributes,
+                          webappVersion
+                        )
+                    )
+
+              })
+              .getOrElse(o1)
+
+
+
+          JsonTools.writeJavax(
+            o2.build()
+          )
         }
       }
     )
@@ -323,6 +370,7 @@ object JarTreeServletConfig {
   val StartupFile = "jartreeservlet.startup.json"
   val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
 
+  val WebappVersionAttributes = "webappVersion"
   val ConfigAttribute = "config"
   val ParamAttribute = "param"
 

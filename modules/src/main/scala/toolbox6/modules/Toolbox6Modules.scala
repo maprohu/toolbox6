@@ -75,8 +75,14 @@ object JarTreeModules {
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
-//    mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven:jar:2.2.2`
-  )
+  ) {
+//    object R1 extends Release(
+//      Api.R1,
+//      mvn.`commons-io:commons-io:jar:2.5`,
+//      mvn.`commons-codec:commons-codec:jar:1.10`,
+//      mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
+//    )
+  }
 
   object Impl extends ScalaModule(
     "impl",
@@ -88,7 +94,7 @@ object JarTreeModules {
 
   object ServletApi extends ScalaModule(
     "servletapi",
-    Api,
+    Api.R1,
     mvn.`javax.servlet:servlet-api:jar:2.5`
   ) {
     object R1 extends Release(
@@ -100,7 +106,7 @@ object JarTreeModules {
   object Servlet extends ScalaModule(
     "servlet",
     Impl,
-    ServletApi,
+    ServletApi.R1,
     Toolbox6Modules.Logging,
     ManagementApi,
     ManagementUtils,
@@ -115,16 +121,10 @@ object JarTreeModules {
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
   )
 
-  object Framework extends ScalaModule(
-    "framework",
-    Api,
-    ServletApi
-  )
-
   object Wiring extends ScalaModule(
     "wiring",
-    Api,
-    ServletApi,
+    Api.R1,
+    ServletApi.R1,
     Util,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
@@ -149,13 +149,12 @@ object JarTreeModules {
     ManagementUtils,
     mvn.`com.oracle:wlfullclient:jar:10.3.6.0`,
     Toolbox6Modules,
-    Packaging,
-    Framework
+    Packaging
   )
 
   object Akka extends ScalaModule(
     "akka",
-    ServletApi,
+    ServletApi.R1,
     AkkaModules.Http
   )
 
@@ -163,7 +162,7 @@ object JarTreeModules {
   object Testing extends ScalaModule(
     "testing",
     Api,
-    ServletApi,
+    ServletApi.R1,
     Packaging
   )
 

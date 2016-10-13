@@ -16,6 +16,7 @@ import toolbox6.jartree.api.JarPlugger
 import toolbox6.jartree.packaging.JarTreePackaging.RunHierarchy
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util.ClassRequestImpl
+import toolbox6.jartree.webapp.WebappServlet
 import upickle.Js
 
 
@@ -162,7 +163,7 @@ object JarTreeWarPackager {
                    version="2.5">
             <servlet>
               <servlet-name>jartree</servlet-name>
-              <servlet-class>{classOf[toolbox6.jartree.servlet.JarTreeServlet].getName}</servlet-class>
+              <servlet-class>{classOf[WebappServlet].getName}</servlet-class>
               <load-on-startup>1</load-on-startup>
             </servlet>
             <servlet-mapping>

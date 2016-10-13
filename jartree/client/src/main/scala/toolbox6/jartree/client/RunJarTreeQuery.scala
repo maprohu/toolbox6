@@ -1,39 +1,34 @@
 package toolbox6.jartree.client
 
-import java.rmi.RemoteException
-
-import org.apache.commons.io.IOUtils
-import toolbox6.jartree.framework.HelloByteArray
-import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener}
+import toolbox6.jartree.managementapi.JarTreeManagement
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
-import toolbox6.jartree.packaging.{JarTreePackaging, JarTreeWarPackager}
-import toolbox6.jartree.util.{CaseClassLoaderKey, ClassRequestImpl, ClassRequestImpl$}
-import toolbox6.modules.{JarTreeModules, Toolbox6Modules}
-import toolbox6.packaging.MavenHierarchy
 import weblogic.jndi.Environment
 
-import scala.collection.immutable._
-import scala.io.StdIn
 
 /**
   * Created by martonpapp on 02/10/16.
   */
-object RunJarTreeClient {
-//  def main(args: Array[String]): Unit = {
-//    val env = new Environment()
-//    env.setProviderURL("t3://localhost:7002")
-//    val ctx = env.getInitialContext
-//    val management =
-//      ctx
-//        .lookup(
-//          JarTreeManagementUtils.bindingName(
-//            "ftx-core"
-//          )
-//        )
-//        .asInstanceOf[JarTreeManagement]
-//
-//    println(management.sayHello())
-//
+object RunJarTreeQuery {
+  val Target = "t3://localhost:7002"
+  val App = "ftx-core"
+
+  def main(args: Array[String]): Unit = {
+    val env = new Environment()
+    env.setProviderURL(Target)
+    val ctx = env.getInitialContext
+    val management =
+      ctx
+        .lookup(
+          JarTreeManagementUtils.bindingName(
+            App
+          )
+        )
+        .asInstanceOf[JarTreeManagement]
+
+
+
+    println(management.query())
+
 //    val cb = new LogListener {
 //      @throws(classOf[RemoteException])
 //      override def entry(msg: String): Unit = {
@@ -102,5 +97,5 @@ object RunJarTreeClient {
 //    StdIn.readLine("enter...")
 //
 //    reg.unregister()
-//  }
+  }
 }

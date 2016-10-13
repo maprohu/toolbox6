@@ -8,8 +8,8 @@ import maven.modules.builder.ModuleRelease
 object RunToolbox6Release {
 
   val Releases = Seq(
-    JarTreeModules.Api.R1
-//    JarTreeModules.ServletApi.R1
+    JarTreeModules.Api.R1,
+    JarTreeModules.ServletApi.R1
   )
 
   def main(args: Array[String]): Unit = {

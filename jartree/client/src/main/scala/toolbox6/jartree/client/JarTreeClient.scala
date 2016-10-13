@@ -4,8 +4,7 @@ import java.rmi.RemoteException
 
 import maven.modules.builder.NamedModule
 import org.apache.commons.io.IOUtils
-import toolbox6.jartree.framework.HelloByteArray
-import toolbox6.jartree.managementapi.{JarTreeManagement, LogListener}
+import toolbox6.jartree.managementapi.JarTreeManagement
 import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.packaging.JarTreePackaging.{RunHierarchy, RunMavenHierarchy}
 import toolbox6.jartree.packaging.{JarTreePackaging, JarTreeWarPackager}
@@ -43,16 +42,16 @@ object JarTreeClient {
         )
         .asInstanceOf[JarTreeManagement]
 
-    println(management.sayHello())
+//    println(management.sayHello())
 
-    val cb = new LogListener {
-      @throws(classOf[RemoteException])
-      override def entry(msg: String): Unit = {
-        println(msg)
-      }
-    }
+//    val cb = new LogListener {
+//      @throws(classOf[RemoteException])
+//      override def entry(msg: String): Unit = {
+//        println(msg)
+//      }
+//    }
 
-    val reg = management.registerLogListener(cb)
+//    val reg = management.registerLogListener(cb)
 
     val runMavenHierarchy : RunMavenHierarchy =
       runHierarchy.toMaven
@@ -101,6 +100,6 @@ object JarTreeClient {
 
     println(new String(bytes))
 
-    reg.unregister()
+//    reg.unregister()
   }
 }

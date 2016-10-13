@@ -33,6 +33,8 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
 
   override def get(): T = atomic.get.instance
 
+  def query() = atomic.get.request
+
   private val Noop = () => ()
 
   type PlugTransform = (() => Unit, Plugged[T, C])

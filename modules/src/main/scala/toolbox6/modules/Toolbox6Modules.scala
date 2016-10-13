@@ -21,7 +21,13 @@ object Toolbox6Modules extends MavenCentralModule(
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`io.monix:monix_2.11:jar:2.0.4`,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
-  )
+  ) {
+    object R1 extends Release(
+      mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
+      mvn.`io.monix:monix_2.11:jar:2.0.4`,
+      mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
+    )
+  }
 
   object Logging extends ScalaModule(
     "logging",
@@ -71,26 +77,31 @@ object JarTreeModules {
 
   object Util extends ScalaModule(
     "util",
-    Api,
+    Api.R1,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
-//    object R1 extends Release(
-//      Api.R1,
-//      mvn.`commons-io:commons-io:jar:2.5`,
-//      mvn.`commons-codec:commons-codec:jar:1.10`,
-//      mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
-//    )
+    object R1 extends Release(
+      Api.R1,
+      mvn.`commons-io:commons-io:jar:2.5`,
+      mvn.`commons-codec:commons-codec:jar:1.10`,
+      mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
+    )
   }
 
   object Impl extends ScalaModule(
     "impl",
-    Api,
-    Util,
-//    mvn.`org.eclipse.aether:aether-util:jar:1.1.0`,
+    Api.R1,
+    Util.R1,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
-  )
+  ) {
+    object R1 extends Release(
+      Api.R1,
+      Util.R1,
+      mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
+    )
+  }
 
   object ServletApi extends ScalaModule(
     "servletapi",
@@ -105,44 +116,73 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl,
+    Impl.R1,
     ServletApi.R1,
-    Toolbox6Modules.Logging,
-    ManagementApi,
-    ManagementUtils,
-    Wiring,
+    Toolbox6Modules.Logging.R1,
+    ManagementApi.R1,
+    ManagementUtils.R1,
+    Wiring.R1,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
-  )
+  ) {
+    object R1 extends Release(
+      Impl.R1,
+      ServletApi.R1,
+      Toolbox6Modules.Logging.R1,
+      ManagementApi.R1,
+      ManagementUtils.R1,
+      Wiring.R1,
+      mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
+      mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
+    )
+  }
 
   object Webapp extends ScalaModule(
     "webapp",
-    Servlet,
+    Servlet.R1,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
-  )
+  ) {
+    object R1 extends Release(
+      Servlet.R1,
+      mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
+    )
+  }
 
   object Wiring extends ScalaModule(
     "wiring",
     Api.R1,
     ServletApi.R1,
-    Util,
+    Util.R1,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
-  )
-
-
-  object ManagementApi extends JavaModule(
-    "managementapi",
-    Module.provided(
-      mvn.`org.scala-lang:scala-library:jar:2.11.8`
+  ) {
+    object R1 extends Release(
+      Api.R1,
+      ServletApi.R1,
+      Util.R1,
+      mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
+      mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
     )
-  )
+  }
+
+
+  object ManagementApi extends ScalaModule(
+    "managementapi"
+  ) {
+    object R1 extends Release(
+    )
+  }
 
   object ManagementUtils extends ScalaModule(
     "managementutils",
-    ManagementApi,
-    Common
-  )
+    ManagementApi.R1,
+    Common.R1
+  ) {
+    object R1 extends Release(
+      ManagementApi.R1,
+      Common.R1
+    )
+  }
 
   object Client extends ScalaModule(
     "client",

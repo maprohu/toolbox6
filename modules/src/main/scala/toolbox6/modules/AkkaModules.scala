@@ -11,7 +11,6 @@ object AkkaModules {
 
   object Http extends ScalaModule(
     "http",
-    "1.0.0-SNAPSHOT",
     mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`com.typesafe.akka:akka-slf4j_2.11:2.3.15`
@@ -19,7 +18,6 @@ object AkkaModules {
 
   object Json4s extends ScalaModule(
     "json4s",
-    "1.0.0-SNAPSHOT",
     mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
     mvn.`org.json4s:json4s-core_2.11:jar:3.4.0`,
     mvn.`org.json4s:json4s-native_2.11:jar:3.4.0`

@@ -166,7 +166,7 @@ trait HasMavenCoordinates {
     s"${URLEncoder.encode(toCanonical, "UTF-8")}.jar"
   }
 
-  def isSnapshot = version.endsWith("-SNAPSHOT")
+  def isSnapshot = version.endsWith("SNAPSHOT")
 }
 
 

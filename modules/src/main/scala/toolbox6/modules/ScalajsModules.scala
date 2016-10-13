@@ -24,7 +24,6 @@ object VisModules {
 
   object Raw extends ScalaModule(
     "raw",
-    "1.0.0-SNAPSHOT",
     mvn.`org.scala-js:scalajs-library_2.11:jar:0.6.12`
   )
 

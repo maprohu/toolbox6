@@ -12,7 +12,6 @@ object Osgi6Modules {
 
   object Packaging extends ScalaModule(
     "packaging",
-    "1.0.0-SNAPSHOT",
     mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.4`
 
   )

@@ -18,7 +18,6 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Common extends ScalaModule(
     "common",
-    "1.0.1-SNAPSHOT",
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`io.monix:monix_2.11:jar:2.0.4`,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
@@ -26,21 +25,24 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Logging extends ScalaModule(
     "logging",
-    "1.0.0-SNAPSHOT",
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
-  )
+  ) {
+    object R1 extends Release(
+      mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
+    )
+  }
 
   object Jms extends ScalaModule(
     "jms",
-    "1.0.0-SNAPSHOT",
     Logging,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
     mvn.`io.monix:monix_2.11:jar:2.0.2`
-  )
+  ) {
+
+  }
 
   object Packaging extends ScalaModule(
     "packaging",
-    "1.0.0-SNAPSHOT",
     MavenModulesBuilder,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.apache.maven.shared:maven-invoker:2.2`,
@@ -49,7 +51,6 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Macros extends ScalaModule(
     "macros",
-    "1.0.0-SNAPSHOT",
     mvn.`org.scala-lang:scala-reflect:jar:2.11.8`
   )
 
@@ -59,17 +60,17 @@ object JarTreeModules {
 
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "jartree")
 
-  object Api extends NamedModule(
-    Container,
+  object Api extends ScalaModule(
     "api",
-    "1.0.0-SNAPSHOT",
-    mvn.`org.glassfish:javax.json:jar:1.0.4`,
-    (mvn.`org.scala-lang:scala-library:jar:2.11.8`:Module).copy(provided = true)
-  )
+    mvn.`org.glassfish:javax.json:jar:1.0.4`
+  ) {
+    object R1 extends Release(
+      mvn.`org.glassfish:javax.json:jar:1.0.4`
+    )
+  }
 
   object Util extends ScalaModule(
     "util",
-    "1.0.0-SNAPSHOT",
     Api,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
@@ -79,7 +80,6 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
-    "1.0.0-SNAPSHOT",
     Api,
     Util,
 //    mvn.`org.eclipse.aether:aether-util:jar:1.1.0`,
@@ -88,14 +88,17 @@ object JarTreeModules {
 
   object ServletApi extends ScalaModule(
     "servletapi",
-    "1.0.0-SNAPSHOT",
     Api,
     mvn.`javax.servlet:servlet-api:jar:2.5`
-  )
+  ) {
+    object R1 extends Release(
+      Api.R1,
+      mvn.`javax.servlet:servlet-api:jar:2.5`
+    )
+  }
 
   object Servlet extends ScalaModule(
     "servlet",
-    "1.0.0-SNAPSHOT",
     Impl,
     ServletApi,
     Toolbox6Modules.Logging,
@@ -108,21 +111,18 @@ object JarTreeModules {
 
   object Webapp extends ScalaModule(
     "webapp",
-    "1.0.0-SNAPSHOT",
     Servlet,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
   )
 
   object Framework extends ScalaModule(
     "framework",
-    "1.0.0-SNAPSHOT",
     Api,
     ServletApi
   )
 
   object Wiring extends ScalaModule(
     "wiring",
-    "1.0.0-SNAPSHOT",
     Api,
     ServletApi,
     Util,
@@ -133,7 +133,6 @@ object JarTreeModules {
 
   object ManagementApi extends JavaModule(
     "managementapi",
-    "1.0.0-SNAPSHOT",
     Module.provided(
       mvn.`org.scala-lang:scala-library:jar:2.11.8`
     )
@@ -141,14 +140,12 @@ object JarTreeModules {
 
   object ManagementUtils extends ScalaModule(
     "managementutils",
-    "1.0.0-SNAPSHOT",
     ManagementApi,
     Common
   )
 
   object Client extends ScalaModule(
     "client",
-    "1.0.0-SNAPSHOT",
     ManagementUtils,
     mvn.`com.oracle:wlfullclient:jar:10.3.6.0`,
     Toolbox6Modules,
@@ -158,7 +155,6 @@ object JarTreeModules {
 
   object Akka extends ScalaModule(
     "akka",
-    "1.0.0-SNAPSHOT",
     ServletApi,
     AkkaModules.Http
   )
@@ -166,7 +162,6 @@ object JarTreeModules {
 
   object Testing extends ScalaModule(
     "testing",
-    "1.0.0-SNAPSHOT",
     Api,
     ServletApi,
     Packaging
@@ -174,7 +169,6 @@ object JarTreeModules {
 
   object Packaging extends ScalaModule(
     "packaging",
-    "1.0.0-SNAPSHOT",
     Toolbox6Modules,
     Toolbox6Modules.Packaging,
     Webapp,

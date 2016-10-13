@@ -11,13 +11,11 @@ object Servlet25Modules {
 
   object SingleApi extends JavaModule(
     "singleapi",
-    "1.0.0-SNAPSHOT",
     mvn.`javax.servlet:servlet-api:jar:2.5`
   )
 
   object RunApi extends JavaModule(
     "runapi",
-    "1.0.0-SNAPSHOT",
     SingleApi,
     mvn.`javax.servlet:servlet-api:jar:2.5`
 //    mvn.`jartree:jartree-api:jar:1.0.0-SNAPSHOT`
@@ -25,7 +23,6 @@ object Servlet25Modules {
 
   object Webapp extends ScalaModule(
     "webapp",
-    "1.0.0-SNAPSHOT",
     SingleApi,
     RunApi,
     Toolbox6Modules.Common,
@@ -37,7 +34,6 @@ object Servlet25Modules {
 
   object SampleRunner extends ScalaModule(
     "samplerunner",
-    "1.0.0-SNAPSHOT",
     RunApi
   )
 

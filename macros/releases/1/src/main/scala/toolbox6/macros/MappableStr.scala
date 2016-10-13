@@ -125,6 +125,7 @@ object MappableStr {
         case o =>
           val (ofrom, oto) = extractField(q"map($decoded)", q"o.$name", o)
           (ofrom, q"$decoded -> Some($oto)")
+        case _ => ???
       }
 
       (

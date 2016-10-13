@@ -27,7 +27,14 @@ object RunJarTreeQuery {
 
 
 
-    println(management.query())
+    println(
+      upickle.json.write(
+        upickle.json.read(
+          management.query()
+        ),
+        2
+      )
+    )
 
 //    val cb = new LogListener {
 //      @throws(classOf[RemoteException])

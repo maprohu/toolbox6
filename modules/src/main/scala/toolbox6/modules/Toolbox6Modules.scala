@@ -40,11 +40,15 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Jms extends ScalaModule(
     "jms",
-    Logging,
+    Logging.R1,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
     mvn.`io.monix:monix_2.11:jar:2.0.2`
   ) {
-
+    object R1 extends Release(
+      Logging.R1,
+      mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
+      mvn.`io.monix:monix_2.11:jar:2.0.2`
+    )
   }
 
   object Packaging extends ScalaModule(
@@ -58,7 +62,11 @@ object Toolbox6Modules extends MavenCentralModule(
   object Macros extends ScalaModule(
     "macros",
     mvn.`org.scala-lang:scala-reflect:jar:2.11.8`
-  )
+  ) {
+    object R1 extends Release(
+      mvn.`org.scala-lang:scala-reflect:jar:2.11.8`
+    )
+  }
 
 }
 
@@ -195,8 +203,13 @@ object JarTreeModules {
   object Akka extends ScalaModule(
     "akka",
     ServletApi.R1,
-    AkkaModules.Http
-  )
+    AkkaModules.Http.R1
+  ) {
+    object R1 extends Release(
+      ServletApi.R1,
+      AkkaModules.Http.R1
+    )
+  }
 
 
   object Testing extends ScalaModule(

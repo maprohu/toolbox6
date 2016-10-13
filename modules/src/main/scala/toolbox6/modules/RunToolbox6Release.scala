@@ -19,7 +19,16 @@ object RunToolbox6Release {
     JarTreeModules.ManagementUtils.R1,
     JarTreeModules.Impl.R1,
     JarTreeModules.Servlet.R1,
-    JarTreeModules.Webapp.R1
+    JarTreeModules.Webapp.R1,
+
+    AkkaModules.Http.R1,
+    JarTreeModules.Akka.R1,
+    AkkaModules.Json4s.R1,
+    Toolbox6Modules.Macros.R1,
+    Toolbox6Modules.Jms.R1
+
+
+
   )
 
   def main(args: Array[String]): Unit = {

@@ -1,7 +1,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6</groupId>
-    <artifactId>toolbox6-jartree-servlet</artifactId>
+    <artifactId>toolbox6-docs</artifactId>
     <version>2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <build>
@@ -108,44 +108,9 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-impl</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-servletapi</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-logging</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-managementapi</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-managementutils</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-wiring</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>io.monix</groupId>
-            <artifactId>monix-execution_2.11</artifactId>
-            <version>2.0.2</version>
-        </dependency>
-        <dependency>
             <groupId>com.lihaoyi</groupId>
-            <artifactId>upickle_2.11</artifactId>
-            <version>0.4.2</version>
+            <artifactId>scalatex-site_2.11</artifactId>
+            <version>0.3.6</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

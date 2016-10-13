@@ -115,7 +115,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-akka-http</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

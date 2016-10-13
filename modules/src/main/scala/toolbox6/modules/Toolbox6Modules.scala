@@ -68,6 +68,11 @@ object Toolbox6Modules extends MavenCentralModule(
     )
   }
 
+  object Docs extends ScalaModule(
+    "docs",
+    mvn.`com.lihaoyi:scalatex-site_2.11:jar:0.3.6`
+  )
+
 }
 
 object JarTreeModules {

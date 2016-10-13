@@ -21,5 +21,6 @@
         <module>jms</module>
         <module>logging</module>
         <module>packaging</module>
+        <module>docs</module>
     </modules>
 </project>

@@ -24,6 +24,7 @@ object RunToolbox6 {
     Toolbox6Modules.Jms,
     Toolbox6Modules.Logging,
     Toolbox6Modules.Packaging,
+    Toolbox6Modules.Docs,
     JarTreeModules.Api,
     JarTreeModules.Util,
     JarTreeModules.Impl,

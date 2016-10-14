@@ -45,3 +45,17 @@ object RunToolbox6Release {
   }
 
 }
+
+object RunToolbox6ReleaseInstall {
+  def main(args: Array[String]): Unit = {
+    RunToolbox6Release.Releases.foreach { r =>
+      println(r.getClass.getName)
+
+      ModuleRelease.installRelease(
+        RunToolbox6.Roots,
+        r
+      )
+    }
+
+  }
+}

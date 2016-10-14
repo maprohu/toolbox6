@@ -24,6 +24,7 @@ object RunToolbox6 {
     Toolbox6Modules.Jms,
     Toolbox6Modules.Logging,
     Toolbox6Modules.Packaging,
+    Toolbox6Modules.StateMachine,
     Toolbox6Modules.Docs,
     JarTreeModules.Api,
     JarTreeModules.Util,
@@ -39,7 +40,11 @@ object RunToolbox6 {
     JarTreeModules.Testing,
     JarTreeModules.Packaging,
     AkkaModules.Http,
-    AkkaModules.Json4s
+    AkkaModules.Json4s,
+    UiModules.Ast,
+    UiModules.Swing,
+    UiModules.Android
+
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,
 //    Servlet25Modules.SampleRunner,

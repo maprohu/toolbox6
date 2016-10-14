@@ -10,8 +10,7 @@ object UiModules {
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "ui")
 
   object Ast extends ScalaModule(
-    "ast",
-    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
+    "ast"
   )
 
   object Swing extends ScalaModule(

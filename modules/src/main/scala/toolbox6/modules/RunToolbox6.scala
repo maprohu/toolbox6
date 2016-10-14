@@ -43,7 +43,9 @@ object RunToolbox6 {
     AkkaModules.Json4s,
     UiModules.Ast,
     UiModules.Swing,
-    UiModules.Android
+    UiModules.Android,
+    AndroidModules.Packaging,
+    AndroidModules.LibInstaller
 
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,

@@ -2,16 +2,19 @@ package toolbox6.ui.swing
 
 import java.awt._
 import java.awt.event.{ActionEvent, ActionListener}
-import javax.swing.{JFrame, JPanel, JToggleButton}
+import javax.swing.{JFrame, JPanel, JToggleButton, SwingUtilities}
 
 import toolbox6.ui.ast
 import toolbox6.ui.ast.Column
+
+import scala.concurrent.{Future, Promise}
+import scala.util.Try
 
 /**
   * Created by pappmar on 14/10/2016.
   */
 class SwingUI(container: Container) extends ast.UI {
-  override def display(widget: ast.Widget): Unit = {
+  override def displaySync(widget: ast.Widget): Unit = {
     container.removeAll()
     container.setLayout(new GridBagLayout)
     val c = new GridBagConstraints()
@@ -61,10 +64,20 @@ class SwingUI(container: Container) extends ast.UI {
     }
 
   }
+
+  override def run[T](fn: => T): Future[T] = {
+    val promise = Promise[T]()
+    SwingUtilities.invokeLater(new Runnable {
+      override def run(): Unit = {
+        promise.complete(Try(fn))
+      }
+    })
+    promise.future
+  }
 }
 
 object SwingUI {
-  def fullScreen(w: ast.UI => ast.Widget): Unit = {
+  def fullScreen(w: ast.UI => Unit): Unit = {
     val frame = new JFrame()
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.setExtendedState(
@@ -72,7 +85,7 @@ object SwingUI {
     )
 
     val ui = new SwingUI(frame.getContentPane)
-    ui.display(w(ui))
+    w(ui)
 
     frame.pack()
     frame.setVisible(true)

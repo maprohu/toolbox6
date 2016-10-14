@@ -1,11 +1,13 @@
 package toolbox6.ui.ast
 
 import scala.collection.immutable._
+import scala.concurrent.Future
 
 
 trait UI {
 
-  def display(widget: Widget) : Unit
+  def displaySync(widget: Widget) : Unit
+  def run[T](fn: => T) : Future[T]
 
 }
 
@@ -31,6 +33,7 @@ object SimpleHandler {
   ) extends SimpleHandler
 
   implicit def toSimpleHandler(fn: Type) = of(fn)
+  implicit def fromOption(fn: Option[Type]) : SimpleHandler = fn.map(toSimpleHandler).getOrElse(UI.Default)
 }
 
 sealed trait Widget
@@ -45,6 +48,10 @@ object Ability {
       case Enabled => true
       case Disabled => false
     }
+  }
+
+  implicit def fromBoolean(o: Boolean) : Ability = {
+    if (o) Enabled else Disabled
   }
 
 }

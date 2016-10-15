@@ -9,7 +9,8 @@ import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
 import monix.execution.cancelables.CompositeCancelable
 import org.apache.commons.io.FileUtils
-import toolbox6.jartree.api.{ClassRequest, ClosableJarCleaner, JarPlugger}
+import toolbox6.jartree.api.{ClassRequest, ClosableJarCleaner, JarPlugger, JarUpdatable}
+import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
 import toolbox6.jartree.wiring.SimpleJarSocket
 import toolbox6.logging.LogTools
@@ -22,7 +23,7 @@ import scala.util.Try
   * Created by martonpapp on 15/10/16.
   */
 object JarTreeBootstrap {
-  def init[Processor, Context](
+  case class Config[Processor <: JarUpdatable, Context](
     contextProvider: JarTree => Context,
     voidProcessor : Processor,
     managementSetup : JarTreeManagement => Cancelable,
@@ -33,27 +34,19 @@ object JarTreeBootstrap {
     initialStartup : ClassRequestImpl[JarPlugger[Processor, Context]],
     initialParam: JsonObject,
     runtimeVersion: String
+  )
+  def init[Processor <: JarUpdatable, Context](
+    config : Config[Processor, Context]
   ) : Cancelable = {
     new JarTreeBootstrap(
-      contextProvider,
-      voidProcessor,
-      managementSetup
-    ).init(
-      name,
-      dataPath,
-      version,
-      embeddedJars,
-      initialStartup,
-      initialParam,
-      runtimeVersion
-    )
+      config
+    ).init()
   }
 }
-class JarTreeBootstrap[Processor, Context](
-  contextProvider: JarTree => Context,
-  voidProcessor : Processor,
-  managementSetup : JarTreeManagement => Cancelable
+class JarTreeBootstrap[Processor <: JarUpdatable, Context](
+  config: Config[Processor, Context]
 ) extends LazyLogging with LogTools {
+  import config._
 
   type Plugger = JarPlugger[Processor, Context]
 
@@ -98,19 +91,8 @@ class JarTreeBootstrap[Processor, Context](
 
   }
 
-  def init(
-    name: String,
-    dataPath: String,
-    version : Int = 1,
-    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup : ClassRequestImpl[Plugger],
-    initialParam: JsonObject,
-    runtimeVersion: String
-  ): Cancelable = {
+  def init(): Cancelable = {
     logger.info("starting {}", name)
-
-
-
 
     val dir = new File(dataPath)
     val versionFile = new File(dir, JarTreeBootstrapConfig.VersionFile)
@@ -194,24 +176,20 @@ class JarTreeBootstrap[Processor, Context](
     })
 
     stopper += setupManagement(
-      name,
       cache,
       jarTree,
       context,
-      processorSocket,
-      runtimeVersion
+      processorSocket
     )
 
     stopper
   }
 
   def setupManagement(
-    name: String,
     cache: JarCache,
     jarTree: JarTree,
     ctx: Context,
-    processorSocket: SimpleJarSocket[Processor, Context],
-    runtimeVersion: String
+    processorSocket: SimpleJarSocket[Processor, Context]
   ) : Cancelable = {
     val management =
       new JarTreeManagement {
@@ -365,6 +343,6 @@ case class JarTreeBootstrapConfig(
   stdout: Boolean,
   debug: Boolean
 ) {
-//  def plugger =
-//    startup.asInstanceOf[ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]]]
+  def plugger[Processor <: JarUpdatable, Context] =
+    startup.asInstanceOf[ClassRequestImpl[JarPlugger[Processor, Context]]]
 }

@@ -112,7 +112,10 @@ object JarTreeModules {
     "impl",
     Api.R1,
     Util.R1,
-    mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
+    mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
+    Toolbox6Modules.Logging,
+    mvn.`io.monix:monix-eval_2.11:jar:2.0.4`,
+    Wiring
   ) {
     object R1 extends Release(
       Api.R1,

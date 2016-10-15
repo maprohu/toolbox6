@@ -1,26 +1,17 @@
-package toolbox6.jartree.servlet
+package toolbox6.jartree.impl
 
 import java.io._
 import java.rmi.RemoteException
+import javax.json.JsonObject
 import javax.json.spi.JsonProvider
-import javax.json.{Json, JsonObject, JsonValue}
-import javax.servlet.ServletConfig
-import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
-import monix.execution.atomic.Atomic
-import monix.execution.cancelables.{AssignableCancelable, CompositeCancelable}
-import org.apache.commons.io.{FileUtils, IOUtils}
-import toolbox6.common.ManagementTools
-import toolbox6.jartree.api._
-import toolbox6.jartree.impl.{JarCache, JarTree}
-import toolbox6.jartree.managementapi.JarTreeManagement
-import toolbox6.jartree.managementutils.JarTreeManagementUtils
-import toolbox6.jartree.servlet.JarTreeServletConfig.Plugger
-import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
+import monix.execution.cancelables.CompositeCancelable
+import org.apache.commons.io.FileUtils
+import toolbox6.jartree.api.{ClassRequest, ClosableJarCleaner, JarPlugger}
 import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
-import toolbox6.jartree.wiring.{Plugged, SimpleJarSocket}
+import toolbox6.jartree.wiring.SimpleJarSocket
 import toolbox6.logging.LogTools
 import upickle.Js
 
@@ -28,52 +19,43 @@ import scala.io.{Codec, Source}
 import scala.util.Try
 
 /**
-  * Created by martonpapp on 01/10/16.
+  * Created by martonpapp on 15/10/16.
   */
-class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
-  val impl = new JarTreeServletImpl
-
-  override def init(config: ServletConfig): Unit = {
-    super.init(config)
-    JarTreeServletConfig.jconfig.map({ case (jconfig, param) =>
-      impl.init(
-        config,
-        jconfig.name,
-        jconfig.dataPath,
-        jconfig.version,
-        jconfig
-          .embeddedJars
-          .map({ jar =>
-            (
-              jar.key,
-              () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
-            )
-          }),
-        jconfig.plugger,
-        param,
-        self.getClass.getPackage.getImplementationVersion
-      )
-    })
-  }
-
-  override def destroy(): Unit = {
-    impl.destroy()
-    super.destroy()
-  }
-
-  override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    impl.service(req, resp)
+object JarTreeBootstrap {
+  def init[Processor, Context](
+    contextProvider: JarTree => Context,
+    voidProcessor : Processor,
+    managementSetup : JarTreeManagement => Cancelable,
+    name: String,
+    dataPath: String,
+    version : Int = 1,
+    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
+    initialStartup : ClassRequestImpl[JarPlugger[Processor, Context]],
+    initialParam: JsonObject,
+    runtimeVersion: String
+  ) : Cancelable = {
+    new JarTreeBootstrap(
+      contextProvider,
+      voidProcessor,
+      managementSetup
+    ).init(
+      name,
+      dataPath,
+      version,
+      embeddedJars,
+      initialStartup,
+      initialParam,
+      runtimeVersion
+    )
   }
 }
+class JarTreeBootstrap[Processor, Context](
+  contextProvider: JarTree => Context,
+  voidProcessor : Processor,
+  managementSetup : JarTreeManagement => Cancelable
+) extends LazyLogging with LogTools {
 
-class JarTreeServletImpl extends LazyLogging with LogTools {
-
-  val VoidProcessor : Processor = new Processor {
-    override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
-    override def close(): Unit = ()
-
-    override def update(param: JsonObject): Unit = ()
-  }
+  type Plugger = JarPlugger[Processor, Context]
 
   var processor : () => Processor = null
 
@@ -117,26 +99,25 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
   }
 
   def init(
-    config: ServletConfig,
     name: String,
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
     initialStartup : ClassRequestImpl[Plugger],
     initialParam: JsonObject,
-    webappVersion: String
-  ): Unit = {
+    runtimeVersion: String
+  ): Cancelable = {
     logger.info("starting {}", name)
 
 
 
 
     val dir = new File(dataPath)
-    val versionFile = new File(dir, JarTreeServletConfig.VersionFile)
+    val versionFile = new File(dir, JarTreeBootstrapConfig.VersionFile)
     val cacheDir = new File(dir, "cache")
 
     val startupIO = new StartupIO(
-      new File(dir, JarTreeServletConfig.StartupFile)
+      new File(dir, JarTreeBootstrapConfig.StartupFile)
     )
 
     val cache = if (
@@ -182,15 +163,12 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       cache
     )
 
-    val context : JarTreeServletContext = new JarTreeServletContext {
-      override def servletConfig(): ServletConfig = config
-      override def resolve[T](request: ClassRequest[T]): T = jarTree.resolve(request)
-    }
+    val context = contextProvider(jarTree)
 
-    val processorSocket = new SimpleJarSocket[Processor, JarTreeServletContext](
-      VoidProcessor,
+    val processorSocket = new SimpleJarSocket[Processor, Context](
+      voidProcessor,
       context,
-      new ClosableJarCleaner(VoidProcessor)
+      new ClosableJarCleaner(voidProcessor)
     )
     processor = () => processorSocket.get()
 
@@ -221,24 +199,22 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
       jarTree,
       context,
       processorSocket,
-      webappVersion
+      runtimeVersion
     )
+
+    stopper
   }
 
   def setupManagement(
     name: String,
     cache: JarCache,
     jarTree: JarTree,
-    ctx: JarTreeServletContext,
-    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext],
-    webappVersion: String
-  ) = {
-    ManagementTools.bind(
-      JarTreeManagementUtils.bindingName(
-        name
-      ),
+    ctx: Context,
+    processorSocket: SimpleJarSocket[Processor, Context],
+    runtimeVersion: String
+  ) : Cancelable = {
+    val management =
       new JarTreeManagement {
-        @throws(classOf[RemoteException])
         override def verifyCache(ids: Array[String]): Array[Int] = {
           ids
             .zipWithIndex
@@ -247,7 +223,6 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
             })
         }
 
-        @throws(classOf[RemoteException])
         override def putCache(id: String, data: Array[Byte]): Unit = {
           cache.putStream(
             CaseJarKey(id),
@@ -255,10 +230,9 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
           )
         }
 
-        @throws(classOf[RemoteException])
         override def plug(jarPluggerClassRequestJson: String, param: String): Array[Byte] = {
           val request =
-            ClassRequestImpl.fromString[JarPlugger[Processor, JarTreeServletContext]](jarPluggerClassRequestJson)
+            ClassRequestImpl.fromString[JarPlugger[Processor, Context]](jarPluggerClassRequestJson)
 
           val paramJson = JsonTools.readJavax(param)
 
@@ -271,7 +245,6 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
           }
         }
 
-        @throws(classOf[RemoteException])
         override def query(): String = {
           val v = processorSocket.query()
 
@@ -289,18 +262,18 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
                         .provider()
                         .createObjectBuilder()
                         .add(
-                          JarTreeServletConfig.ConfigAttribute,
+                          JarTreeBootstrapConfig.ConfigAttribute,
                           JsonTools.toJavax(
                             upickle.default.writeJs(cr).asInstanceOf[Js.Obj]
                           )
                         )
                         .add(
-                          JarTreeServletConfig.ParamAttribute,
+                          JarTreeBootstrapConfig.ParamAttribute,
                           o
                         )
                         .add(
-                          JarTreeServletConfig.WebappVersionAttributes,
-                          webappVersion
+                          JarTreeBootstrapConfig.RuntimeVersionAttribute,
+                          runtimeVersion
                         )
                     )
 
@@ -314,7 +287,8 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
           )
         }
       }
-    )
+
+    managementSetup(management)
 
   }
 
@@ -325,34 +299,28 @@ class JarTreeServletImpl extends LazyLogging with LogTools {
     }
   }
 
-  def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    processor().service(req, resp)
-  }
+
 }
 
-object JarTreeServletConfig {
+object JarTreeBootstrapConfig {
 
   var verbose = true
 
-  type Plugger = JarPlugger[Processor, JarTreeServletContext]
-
-  val ConfigFile = "jartreeservlet.conf.json"
-  val VersionFile = "jartreeservlet.version"
-  val StartupFile = "jartreeservlet.startup.json"
+  val ConfigFile = "jartreebootstrap.conf.json"
+  val VersionFile = "jartreebootstrap.version"
+  val StartupFile = "jartreebootstrap.startup.json"
   val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
 
-  val WebappVersionAttributes = "webappVersion"
+  val RuntimeVersionAttribute = "runtimeVersion"
   val ConfigAttribute = "config"
   val ParamAttribute = "param"
 
-  lazy val jconfig : Option[(JarTreeServletConfig, JsonObject)] =
+  lazy val jconfig : Option[(JarTreeBootstrapConfig, JsonObject)] =
     try {
       val is =
-        JarTreeServletConfig.getClass.getClassLoader.getResourceAsStream(
+        JarTreeBootstrapConfig.getClass.getClassLoader.getResourceAsStream(
           ConfigFile
         )
-
-//      val str =
 
       val reader = JsonProvider
         .provider()
@@ -362,7 +330,7 @@ object JarTreeServletConfig {
 
       Some(
         (
-          upickle.default.readJs[JarTreeServletConfig](
+          upickle.default.readJs[JarTreeBootstrapConfig](
             JsonTools.fromJavax(
               obj.getJsonObject(ConfigAttribute)
             )
@@ -387,7 +355,7 @@ case class EmbeddedJar(
 
 )
 
-case class JarTreeServletConfig(
+case class JarTreeBootstrapConfig(
   name: String,
   dataPath: String,
   logPath: String,
@@ -397,6 +365,6 @@ case class JarTreeServletConfig(
   stdout: Boolean,
   debug: Boolean
 ) {
-  def plugger =
-    startup.asInstanceOf[ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]]]
+//  def plugger =
+//    startup.asInstanceOf[ClassRequestImpl[JarPlugger[Processor, JarTreeServletContext]]]
 }

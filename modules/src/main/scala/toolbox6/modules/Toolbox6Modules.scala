@@ -221,7 +221,6 @@ object JarTreeModules {
     )
   }
 
-
   object Testing extends ScalaModule(
     "testing",
     Api,

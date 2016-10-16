@@ -107,4 +107,16 @@ object JarTreeClient {
       .toIndexedSeq
   }
 
+  def resolverJarsFile(runMavenHierarchy: RunMavenHierarchy) = {
+    runMavenHierarchy.jars
+      .map({ h =>
+
+        val id = JarTreePackaging.getId(h)
+        val data = JarTreePackaging.resolveFile(h)
+
+        (id.uniqueId, data)
+      })
+      .toIndexedSeq
+  }
+
 }

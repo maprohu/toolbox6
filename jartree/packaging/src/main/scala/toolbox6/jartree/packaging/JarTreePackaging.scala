@@ -178,8 +178,8 @@ object JarTreePackaging {
       )
     }
 
-    def request = {
-      ClassRequestImpl(
+    def request[T] = {
+      ClassRequestImpl[T](
         classLoader,
         runClassName
       )

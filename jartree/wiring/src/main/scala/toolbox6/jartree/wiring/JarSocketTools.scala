@@ -1,7 +1,5 @@
 package toolbox6.jartree.wiring
 
-import javax.json.{JsonObject, JsonValue}
-
 import monix.execution.atomic.Atomic
 import rx.{Rx, Var}
 import toolbox6.jartree.api._
@@ -9,10 +7,30 @@ import toolbox6.jartree.util.{ClassRequestImpl, JarTreeTools, JsonTools}
 
 import scala.collection.immutable.Seq
 
+case class PlugRequestImpl[T <: JarUpdatable, C](
+  request: ClassRequestImpl[JarPlugger[T, C]],
+  param: Array[Byte]
+) extends PlugRequest[T, C]
+
+object PlugRequestImpl {
+  def apply[T <: JarUpdatable, C](
+    request: PlugRequest[T, C]
+  ) : PlugRequestImpl[T, C] = {
+    PlugRequestImpl(
+      ClassRequestImpl(
+        request.request()
+      ),
+      request.param()
+    )
+  }
+
+
+}
+
 
 case class Plugged[T <: JarUpdatable, C](
   instance: T,
-  request: Option[(ClassRequestImpl[JarPlugger[T, C]], JsonObject)]
+  request: Option[PlugRequestImpl[T, C]]
 )
 
 class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
@@ -43,8 +61,8 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
   private def plugInternal2(
     plugged: Plugged[T, C],
     plugger: JarPlugger[T, C],
-    request: Option[(ClassRequestImpl[JarPlugger[T, C]], JsonObject)],
-    param: JsonObject
+    request: Option[PlugRequestImpl[T, C]],
+    param: Array[Byte]
   ): PlugTransform = {
     val response = plugger.pull(
       plugged.instance,
@@ -77,23 +95,22 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
   }
 
   override def plug(
-    request: ClassRequest[JarPlugger[T, C]],
-    param: JsonObject
+    request: PlugRequest[T, C]
   ): Unit = {
     plugInternal1({ plugged =>
-      val r = Some(ClassRequestImpl(request), param)
+      val r = Some(PlugRequestImpl(request))
 
-      if (plugged.request.map(_._1) != r.map(_._1)) {
-        val plugger = context.resolve(request)
+      if (plugged.request.map(_.request) != r.map(_.request)) {
+        val plugger = context.resolve(request.request())
 
         plugInternal2(
           plugged,
           plugger,
           r,
-          param
+          request.param
         )
       } else {
-        plugged.instance.update(param)
+        plugged.instance.update(request.param())
 
         (Noop, plugged.copy(request = r))
       }
@@ -162,21 +179,21 @@ object NamedSocket {
 
 object JarSocketTools {
 
-  def multiUpdate[T <: JarUpdatable, C, S <: JarSocket[T, C]](
-    param: JsonObject,
-    sockets: NamedSocket[T, C, S]*
-  ): Unit = {
-    sockets.foreach({ ns =>
-      val (request, p) =
-        JsonTools.readUpdate(
-          param.getJsonObject(ns.name)
-        )
-
-      ns.socket.plug(
-        request,
-        p
-      )
-    })
-  }
+//  def multiUpdate[T <: JarUpdatable, C, S <: JarSocket[T, C]](
+//    param: JsonObject,
+//    sockets: NamedSocket[T, C, S]*
+//  ): Unit = {
+//    sockets.foreach({ ns =>
+//      val (request, p) =
+//        JsonTools.readUpdate(
+//          param.getJsonObject(ns.name)
+//        )
+//
+//      ns.socket.plug(
+//        request,
+//        p
+//      )
+//    })
+//  }
 
 }

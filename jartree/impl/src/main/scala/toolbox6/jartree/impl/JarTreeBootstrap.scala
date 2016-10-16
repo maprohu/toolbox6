@@ -1,9 +1,8 @@
 package toolbox6.jartree.impl
 
 import java.io._
+import java.nio.ByteBuffer
 import java.rmi.RemoteException
-import javax.json.JsonObject
-import javax.json.spi.JsonProvider
 
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
@@ -12,7 +11,7 @@ import org.apache.commons.io.FileUtils
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
-import toolbox6.jartree.wiring.SimpleJarSocket
+import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
 import toolbox6.logging.LogTools
 import upickle.Js
 
@@ -31,8 +30,9 @@ object JarTreeBootstrap {
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup : ClassRequestImpl[JarPlugger[Processor, Context]],
-    initialParam: JsonObject,
+//    initialStartup : ClassRequestImpl[JarPlugger[Processor, Context]],
+//    initialParam: Array[Byte],
+    initialStartup: PlugRequestImpl[Processor, Context],
     runtimeVersion: String
   )
   def init[Processor <: JarUpdatable with Closable, Context <: InstanceResolver](
@@ -49,6 +49,12 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
   import config._
 
   type Plugger = JarPlugger[Processor, Context]
+  type Startup = PlugRequestImpl[Processor, Context]
+
+//  final case class Startup(
+//    requestImpl: ClassRequestImpl[Plugger],
+//    param: Array[Byte]
+//  )
 
   var processor : () => Processor = null
 
@@ -58,35 +64,59 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
 
   class StartupIO(startupFile: File) {
 
-    def writeStartup(startup: ClassRequestImpl[Plugger], jsonObject: JsonObject) : Unit = synchronized {
-      val jsObj = Js.Obj(
-        JsonTools.RequestAttribute ->
-          ClassRequestImpl.toJsObj(startup),
-        JsonTools.ParamAttribute ->
-          JsonTools.fromJavax(jsonObject)
-      )
+    def writeStartup(
+      startup: Startup
+    ) : Unit = synchronized {
+//      val jsObj = Js.Obj(
+//        JsonTools.RequestAttribute ->
+//          ClassRequestImpl.toJsObj(startup),
+//        JsonTools.ParamAttribute ->
+//          JsonTools.fromJavax(jsonObject)
+//      )
+      import boopickle.Default._
 
-      new PrintWriter(startupFile) {
-        write(
-          upickle.json.write(
-            jsObj,
-            2
-          )
+      val channel = new FileOutputStream(startupFile).getChannel
+      try {
+        channel.write(
+          Pickle
+            .intoBytes(
+              startup
+            )
         )
-        close
+      } finally {
+        channel.close()
       }
     }
 
-    def read : (ClassRequestImpl[Plugger], JsonObject) = synchronized {
-      val json = JsonTools.readJavax(startupFile)
+    def read : Startup = synchronized {
+      import boopickle.Default._
+      val raf = new RandomAccessFile(startupFile, "r")
+      try {
+        val channel = raf.getChannel
+        try {
+          val size = channel.size()
+          val buffer = ByteBuffer.allocate(size.toInt)
+          channel.read(buffer)
+          Unpickle[Startup].fromBytes(
+            buffer
+          )
+        } finally {
+          channel.close()
+        }
+      } finally {
+        raf.close()
+      }
 
-      val request = upickle.default.readJs[ClassRequestImpl[Any]](
-        JsonTools.fromJavax(
-          json.get(JsonTools.RequestAttribute)
-        )
-      ).asInstanceOf[ClassRequestImpl[Plugger]]
 
-      (request, json.getJsonObject(JsonTools.ParamAttribute))
+//      val json = JsonTools.readJavax(startupFile)
+//
+//      val request = upickle.default.readJs[ClassRequestImpl[Any]](
+//        JsonTools.fromJavax(
+//          json.get(JsonTools.RequestAttribute)
+//        )
+//      ).asInstanceOf[ClassRequestImpl[Plugger]]
+//
+//      (request, json.getJsonObject(JsonTools.ParamAttribute))
     }
 
   }
@@ -126,7 +156,9 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
         })
 
       quietly {
-        startupIO.writeStartup(initialStartup, initialParam)
+        startupIO.writeStartup(
+          initialStartup
+        )
       }
 
       new PrintWriter(versionFile) {
@@ -156,19 +188,17 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
 
     import rx.Ctx.Owner.Unsafe._
     val obs = processorSocket.dynamic.foreach({ p =>
-      p.request.foreach({
-        case (req, param) =>
-          startupIO.writeStartup(req, param)
+      p.request.foreach({ r =>
+        startupIO.writeStartup(r)
       })
     })
     stopper += Cancelable(() => obs.kill())
 
 
-    val (startupRequest, startupParam) = startupIO.read
+    val startupRequest = startupIO.read
 
     processorSocket.plug(
-      startupRequest,
-      startupParam
+      startupRequest
     )
 
     stopper += Cancelable({

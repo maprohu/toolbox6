@@ -14,8 +14,8 @@ trait JarTreeManagement {
 
   def plug(
     jarPluggerClassRequestJson: String,
-    param: String
-  ) : Array[Byte]
+    param: Array[Byte]
+  ) : Unit
 
   def query() : String
 

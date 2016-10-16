@@ -1,6 +1,5 @@
 package toolbox6.jartree.util
 
-import javax.json.JsonObject
 
 import toolbox6.jartree.api.{Closable, JarPlugResponse, JarPlugger, JarUpdatable}
 
@@ -27,7 +26,7 @@ object JarTreeTools {
     val response = noopResponse(init)
 
     new JarPlugger[T, C] {
-      override def pull(previous: T, param: JsonObject, context: C): JarPlugResponse[T] = response
+      override def pull(previous: T, param: Array[Byte], context: C): JarPlugResponse[T] = response
     }
   }
 

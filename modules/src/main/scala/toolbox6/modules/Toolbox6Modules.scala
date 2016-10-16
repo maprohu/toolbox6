@@ -85,8 +85,7 @@ object JarTreeModules {
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "jartree")
 
   object Api extends ScalaModule(
-    "api",
-    mvn.`org.glassfish:javax.json:jar:1.0.4`
+    "api"
   ) {
     object R1 extends Release(
       mvn.`org.glassfish:javax.json:jar:1.0.4`
@@ -95,7 +94,7 @@ object JarTreeModules {
 
   object Util extends ScalaModule(
     "util",
-    Api.R1,
+    Api,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
@@ -110,12 +109,13 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
-    Api.R1,
-    Util.R1,
+    Api,
+    Util,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     Toolbox6Modules.Logging,
     mvn.`io.monix:monix-eval_2.11:jar:2.0.4`,
-    Wiring
+    Wiring,
+    mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
     object R1 extends Release(
       Api.R1,
@@ -126,7 +126,7 @@ object JarTreeModules {
 
   object ServletApi extends ScalaModule(
     "servletapi",
-    Api.R1,
+    Api,
     mvn.`javax.servlet:servlet-api:jar:2.5`
   ) {
     object R1 extends Release(
@@ -171,9 +171,9 @@ object JarTreeModules {
 
   object Wiring extends ScalaModule(
     "wiring",
-    Api.R1,
-    ServletApi.R1,
-    Util.R1,
+    Api,
+    ServletApi,
+    Util,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
   ) {

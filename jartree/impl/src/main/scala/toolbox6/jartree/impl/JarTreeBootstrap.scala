@@ -9,7 +9,7 @@ import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
 import monix.execution.cancelables.CompositeCancelable
 import org.apache.commons.io.FileUtils
-import toolbox6.jartree.api.{ClassRequest, ClosableJarCleaner, JarPlugger, JarUpdatable}
+import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
 import toolbox6.jartree.wiring.SimpleJarSocket
@@ -35,7 +35,7 @@ object JarTreeBootstrap {
     initialParam: JsonObject,
     runtimeVersion: String
   )
-  def init[Processor <: JarUpdatable, Context](
+  def init[Processor <: JarUpdatable with Closable, Context <: InstanceResolver](
     config : Config[Processor, Context]
   ) : Cancelable = {
     new JarTreeBootstrap(
@@ -43,7 +43,7 @@ object JarTreeBootstrap {
     ).init()
   }
 }
-class JarTreeBootstrap[Processor <: JarUpdatable, Context](
+class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: InstanceResolver](
   config: Config[Processor, Context]
 ) extends LazyLogging with LogTools {
   import config._
@@ -193,13 +193,13 @@ class JarTreeBootstrap[Processor <: JarUpdatable, Context](
   ) : Cancelable = {
     val management =
       new JarTreeManagement {
-        override def verifyCache(ids: Array[String]): Array[Int] = {
-          ids
-            .zipWithIndex
-            .collect({
-              case (id, idx) if !cache.contains(id) => idx
-            })
-        }
+//        override def verifyCache(ids: Array[String]): Array[Int] = {
+//          ids
+//            .zipWithIndex
+//            .collect({
+//              case (id, idx) if !cache.contains(id) => idx
+//            })
+//        }
 
         override def putCache(id: String, data: Array[Byte]): Unit = {
           cache.putStream(
@@ -264,6 +264,8 @@ class JarTreeBootstrap[Processor <: JarUpdatable, Context](
             o2.build()
           )
         }
+
+        override def verifyCache(uniqueId: String): Boolean = ???
       }
 
     managementSetup(management)

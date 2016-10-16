@@ -22,7 +22,7 @@ object PackagingTools {
 
 }
 
-case class MavenCoordinatesImpl(
+final case class MavenCoordinatesImpl(
   groupId: String,
   artifactId: String,
   version: String,
@@ -42,7 +42,7 @@ object MavenCoordinatesImpl extends HasMavenCoordinatesImplicits {
 
 }
 
-case class MavenHierarchy(
+final case class MavenHierarchy(
   jar: MavenCoordinatesImpl,
   dependencies: Seq[MavenHierarchy]
 ) {

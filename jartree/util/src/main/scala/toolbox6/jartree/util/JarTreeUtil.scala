@@ -93,7 +93,7 @@ object CaseClassLoaderKey {
   )
 }
 
-case class ClassRequestImpl[+T](
+final case class ClassRequestImpl[+T](
   classLoader: CaseClassLoaderKey,
   className: String
 ) extends ClassRequest[T]

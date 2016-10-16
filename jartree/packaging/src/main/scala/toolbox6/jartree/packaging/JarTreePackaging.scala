@@ -137,20 +137,28 @@ object JarTreePackaging {
     runClassName: String,
     children: CaseClassLoaderKey => Map[String, RunHierarchy] = _ => Map()
   ) {
-    def toMaven : RunMavenHierarchy = {
+    def forWar : RunMavenHierarchy = {
+      forTarget(
+        JarTreeWarPackager.modulesInParent.contains
+      )
+    }
+
+    def forTarget(
+      targetContains: MavenCoordinatesImpl => Boolean
+    ) : RunMavenHierarchy = {
       val mavenHierarchy : MavenHierarchy =
-        JarTreeWarPackager
-          .filteredHierarchy(
-            resolve(namedModule)
-          )
+        MavenHierarchy
+          .moduleToHierarchy(resolve(namedModule))
+          .filter(m => !targetContains(m))
 
       RunMavenHierarchy(
         mavenHierarchy,
         parent,
         runClassName,
-        cl => children(cl).mapValues(_.toMaven)
+        cl => children(cl).mapValues(_.forTarget(targetContains))
       )
     }
+
   }
 
   case class RunMavenHierarchy(
@@ -225,5 +233,17 @@ object JarTreePackaging {
       .map(mapper)
       .flatten
   }
+
+
+  def target(
+    modules: NamedModule*
+  ) = {
+    modules
+      .map(p => p:MavenHierarchy)
+      .flatMap(_.jars)
+      .toSet
+      .contains _
+  }
+
 
 }

@@ -254,7 +254,7 @@ object JarTreeWarPackager {
     startup: RunHierarchy
   ) = {
     val hierarchy =
-      startup.toMaven
+      startup.forWar
 
     val embeddedJars =
       hierarchy.jars

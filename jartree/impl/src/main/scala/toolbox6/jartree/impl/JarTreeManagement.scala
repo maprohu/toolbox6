@@ -4,11 +4,11 @@ package toolbox6.jartree.impl
 trait JarTreeManagement {
 
   def verifyCache(
-    ids: Array[String]
-  ) : Array[Int]
+    uniqueId: String
+  ) : Boolean
 
   def putCache(
-    id: String,
+    uniqueId: String,
     data: Array[Byte]
   ) : Unit
 

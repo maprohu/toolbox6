@@ -1,35 +1,64 @@
 package toolbox6.statemachine
 
 import monix.eval.Task
-import monix.execution.Scheduler
+import monix.reactive.Observable
 
-import scala.concurrent.Future
 
 /**
   * Created by pappmar on 14/10/2016.
   */
-
-
-trait StateMachine[State, Event] {
-
-  protected def initial : State
-
-  private var current = initial
-
-  protected def scheduler : Scheduler
-
-  protected def transition(from: State, event: Event) : State
-
-  def process(event: Event) : Unit = {
-    scheduler.execute(new Runnable {
-      override def run(): Unit = {
-        current = transition(current, event)
-
-      }
-    })
+case class State[I, O](
+  out: Observable[O] = Observable.empty,
+  fn: I => State[I, O]
+) {
+  def transformer : Observable[I] => Observable[O] = { o =>
+    Observable
+      .concat(
+        out,
+        o
+          .scan(
+            this
+          )({ (state, in) =>
+            state.fn(in)
+          })
+          .flatMap(_.out)
+      )
   }
+}
 
+object State {
+  def end[I, O](out: Observable[O]) : State[I, O] = State[I, O](
+    out = out,
+    fn = _ => end(Observable.empty)
+  )
 
+}
 
+case class StateAsync[I, O](
+  out: Observable[O] = Observable.empty,
+  fn: I => Task[StateAsync[I, O]]
+) {
+  def transformer : Observable[I] => Observable[O] = { o =>
+    Observable
+      .concat(
+        out,
+        o
+          .flatScan(
+            this
+          )({ (state, in) =>
+            Observable
+              .fromTask(
+                state.fn(in)
+              )
+          })
+          .flatMap(_.out)
+      )
+  }
+}
+object StateAsync {
+  def end[I, O](out: Observable[O]) : StateAsync[I, O] = StateAsync[I, O](
+    out = out,
+    fn = _ => Task(end(Observable.empty))
+  )
 
 }

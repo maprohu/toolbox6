@@ -80,7 +80,7 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object StateMachine extends ScalaModule(
     "statemachine",
-    mvn.`io.monix:monix-eval_2.11:jar:2.0.4`
+    mvn.`io.monix:monix-reactive_2.11:jar:2.0.4`
   )
 
   object Docs extends ScalaModule(
@@ -208,7 +208,7 @@ object JarTreeModules {
 
   object ManagementUtils extends ScalaModule(
     "managementutils",
-    ManagementApi.R1,
+    ManagementApi,
     Common.R1
   ) {
     object R1 extends Release(

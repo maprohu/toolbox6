@@ -80,13 +80,14 @@ object JarTreeClient {
 
     val bytes = management
       .plug(
-        ClassRequestImpl.toString(
-          runMavenHierarchy.request
-        ),
-        upickle.json.write(
-          runMavenHierarchy.childrenJs,
-          2
-        )
+        ???
+//        ClassRequestImpl.toString(
+//          runMavenHierarchy.request
+//        ),
+//        upickle.json.write(
+//          runMavenHierarchy.childrenJs,
+//          2
+//        )
       )
 
     println(new String(bytes))

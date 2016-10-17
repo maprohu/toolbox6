@@ -24,8 +24,7 @@ trait JarTreeManagement extends java.rmi.Remote {
 
   @throws(classOf[RemoteException])
   def plug(
-    jarPluggerClassRequestJson: String,
-    param: String
+    plugRequest: Array[Byte]
   ) : Array[Byte]
 
   @throws(classOf[RemoteException])

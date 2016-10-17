@@ -36,7 +36,6 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
   case class Runtime[Processor <: JarUpdatable, Context <: InstanceResolver](
     stop: Cancelable,
-    cache: JarCache,
     jarTree: JarTree,
     ctx: Context,
     processorSocket: SimpleJarSocket[Processor, Context]
@@ -161,7 +160,6 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
     Runtime(
       stopper,
-      cache,
       jarTree,
       context,
       processorSocket

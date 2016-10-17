@@ -174,9 +174,9 @@ object JarTreeBootstrapConfig {
 
   var verbose = true
 
-  val ConfigFile = "jartreebootstrap.conf.json"
+  val ConfigFile = "jartreebootstrap.conf"
   val VersionFile = "jartreebootstrap.version"
-  val StartupFile = "jartreebootstrap.startup.json"
+  val StartupFile = "jartreebootstrap.startup"
   val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
 
   val RuntimeVersionAttribute = "runtimeVersion"

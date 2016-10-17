@@ -185,27 +185,27 @@ object JarTreePackaging {
       )
     }
 
-    def toJsObj : Js.Obj = {
-      Js.Obj(
-        JsonTools.RequestAttribute ->
-          ClassRequestImpl.toJsObj(
-            request
-          ),
-        JsonTools.ParamAttribute ->
-          childrenJs
-      )
-    }
-
-    def childrenJs : Js.Obj = {
-      Js.Obj(
-        children(classLoader)
-          .to[Seq]
-          .map({
-            case (key, value) =>
-              key -> value.toJsObj
-          }):_*
-      )
-    }
+//    def toJsObj : Js.Obj = {
+//      Js.Obj(
+//        JsonTools.RequestAttribute ->
+//          ClassRequestImpl.toJsObj(
+//            request
+//          ),
+//        JsonTools.ParamAttribute ->
+//          childrenJs
+//      )
+//    }
+//
+//    def childrenJs : Js.Obj = {
+//      Js.Obj(
+//        children(classLoader)
+//          .to[Seq]
+//          .map({
+//            case (key, value) =>
+//              key -> value.toJsObj
+//          }):_*
+//      )
+//    }
 
     def jars =
         hierarchies

@@ -1,7 +1,6 @@
 package toolbox6.jartree.packaging
 
 import java.io.File
-import javax.json.JsonObject
 
 import maven.modules.builder.{Module, NamedModule}
 import sbt.io.IO
@@ -16,7 +15,6 @@ import toolbox6.jartree.api.JarPlugger
 import toolbox6.jartree.packaging.JarTreePackaging.RunHierarchy
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util.ClassRequestImpl
-import toolbox6.jartree.webapp.WebappServlet
 import upickle.Js
 
 
@@ -163,7 +161,7 @@ object JarTreeWarPackager {
                    version="2.5">
             <servlet>
               <servlet-name>jartree</servlet-name>
-              <servlet-class>{classOf[WebappServlet].getName}</servlet-class>
+              <servlet-class>toolbox6.jartree.webapp.WebappServlet</servlet-class>
               <load-on-startup>1</load-on-startup>
             </servlet>
             <servlet-mapping>
@@ -209,41 +207,42 @@ object JarTreeWarPackager {
 
 
 
-        val configObj = Js.Obj(
-          JarTreeServletConfig.ConfigAttribute ->
-            upickle.default.writeJs(
-              JarTreeServletConfig(
-                name = name,
-                dataPath = dataPath,
-                logPath = logPath,
-                version = dataDirVersion,
-                embeddedJars = embeddedJars.map({ case (coords, fn) =>
-                  EmbeddedJar(
-                    s"${JarsDirName}/${fn}",
-                    JarTreePackaging.getId(coords)
-                  )
-                }),
-                startup = runRequest,
-                stdout = false,
-                debug = false
-              )
-            ),
-          JarTreeServletConfig.ParamAttribute ->
-            paramObject
-
-        )
-
-        runtimeDir.mkdirs()
-        val configString =
-          upickle.json.write(
-            configObj,
-            2
-          )
-        println(configString)
-        IO.write(
-          new File(runtimeDir, JarTreeServletConfig.ConfigFile),
-          configString
-        )
+//        val configObj = Js.Obj(
+//          JarTreeServletConfig.ConfigAttribute ->
+//            upickle.default.writeJs(
+//              JarTreeServletConfig(
+//                name = name,
+//                dataPath = dataPath,
+//                logPath = logPath,
+//                version = dataDirVersion,
+//                embeddedJars = embeddedJars.map({ case (coords, fn) =>
+//                  EmbeddedJar(
+//                    s"${JarsDirName}/${fn}",
+//                    JarTreePackaging.getId(coords)
+//                  )
+//                }),
+//                startup = runRequest,
+//                stdout = false,
+//                debug = false
+//              )
+//            ),
+//          JarTreeServletConfig.ParamAttribute ->
+//            paramObject
+//
+//        )
+//
+//        runtimeDir.mkdirs()
+//        val configString =
+//          upickle.json.write(
+//            configObj,
+//            2
+//          )
+//        println(configString)
+//        IO.write(
+//          new File(runtimeDir, JarTreeServletConfig.ConfigFile),
+//          configString
+//        )
+        ???
       }
     ){ dir =>
       postProcessor(new File(dir, s"target/${name}.war"))
@@ -261,7 +260,8 @@ object JarTreeWarPackager {
 
     val runRequest = hierarchy.request
 
-    val param = hierarchy.childrenJs
+//    val param = hierarchy.childrenJs
+    val param = ???
 
     (runRequest, param, embeddedJars)
   }

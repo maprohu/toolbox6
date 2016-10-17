@@ -119,7 +119,17 @@
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-webapp</artifactId>
+            <artifactId>toolbox6-jartree-servletapi</artifactId>
+            <version>2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-jartree-util</artifactId>
+            <version>2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-jartree-servlet</artifactId>
             <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>

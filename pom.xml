@@ -18,6 +18,8 @@
         <module>akka</module>
         <module>ui</module>
         <module>android</module>
+        <module>javaapi</module>
+        <module>javaimpl</module>
         <module>macros</module>
         <module>common</module>
         <module>jms</module>

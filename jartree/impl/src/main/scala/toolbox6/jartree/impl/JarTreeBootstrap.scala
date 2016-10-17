@@ -7,7 +7,8 @@ import java.rmi.RemoteException
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
 import monix.execution.cancelables.CompositeCancelable
-import org.apache.commons.io.FileUtils
+import org.apache.commons.io.{FileUtils, IOUtils}
+import toolbox6.common.ByteBufferTools
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
@@ -21,116 +22,69 @@ import scala.util.Try
 /**
   * Created by martonpapp on 15/10/16.
   */
-object JarTreeBootstrap {
+object JarTreeBootstrap extends LazyLogging with LogTools {
   case class Config[Processor <: JarUpdatable, Context](
     contextProvider: JarTree => Context,
     voidProcessor : Processor,
-    managementSetup : JarTreeManagement => Cancelable,
     name: String,
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-//    initialStartup : ClassRequestImpl[JarPlugger[Processor, Context]],
-//    initialParam: Array[Byte],
     initialStartup: PlugRequestImpl[Processor, Context],
     runtimeVersion: String
   )
+
+  case class Runtime[Processor <: JarUpdatable, Context <: InstanceResolver](
+    stop: Cancelable,
+    cache: JarCache,
+    jarTree: JarTree,
+    ctx: Context,
+    processorSocket: SimpleJarSocket[Processor, Context]
+  )
   def init[Processor <: JarUpdatable with Closable, Context <: InstanceResolver](
     config : Config[Processor, Context]
-  ) : Cancelable = {
-    new JarTreeBootstrap(
-      config
-    ).init()
-  }
-}
-class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: InstanceResolver](
-  config: Config[Processor, Context]
-) extends LazyLogging with LogTools {
-  import config._
-
-  type Plugger = JarPlugger[Processor, Context]
-  type Startup = PlugRequestImpl[Processor, Context]
-
-//  final case class Startup(
-//    requestImpl: ClassRequestImpl[Plugger],
-//    param: Array[Byte]
-//  )
-
-  var processor : () => Processor = null
-
-  implicit val codec = Codec.UTF8
-
-  val stopper = CompositeCancelable()
-
-  class StartupIO(startupFile: File) {
-
-    def writeStartup(
-      startup: Startup
-    ) : Unit = synchronized {
-//      val jsObj = Js.Obj(
-//        JsonTools.RequestAttribute ->
-//          ClassRequestImpl.toJsObj(startup),
-//        JsonTools.ParamAttribute ->
-//          JsonTools.fromJavax(jsonObject)
-//      )
-      import boopickle.Default._
-
-      val channel = new FileOutputStream(startupFile).getChannel
-      try {
-        channel.write(
-          Pickle
-            .intoBytes(
-              startup
-            )
-        )
-      } finally {
-        channel.close()
-      }
-    }
-
-    def read : Startup = synchronized {
-      import boopickle.Default._
-      val raf = new RandomAccessFile(startupFile, "r")
-      try {
-        val channel = raf.getChannel
-        try {
-          val size = channel.size()
-          val buffer = ByteBuffer.allocate(size.toInt)
-          channel.read(buffer)
-          Unpickle[Startup].fromBytes(
-            buffer
-          )
-        } finally {
-          channel.close()
-        }
-      } finally {
-        raf.close()
-      }
-
-
-//      val json = JsonTools.readJavax(startupFile)
-//
-//      val request = upickle.default.readJs[ClassRequestImpl[Any]](
-//        JsonTools.fromJavax(
-//          json.get(JsonTools.RequestAttribute)
-//        )
-//      ).asInstanceOf[ClassRequestImpl[Plugger]]
-//
-//      (request, json.getJsonObject(JsonTools.ParamAttribute))
-    }
-
-  }
-
-  def init(): Cancelable = {
+  ) : Runtime[Processor, Context] = {
+    import config._
     logger.info("starting {}", name)
 
+    type Plugger = JarPlugger[Processor, Context]
+    type Startup = PlugRequestImpl[Processor, Context]
+
+    var processor : () => Processor = null
+
+    implicit val codec = Codec.UTF8
+
+    val stopper = CompositeCancelable()
+
     val dir = new File(dataPath)
+    val startupFile = new File(dir, JarTreeBootstrapConfig.StartupFile)
     val versionFile = new File(dir, JarTreeBootstrapConfig.VersionFile)
     val cacheDir = new File(dir, "cache")
 
-    val startupIO = new StartupIO(
-      new File(dir, JarTreeBootstrapConfig.StartupFile)
-    )
+    def writeStartup(
+      startup: Startup
+    ) : Unit = this.synchronized {
+      import boopickle.Default._
+      ByteBufferTools
+        .writeFile(
+          Pickle
+            .intoByteBuffers(
+              startup
+            )
+            .toArray,
+          startupFile
+        )
+    }
+
+    def readStartup : Startup = this.synchronized {
+      import boopickle.Default._
+      Unpickle[Startup].fromBytes(
+        ByteBufferTools
+          .readFile(
+            startupFile
+          )
+      )
+    }
 
     val cache = if (
       Try(Source.fromFile(versionFile).mkString.toInt)
@@ -156,7 +110,7 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
         })
 
       quietly {
-        startupIO.writeStartup(
+        writeStartup(
           initialStartup
         )
       }
@@ -173,7 +127,7 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
     }
 
     val jarTree = new JarTree(
-      getClass.getClassLoader,
+      JarTreeBootstrap.getClass.getClassLoader,
       cache
     )
 
@@ -189,13 +143,13 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
     import rx.Ctx.Owner.Unsafe._
     val obs = processorSocket.dynamic.foreach({ p =>
       p.request.foreach({ r =>
-        startupIO.writeStartup(r)
+        writeStartup(r)
       })
     })
     stopper += Cancelable(() => obs.kill())
 
 
-    val startupRequest = startupIO.read
+    val startupRequest = readStartup
 
     processorSocket.plug(
       startupRequest
@@ -205,112 +159,16 @@ class JarTreeBootstrap[Processor <: JarUpdatable with Closable, Context <: Insta
       () => processorSocket.clear()
     })
 
-    stopper += setupManagement(
+    Runtime(
+      stopper,
       cache,
       jarTree,
       context,
       processorSocket
     )
-
-    stopper
   }
-
-  def setupManagement(
-    cache: JarCache,
-    jarTree: JarTree,
-    ctx: Context,
-    processorSocket: SimpleJarSocket[Processor, Context]
-  ) : Cancelable = {
-    val management =
-      new JarTreeManagement {
-//        override def verifyCache(ids: Array[String]): Array[Int] = {
-//          ids
-//            .zipWithIndex
-//            .collect({
-//              case (id, idx) if !cache.contains(id) => idx
-//            })
-//        }
-
-        override def putCache(id: String, data: Array[Byte]): Unit = {
-          cache.putStream(
-            CaseJarKey(id),
-            () => new ByteArrayInputStream(data)
-          )
-        }
-
-        override def plug(jarPluggerClassRequestJson: String, param: String): Array[Byte] = {
-          val request =
-            ClassRequestImpl.fromString[JarPlugger[Processor, Context]](jarPluggerClassRequestJson)
-
-          val paramJson = JsonTools.readJavax(param)
-
-          RunTools.runBytes {
-            processorSocket.plug(
-              request,
-              paramJson
-            )
-            "plugged"
-          }
-        }
-
-        override def query(): String = {
-          val v = processorSocket.query()
-
-          val o1 = JsonProvider
-            .provider()
-            .createArrayBuilder()
-
-          val o2 =
-            v
-              .map({
-                case (cr, o) =>
-                  o1
-                    .add(
-                      JsonProvider
-                        .provider()
-                        .createObjectBuilder()
-                        .add(
-                          JarTreeBootstrapConfig.ConfigAttribute,
-                          JsonTools.toJavax(
-                            upickle.default.writeJs(cr).asInstanceOf[Js.Obj]
-                          )
-                        )
-                        .add(
-                          JarTreeBootstrapConfig.ParamAttribute,
-                          o
-                        )
-                        .add(
-                          JarTreeBootstrapConfig.RuntimeVersionAttribute,
-                          runtimeVersion
-                        )
-                    )
-
-              })
-              .getOrElse(o1)
-
-
-
-          JsonTools.writeJavax(
-            o2.build()
-          )
-        }
-
-        override def verifyCache(uniqueId: String): Boolean = ???
-      }
-
-    managementSetup(management)
-
-  }
-
-
-  def destroy(): Unit = {
-    quietly {
-      stopper.cancel()
-    }
-  }
-
-
 }
+
 
 object JarTreeBootstrapConfig {
 
@@ -325,28 +183,29 @@ object JarTreeBootstrapConfig {
   val ConfigAttribute = "config"
   val ParamAttribute = "param"
 
-  lazy val jconfig : Option[(JarTreeBootstrapConfig, JsonObject)] =
+  lazy val jconfig : Option[JarTreeBootstrapConfig] =
     try {
       val is =
-        JarTreeBootstrapConfig.getClass.getClassLoader.getResourceAsStream(
-          ConfigFile
-        )
+        JarTreeBootstrapConfig
+          .getClass
+          .getClassLoader
+          .getResourceAsStream(
+            ConfigFile
+          )
 
-      val reader = JsonProvider
-        .provider()
-        .createReader(new InputStreamReader(is))
-
-      val obj = reader.readObject()
+      import boopickle.Default._
 
       Some(
-        (
-          upickle.default.readJs[JarTreeBootstrapConfig](
-            JsonTools.fromJavax(
-              obj.getJsonObject(ConfigAttribute)
-            )
-          ),
-          obj.getJsonObject(ParamAttribute)
-        )
+        Unpickle[JarTreeBootstrapConfig]
+          .fromBytes(
+            ByteBuffer
+              .wrap(
+                IOUtils
+                  .toByteArray(
+                    is
+                  )
+              )
+          )
       )
     } catch {
       case ex : Throwable =>
@@ -371,10 +230,10 @@ case class JarTreeBootstrapConfig(
   logPath: String,
   version : Int,
   embeddedJars: Seq[EmbeddedJar],
-  startup : ClassRequestImpl[Any],
+  startup : PlugRequestImpl[JarUpdatable, Any],
   stdout: Boolean,
   debug: Boolean
 ) {
   def plugger[Processor <: JarUpdatable, Context] =
-    startup.asInstanceOf[ClassRequestImpl[JarPlugger[Processor, Context]]]
+    startup.asInstanceOf[PlugRequestImpl[Processor, Context]]
 }

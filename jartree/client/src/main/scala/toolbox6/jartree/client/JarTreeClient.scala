@@ -56,7 +56,7 @@ object JarTreeClient {
     val runMavenHierarchy : RunMavenHierarchy =
       runHierarchy.forWar
 
-    val jars = resolverJars(runMavenHierarchy)
+    val jars = JarTreePackaging.resolverJars(runMavenHierarchy)
 
     val ids = jars.map(_._1).toArray
     println(s"verifying: ${ids.mkString(", ")}")
@@ -95,28 +95,6 @@ object JarTreeClient {
   }
 
 
-  def resolverJars(runMavenHierarchy: RunMavenHierarchy) = {
-    runMavenHierarchy.jars
-      .map({ h =>
 
-        val id = JarTreePackaging.getId(h)
-        val data = () => IOUtils.toByteArray(JarTreePackaging.resolveInputStream(h))
-
-        (id.uniqueId, data)
-      })
-      .toIndexedSeq
-  }
-
-  def resolverJarsFile(runMavenHierarchy: RunMavenHierarchy) = {
-    runMavenHierarchy.jars
-      .map({ h =>
-
-        val id = JarTreePackaging.getId(h)
-        val data = JarTreePackaging.resolveFile(h)
-
-        (id.uniqueId, data)
-      })
-      .toIndexedSeq
-  }
 
 }

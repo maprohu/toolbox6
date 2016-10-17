@@ -45,7 +45,8 @@ class JarCache(
       try {
         IOUtils.copy(in, out)
       } finally {
-        IOUtils.closeQuietly(in, out)
+        IOUtils.closeQuietly(in)
+        IOUtils.closeQuietly(out)
       }
 //      require(digestStream.getMessageDigest.digest().sameElements(hash), "digest mismatch for jar")
       jarFile

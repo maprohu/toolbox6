@@ -16,6 +16,16 @@ object Toolbox6Modules extends MavenCentralModule(
 
   implicit val Root = RootModuleContainer("toolbox6")
 
+  object JavaApi extends ScalaModule(
+    "javaapi"
+  )
+
+  object JavaImpl extends ScalaModule(
+    "javaimpl",
+    JavaApi,
+    mvn.`org.reactivestreams:reactive-streams:jar:1.0.0`
+  )
+
   object Common extends ScalaModule(
     "common",
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
@@ -115,7 +125,9 @@ object JarTreeModules {
     Toolbox6Modules.Logging,
     mvn.`io.monix:monix-eval_2.11:jar:2.0.4`,
     Wiring,
-    mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
+    mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
+    Toolbox6Modules.Common,
+    mvn.`commons-io:commons-io:jar:2.2`
   ) {
     object R1 extends Release(
       Api.R1,

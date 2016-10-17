@@ -245,5 +245,28 @@ object JarTreePackaging {
       .contains _
   }
 
+  def resolverJars(runMavenHierarchy: RunMavenHierarchy) = {
+    runMavenHierarchy.jars
+      .map({ h =>
+
+        val id = JarTreePackaging.getId(h)
+        val data = () => IOUtils.toByteArray(JarTreePackaging.resolveInputStream(h))
+
+        (id.uniqueId, data)
+      })
+      .toIndexedSeq
+  }
+
+  def resolverJarsFile(runMavenHierarchy: RunMavenHierarchy) = {
+    runMavenHierarchy.jars
+      .map({ h =>
+
+        val id = JarTreePackaging.getId(h)
+        val data = JarTreePackaging.resolveFile(h)
+
+        (id.uniqueId, data)
+      })
+      .toIndexedSeq
+  }
 
 }

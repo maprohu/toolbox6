@@ -56,9 +56,18 @@ case class StateAsync[I, O](
   }
 }
 object StateAsync {
-  def end[I, O](out: Observable[O]) : StateAsync[I, O] = StateAsync[I, O](
-    out = out,
-    fn = _ => Task(end(Observable.empty))
-  )
+  def end[I, O](out: Observable[O] = Observable.empty) : StateAsync[I, O] = {
+    lazy val End : StateAsync[I, O] = StateAsync[I, O](
+      fn = _ => Task.now(End)
+    )
+
+    StateAsync[I, O](
+      out = out,
+      fn = _ => Task.now(End)
+    )
+  }
+
+
+
 
 }

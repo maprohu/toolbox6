@@ -4,43 +4,86 @@ import java.io.{File, FileOutputStream, InputStream, OutputStream}
 import java.net.URLEncoder
 import java.security.{DigestInputStream, MessageDigest}
 
+import com.typesafe.scalalogging.LazyLogging
+import monix.execution.atomic.Atomic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import toolbox6.jartree.api.JarKey
 import toolbox6.jartree.util.CaseJarKey
+import toolbox6.logging.LogTools
 
 import scala.collection.immutable._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.Try
 
 /**
   * Created by martonpapp on 27/08/16.
   */
-import toolbox6.jartree.impl.JarCache._
 
 class JarCache(
   val root: File
-) {
+) extends LazyLogging with LogTools {
 
   root.mkdirs()
 
-//  val hashDir = new File(root, "hash")
-//  val mavenDir = new File(root, "maven")
 
-//  var locked = Map.empty[File, Future[File]]
+  var locks = Atomic(Map.empty[String, Future[File]])
+
+  def getAsync(
+    id: String
+  ) : Future[File] = {
+    locks.get(id)
+  }
+
+  def putAsync(
+    id: String
+  )(implicit
+    executionContext: ExecutionContext
+  ) : Option[(File, Promise[Unit])] = {
+    locks
+      .transformAndExtract { lock =>
+        lock
+          .get(id)
+          .map({ _ =>
+            (None, lock)
+          })
+          .getOrElse {
+            val file = toManagedFile(id)
+
+            if (file.exists()) {
+              (None, lock.updated(id, Future.successful(file)))
+            } else {
+              val promise = Promise[Unit]()
+              promise.future.onFailure({
+                case ex =>
+                  locks.transform({ lock =>
+                    quietly {
+                      file.delete()
+                    }
+
+                    lock - id
+                  })
+              })
+
+              (
+                Some(file, promise),
+                lock.updated(id, promise.future.map(_ => file))
+              )
+            }
+          }
+      }
+  }
 
   def delete(file: File) = synchronized {
     file.delete()
   }
 
   def copyToCache(
-//    hash: Hash,
     jarFile: File,
     in: InputStream
   ) = {
     try {
-//      val in = source()
-//      val digestStream = createDigestInputStream(in)
       val out = new FileOutputStream(jarFile)
       try {
         IOUtils.copy(in, out)
@@ -48,7 +91,6 @@ class JarCache(
         IOUtils.closeQuietly(in)
         IOUtils.closeQuietly(out)
       }
-//      require(digestStream.getMessageDigest.digest().sameElements(hash), "digest mismatch for jar")
       jarFile
     } catch {
       case ex : Throwable =>
@@ -65,8 +107,13 @@ class JarCache(
     )
   }
 
+  def get(
+    hash: CaseJarKey
+  ) = {
+    Await.result(getAsync(hash.uniqueId), Duration.Inf)
+  }
 
-  def toJarFile(hash: CaseJarKey) : File = {
+  private def toJarFile(hash: CaseJarKey) : File = {
     val file = toManagedFile(hash.uniqueId)
     file.getParentFile.mkdirs()
     file
@@ -89,8 +136,23 @@ class JarCache(
 
   }
 
-  def contains(id: String) : Boolean = synchronized {
-    toManagedFile(id).exists()
+  def contains(id: String) : Boolean = {
+    locks
+      .transformAndExtract({ lock =>
+        lock
+          .get(id)
+          .map({ _ =>
+            (true, lock)
+          })
+          .getOrElse({
+            val file = toManagedFile(id)
+            if (file.exists()) {
+              (true, lock.updated(id, Future.successful(file)))
+            } else {
+              (false, lock)
+            }
+          })
+      })
   }
 
 //  def put(

@@ -14,7 +14,7 @@ import upickle.Js.Obj
 
 import scala.collection.immutable._
 import scala.collection.JavaConversions._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Created by pappmar on 31/08/2016.
@@ -134,7 +134,7 @@ object ClassRequestImpl {
 }
 
 trait ScalaInstanceResolver extends InstanceResolver {
-
+  implicit def executionContext: ExecutionContext
   def resolve[T](request: ClassRequest[T]) : Future[T]
   def resolveAsync[T](request: ClassRequest[T]) : AsyncValue[T] = JavaImpl.wrapFuture(resolve(request))
 

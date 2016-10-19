@@ -49,17 +49,19 @@ object JavaImpl {
 
   class WrappedFuture[O](
     val future: Future[O]
+  )(implicit
+    executionContext: ExecutionContext
   ) extends AsyncValue[O] {
     override def onComplete(cb: AsyncCallback[O]): Unit = future.onComplete(unwrapCallback(cb))
   }
 
   class UnwrappedFuture[O](
-    val value: AsyncValue[O]
+    val v: AsyncValue[O]
   ) extends Future[O] {
     val promise = Promise[O]()
 
-    value.onComplete(
-      wrapCallback({ o => promise.complete(o) })
+    v.onComplete(
+      wrapCallback[O]({ o => promise.complete(o) })
     )
 
     private def delegate = promise.future
@@ -74,6 +76,8 @@ object JavaImpl {
     }
 
     override def result(atMost: Duration)(implicit permit: CanAwait): O = delegate.result(atMost)
+
+    override def value: Option[Try[O]] = delegate.value
   }
 
   def unwrapFunction[I, O](
@@ -97,9 +101,11 @@ object JavaImpl {
 
   def wrapFuture[O](
     future: Future[O]
+  )(implicit
+    executionContext: ExecutionContext
   ) : AsyncValue[O] = future match {
     case wf : UnwrappedFuture[O] =>
-      wf.value
+      wf.v
     case _ =>
       new WrappedFuture[O](future)
   }

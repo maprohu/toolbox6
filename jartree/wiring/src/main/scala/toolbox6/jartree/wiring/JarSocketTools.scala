@@ -158,10 +158,9 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
 
   override def plugAsync(request: PlugRequest[T, C]): AsyncValue[T] = JavaImpl.wrapFuture(plug(request))
 
-  val plugInput = BufferedSubscriber(
+  val plugInput = BufferedSubscriber[Input](
     Subscriber(subject, scheduler),
     OverflowStrategy.Unbounded
-
   )
   def plug(
     request: PlugRequest[T, C]
@@ -273,6 +272,8 @@ object SimpleJarSocket {
   def noCleaner[T <: JarUpdatable, C <: InstanceResolver](
     init: T,
     context: C with ScalaInstanceResolver
+  )(implicit
+    scheduler: Scheduler
   ) : SimpleJarSocket[T, C] = new SimpleJarSocket[T, C](
     init,
     context,
@@ -298,7 +299,8 @@ object NamedSocket {
     name: String,
     init: T
   )(implicit
-    input: Input[C]
+    input: Input[C],
+    scheduler: Scheduler
   ) : NamedSocket[T , C, SimpleJarSocket[T, C]] = {
     import input._
     NamedSocket(

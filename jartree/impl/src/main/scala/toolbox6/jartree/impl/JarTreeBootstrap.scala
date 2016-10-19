@@ -11,7 +11,7 @@ import org.apache.commons.io.{FileUtils, IOUtils}
 import toolbox6.common.ByteBufferTools
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
-import toolbox6.jartree.util.{CaseJarKey, ClassRequestImpl, JsonTools, RunTools}
+import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
 import toolbox6.logging.LogTools
 import upickle.Js
@@ -40,7 +40,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     ctx: Context,
     processorSocket: SimpleJarSocket[Processor, Context]
   )
-  def init[Processor <: JarUpdatable with Closable, Context <: InstanceResolver](
+  def init[Processor <: JarUpdatable, Context <: InstanceResolver](
     config : Config[Processor, Context]
   ) : Runtime[Processor, Context] = {
     import config._

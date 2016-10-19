@@ -27,6 +27,13 @@ object JarTreeTools {
     }
   }
 
+  def andThenResponse[T <: JarUpdatable](o: => T, cb: () => Unit) = {
+    new JarPlugResponse[T] {
+      override def instance(): T = o
+      override def andThen(): Unit = cb()
+    }
+  }
+
 
   def noopCleaner[T <: JarUpdatable, C](init: T) = {
     val response = noopResponse(init)

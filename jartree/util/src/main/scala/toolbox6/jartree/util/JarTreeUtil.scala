@@ -7,11 +7,14 @@ import java.util
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import toolbox6.jartree.api._
+import toolbox6.javaapi.AsyncValue
+import toolbox6.javaimpl.JavaImpl
 import upickle.Js
 import upickle.Js.Obj
 
 import scala.collection.immutable._
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
 
 /**
   * Created by pappmar on 31/08/2016.
@@ -128,4 +131,11 @@ object ClassRequestImpl {
     classLoaderKey: ClassLoaderKey,
     className: String
   ) : ClassRequestImpl[T] = ClassRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
+}
+
+trait ScalaInstanceResolver extends InstanceResolver {
+
+  def resolve[T](request: ClassRequest[T]) : Future[T]
+  def resolveAsync[T](request: ClassRequest[T]) : AsyncValue[T] = JavaImpl.wrapFuture(resolve(request))
+
 }

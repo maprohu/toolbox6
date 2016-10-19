@@ -1,6 +1,7 @@
 package toolbox6.jartree.api
 
-import java.io.InputStream
+import toolbox6.javaapi.AsyncValue
+
 
 
 /**
@@ -13,10 +14,10 @@ trait JarKey {
   def uniqueId() : String
 }
 
-trait DeployableJar {
-  def key: JarKey
-  def data: InputStream
-}
+//trait DeployableJar {
+//  def key: JarKey
+//  def data: InputStream
+//}
 
 trait  ClassLoaderKey {
   def jars(): java.util.Collection[JarKey]
@@ -36,19 +37,19 @@ trait ClassRequest[+T] {
 //
 //}
 
-trait JarRunnable[C <: AnyRef] {
-
-  def run(ctx: C, self: ClassRequest[JarRunnable[C]]) : Unit
-
-}
+//trait JarRunnable[C <: AnyRef] {
+//
+//  def run(ctx: C, self: ClassRequest[JarRunnable[C]]) : Unit
+//
+//}
 
 trait InstanceResolver {
-  def resolve[T](request: ClassRequest[T]) : T
+  def resolveAsync[T](request: ClassRequest[T]) : AsyncValue[T]
 }
 
-trait JarRunnableByteArray[C <: AnyRef] {
-  def run(data: Array[Byte], ctx: C, self: ClassRequest[JarRunnableByteArray[C]]) : Array[Byte]
-}
+//trait JarRunnableByteArray[C <: AnyRef] {
+//  def run(data: Array[Byte], ctx: C, self: ClassRequest[JarRunnableByteArray[C]]) : Array[Byte]
+//}
 
 trait JarPlugResponse[+T] {
   def instance() : T
@@ -56,15 +57,15 @@ trait JarPlugResponse[+T] {
 }
 
 trait JarUpdatable {
-  def update(param: Array[Byte]) : Unit
+  def updateAsync(param: Array[Byte]) : AsyncValue[Unit]
 }
 
 trait JarPlugger[T <: JarUpdatable, -C] {
-  def pull(
+  def pullAsync(
     previous: T,
     param: Array[Byte],
     context: C
-  ) : JarPlugResponse[T]
+  ) : AsyncValue[JarPlugResponse[T]]
 }
 
 
@@ -74,32 +75,32 @@ trait PlugRequest[T <: JarUpdatable, C] {
 }
 
 trait JarSocket[T <: JarUpdatable, C] {
-  def plug(
+  def plugAsync(
     request: PlugRequest[T, C]
-  ) : Unit
+  ) : AsyncValue[Unit]
 
   def get() : T
 }
 
-trait Closable {
-  def close() : Unit
-}
+//trait Closable {
+//  def close() : Unit
+//}
 
-trait ClosableJarPlugger[T <: JarUpdatable with Closable, C] extends JarPlugger[T, C] { self : T =>
-  override def pull(previous: T, param: Array[Byte], context: C): JarPlugResponse[T] = {
-    new JarPlugResponse[T] {
-      override def instance(): T = self
-      override def andThen(): Unit = previous.close()
-    }
-  }
-
-}
-
-class ClosableJarCleaner[T <: JarUpdatable with Closable](init: T) extends JarPlugger[T, Any] {
-  override def pull(previous: T, param: Array[Byte], context: Any): JarPlugResponse[T] = {
-    new JarPlugResponse[T] {
-      override def instance(): T = init
-      override def andThen(): Unit = previous.close()
-    }
-  }
-}
+//trait ClosableJarPlugger[T <: JarUpdatable with Closable, C] extends JarPlugger[T, C] { self : T =>
+//  override def pull(previous: T, param: Array[Byte], context: C): JarPlugResponse[T] = {
+//    new JarPlugResponse[T] {
+//      override def instance(): T = self
+//      override def andThen(): Unit = previous.close()
+//    }
+//  }
+//
+//}
+//
+//class ClosableJarCleaner[T <: JarUpdatable with Closable](init: T) extends JarPlugger[T, Any] {
+//  override def pull(previous: T, param: Array[Byte], context: Any): JarPlugResponse[T] = {
+//    new JarPlugResponse[T] {
+//      override def instance(): T = init
+//      override def andThen(): Unit = previous.close()
+//    }
+//  }
+//}

@@ -161,6 +161,9 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
     request: PlugRequest[T, C]
   ) : Future[Unit] = {
     val promise = Promise[Unit]()
+    ???
+
+    booo
 
 
 

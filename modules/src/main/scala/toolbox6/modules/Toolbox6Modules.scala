@@ -2,7 +2,7 @@ package toolbox6.modules
 
 import maven.modules.builder._
 import maven.modules.utils.MavenCentralModule
-import toolbox6.modules.Toolbox6Modules.Common
+import toolbox6.modules.Toolbox6Modules.{Common, Logging}
 
 
 /**
@@ -190,7 +190,8 @@ object JarTreeModules {
     ServletApi,
     Util,
     mvn.`io.monix:monix_2.11:jar:2.0.4`,
-    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`
+    mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
+    Logging
   ) {
     object R1 extends Release(
       Api.R1,

@@ -1,6 +1,7 @@
 package toolbox6.jartree.impl
 
 
+import com.typesafe.scalalogging.LazyLogging
 import monix.execution.atomic.Atomic
 import toolbox6.jartree.api._
 import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey}
@@ -25,7 +26,7 @@ class JarTree(
   val cache: JarCache
 )(implicit
   executionContext: ExecutionContext
-) extends InstanceResolver {
+) extends InstanceResolver with LazyLogging {
 
   class Holder(
     val future : Future[WeakReference[ClassLoader]]
@@ -68,6 +69,7 @@ class JarTree(
               (extract, clm)
             })
             .getOrElse({
+              logger.info(s"creating classloader: ${key}")
 
               val parentFuture =
                 key
@@ -100,6 +102,7 @@ class JarTree(
               future
                 .onFailure({
                   case ex : Throwable =>
+                    logger.error(s"error loading: ${key}", ex)
                     classLoaderMap
                       .transform(_ - key)
                 })
@@ -159,9 +162,12 @@ class JarTree(
   def resolve[T](
     request: ClassRequest[T]
   ) : Future[T] = {
+    logger.info(s"resolving: ${request}")
+
     for {
       cl <- get(CaseClassLoaderKey(request.classLoader))
     } yield {
+      logger.info(s"instantiating: ${request}")
       val runClass = cl.loadClass(request.className)
       val instance = runClass.newInstance().asInstanceOf[T]
       instance

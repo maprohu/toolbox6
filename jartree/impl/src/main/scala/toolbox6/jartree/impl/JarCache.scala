@@ -79,26 +79,26 @@ class JarCache(
     file.delete()
   }
 
-  def copyToCache(
-    jarFile: File,
-    in: InputStream
-  ) = {
-    try {
-      val out = new FileOutputStream(jarFile)
-      try {
-        IOUtils.copy(in, out)
-      } finally {
-        IOUtils.closeQuietly(in)
-        IOUtils.closeQuietly(out)
-      }
-      jarFile
-    } catch {
-      case ex : Throwable =>
-        delete(jarFile)
-        throw ex
-    }
-
-  }
+//  def copyToCache(
+//    jarFile: File,
+//    in: InputStream
+//  ) = {
+//    try {
+//      val out = new FileOutputStream(jarFile)
+//      try {
+//        IOUtils.copy(in, out)
+//      } finally {
+//        IOUtils.closeQuietly(in)
+//        IOUtils.closeQuietly(out)
+//      }
+//      jarFile
+//    } catch {
+//      case ex : Throwable =>
+//        delete(jarFile)
+//        throw ex
+//    }
+//
+//  }
 
   def toManagedFile(uniqueId: String) = {
     new File(
@@ -122,17 +122,25 @@ class JarCache(
   def putStream(
     hash: CaseJarKey,
     stream: () => InputStream
+  )(implicit
+    executionContext: ExecutionContext
   ) = {
-    val jarFile = toJarFile(hash)
-
-    synchronized {
-      if (!jarFile.exists()) {
-        copyToCache(
-          jarFile,
-          stream()
-        )
-      }
-    }
+    putAsync(hash.uniqueId)
+      .foreach({
+        case (jarFile, promise) =>
+          promise.complete {
+            Try {
+              val in = stream()
+              val out = new FileOutputStream(jarFile)
+              try {
+                IOUtils.copy(in, out)
+              } finally {
+                IOUtils.closeQuietly(in)
+                IOUtils.closeQuietly(out)
+              }
+            }
+          }
+      })
 
   }
 

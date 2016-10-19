@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.rmi.RemoteException
 
 import com.typesafe.scalalogging.LazyLogging
-import monix.execution.Cancelable
+import monix.execution.{Cancelable, Scheduler}
 import monix.execution.cancelables.CompositeCancelable
 import org.apache.commons.io.{FileUtils, IOUtils}
 import toolbox6.common.ByteBufferTools
@@ -13,9 +13,12 @@ import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
+import toolbox6.javaapi.AsyncValue
+import toolbox6.javaimpl.JavaImpl
 import toolbox6.logging.LogTools
 import upickle.Js
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.{Codec, Source}
 import scala.util.Try
 
@@ -23,6 +26,8 @@ import scala.util.Try
   * Created by martonpapp on 15/10/16.
   */
 object JarTreeBootstrap extends LazyLogging with LogTools {
+  type CTX = ScalaInstanceResolver
+
   case class Config[Processor <: JarUpdatable, Context](
     contextProvider: JarTree => Context,
     voidProcessor : Processor,
@@ -31,17 +36,20 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
     initialStartup: PlugRequestImpl[Processor, Context],
-    runtimeVersion: String
+    runtimeVersion: String,
+    closer: Processor => Unit
   )
 
-  case class Runtime[Processor <: JarUpdatable, Context <: InstanceResolver](
+  case class Runtime[Processor <: JarUpdatable, Context <: CTX](
     stop: Cancelable,
     jarTree: JarTree,
     ctx: Context,
     processorSocket: SimpleJarSocket[Processor, Context]
   )
-  def init[Processor <: JarUpdatable, Context <: InstanceResolver](
+  def init[Processor <: JarUpdatable, Context <: CTX](
     config : Config[Processor, Context]
+  )(implicit
+    scheduler: Scheduler
   ) : Runtime[Processor, Context] = {
     import config._
     logger.info("starting {}", name)
@@ -130,22 +138,36 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       cache
     )
 
-    val context = contextProvider(jarTree)
+    val context : Context = contextProvider(jarTree)
 
-    val processorSocket = new SimpleJarSocket[Processor, Context](
+    val processorSocket = new SimpleJarSocket[Processor, Context ](
       voidProcessor,
       context,
-      new ClosableJarCleaner(voidProcessor)
+      new JarPlugger[Processor, Context] {
+        override def pullAsync(previous: Processor, param: Array[Byte], context: Context): AsyncValue[JarPlugResponse[Processor]] = {
+          JavaImpl.asyncSuccess(
+            new JarPlugResponse[Processor] {
+              override def instance(): Processor = voidProcessor
+              override def andThen(): Unit = closer(previous)
+            }
+          )
+        }
+      },
+      preProcessor = { propt =>
+        propt.foreach(o => writeStartup(o))
+        Future.successful()
+      }
     )
     processor = () => processorSocket.get()
 
-    import rx.Ctx.Owner.Unsafe._
-    val obs = processorSocket.dynamic.foreach({ p =>
-      p.request.foreach({ r =>
-        writeStartup(r)
-      })
-    })
-    stopper += Cancelable(() => obs.kill())
+
+//    import rx.Ctx.Owner.Unsafe._
+//    val obs = processorSocket.dynamic.foreach({ p =>
+//      p.request.foreach({ r =>
+//        writeStartup(r)
+//      })
+//    })
+//    stopper += Cancelable(() => obs.kill())
 
 
     val startupRequest = readStartup

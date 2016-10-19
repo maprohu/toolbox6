@@ -1,5 +1,6 @@
 package toolbox6.jartree.wiring
 
+import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Scheduler
 import monix.execution.atomic.Atomic
 import monix.reactive.{Observable, OverflowStrategy}
@@ -40,13 +41,14 @@ object PlugRequestImpl {
 //  request: Option[PlugRequestImpl[T, C]]
 //)
 
-class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
+class SimpleJarSocket[T <: JarUpdatable, C <: ScalaInstanceResolver](
   init: T,
-  context: C with ScalaInstanceResolver,
-  cleaner: JarPlugger[T, C]
+  context: C,
+  cleaner: JarPlugger[T, C],
+  preProcessor: Option[PlugRequestImpl[T, C]] => Future[Unit] = (_:Option[PlugRequestImpl[T, C]]) => Future.successful()
 )(implicit
   scheduler: Scheduler
-) extends JarSocket[T, C] {
+) extends JarSocket[T, C] with LazyLogging {
 
   case class Input(
     request: Option[PlugRequestImpl[T, C]],
@@ -72,9 +74,6 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
 
   val stopProcessor = subject
     .flatScan(State(currentInstance, None))({ (st, req) =>
-      def respond(i: T) = {
-        req.promise.success(i)
-      }
       def pull(
         plugger: JarPlugger[T, C],
         param: Array[Byte],
@@ -94,8 +93,6 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
             instance,
             request
           )
-          currentInstance = stInstance
-          req.promise.success(instance)
           State(
             stInstance,
             Some(
@@ -109,14 +106,16 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
 
 
       val future = (st.instance.request, req.request) match {
-        case (Some(_), None) =>
+        case (Some(cr), None) =>
+          logger.info(s"cleaning up: ${cr}")
           pull(cleaner, null, None)
 
         case (None, None) =>
-          respond(st.instance.instance)
+          logger.warn(s"cleaning empty socket")
           Future.successful(st)
 
         case (Some(current), Some(pr)) if current == pr.request =>
+          logger.info(s"updating: ${current}")
           for {
             _ <- JavaImpl.unwrapFuture(
               st
@@ -127,20 +126,30 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
                 )
             )
           } yield {
-            respond(st.instance.instance)
             st
           }
 
-        case (_, Some(pr)) =>
+        case (copt, Some(pr)) =>
+          logger.info(s"replacing: ${pr.request} (previous: ${copt})")
           for {
             plugger <- context.resolve(pr.request)
+            _ = logger.info(s"resolved: ${plugger}")
             newState <- pull(plugger, pr.param, Some(pr.request))
           } yield {
             newState
           }
       }
 
-      Observable.fromFuture(future)
+      Observable.fromFuture(
+        preProcessor(req.request)
+          .flatMap(_ => future)
+          .map({ r =>
+            currentInstance = r.instance
+            req.promise.success(r.instance.instance)
+            logger.info(s"plugging complete: ${r.instance.request}")
+            r
+          })
+      )
     })
     .foreach({ st =>
       st.out.foreach(_.cleanup())
@@ -162,9 +171,12 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
     Subscriber(subject, scheduler),
     OverflowStrategy.Unbounded
   )
-  def plug(
-    request: PlugRequest[T, C]
-  ) : Future[T] = {
+
+  def send(
+    request: Option[PlugRequestImpl[T, C]]
+  ) = {
+    logger.info(s"plugging: ${request}")
+
     val promise = Promise[T]()
 
     subject
@@ -172,106 +184,42 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
       .onComplete({ _ =>
         plugInput.onNext(
           Input(
-            Some(
-              PlugRequestImpl(
-                request
-              )
-            ),
+            request,
             promise
           )
         )
       })
 
     promise.future
+
+  }
+  def plug(
+    request: PlugRequest[T, C]
+  ) : Future[T] = {
+    send(
+      Some(
+        PlugRequestImpl(
+          request
+        )
+      )
+    )
   }
 
   def get(): T = currentInstance.instance
 
   def query() = currentInstance.request
 
-  private val Noop = () => ()
-
-//  type PlugTransform = (() => Unit, Plugged[T, C])
-//
-//
-//  private def plugInternal2(
-//    plugged: Plugged[T, C],
-//    plugger: JarPlugger[T, C],
-//    request: Option[PlugRequestImpl[T, C]],
-//    param: Array[Byte]
-//  ): PlugTransform = {
-//    val response = plugger.pull(
-//      plugged.instance,
-//      param,
-//      context
-//    )
-//
-//    val newPlugged =
-//      Plugged(
-//        response.instance(),
-//        request
-//      )
-//
-//    rxVar() = newPlugged
-//
-//    (
-//      () => response.andThen(),
-//      newPlugged
-//    )
-//  }
-//
-//  private def plugInternal1(
-//    trf: Plugged[T, C] => PlugTransform
-//  ): Unit = {
-//    val andThen = atomic.transformAndExtract({ plugged =>
-//      trf(plugged)
-//    })
-//
-//    andThen()
-//  }
-//
-//  def plug(
-//    request: PlugRequest[T, C]
-//  ): Future[Unit] = {
-//    plugInternal1({ plugged =>
-//      val r = Some(PlugRequestImpl(request))
-//
-//      if (plugged.request.map(_.request) != r.map(_.request)) {
-//        val plugger = context.resolve(request.request())
-//
-//        plugInternal2(
-//          plugged,
-//          plugger,
-//          r,
-//          request.param
-//        )
-//      } else {
-//        plugged.instance.update(request.param())
-//
-//        (Noop, plugged.copy(request = r))
-//      }
-//    })
-//  }
-//
-//
-//  def clear() = {
-//    plugInternal1({ plugged =>
-//      plugInternal2(
-//        plugged,
-//        cleaner,
-//        None,
-//        null
-//      )
-//    })
-//  }
+  def clear() = {
+    send(None)
+  }
 
 }
 
 object SimpleJarSocket {
 
-  def noCleaner[T <: JarUpdatable, C <: InstanceResolver](
+  def noCleaner[T <: JarUpdatable, C <: ScalaInstanceResolver](
     init: T,
-    context: C with ScalaInstanceResolver
+    context: C
   )(implicit
     scheduler: Scheduler
   ) : SimpleJarSocket[T, C] = new SimpleJarSocket[T, C](
@@ -291,11 +239,11 @@ case class NamedSocket[T <: JarUpdatable, C, S <: JarSocket[T, C]](
 
 object NamedSocket {
 
-  case class Input[C <: InstanceResolver](
-    context: C with ScalaInstanceResolver
+  case class Input[C <: ScalaInstanceResolver](
+    context: C
   )
 
-  def noopClean[T <: JarUpdatable, C <: InstanceResolver](
+  def noopClean[T <: JarUpdatable, C <: ScalaInstanceResolver](
     name: String,
     init: T
   )(implicit
@@ -311,8 +259,6 @@ object NamedSocket {
       )
     )
   }
-
-
 
 }
 

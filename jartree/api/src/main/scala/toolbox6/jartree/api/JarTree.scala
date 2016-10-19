@@ -77,7 +77,7 @@ trait PlugRequest[T <: JarUpdatable, C] {
 trait JarSocket[T <: JarUpdatable, C] {
   def plugAsync(
     request: PlugRequest[T, C]
-  ) : AsyncValue[Unit]
+  ) : AsyncValue[T]
 
   def get() : T
 }

@@ -2,8 +2,9 @@ package toolbox6.jartree.wiring
 
 import monix.execution.Scheduler
 import monix.execution.atomic.Atomic
-import monix.reactive.Observable
-import monix.reactive.subjects.PublishSubject
+import monix.reactive.{Observable, OverflowStrategy}
+import monix.reactive.observers.{BufferedSubscriber, Subscriber}
+import monix.reactive.subjects.{PublishSubject, PublishToOneSubject}
 import rx.{Rx, Var}
 import toolbox6.jartree.api._
 import toolbox6.jartree.util.{ClassRequestImpl, JarTreeTools, JsonTools, ScalaInstanceResolver}
@@ -52,7 +53,7 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
     promise: Promise[T]
   )
 
-  private val subject = PublishSubject[Input]()
+  private val subject = PublishToOneSubject[Input]()
 
   case class StateOut(
     cleanup: () => Unit
@@ -155,17 +156,32 @@ class SimpleJarSocket[T <: JarUpdatable, C <: InstanceResolver](
 //    initPlugged
 //  )
 
-  override def plugAsync(request: PlugRequest[T, C]): AsyncValue[Unit] = JavaImpl.wrapFuture(plug(request))
+  override def plugAsync(request: PlugRequest[T, C]): AsyncValue[T] = JavaImpl.wrapFuture(plug(request))
 
+  val plugInput = BufferedSubscriber(
+    Subscriber(subject, scheduler),
+    OverflowStrategy.Unbounded
+
+  )
   def plug(
     request: PlugRequest[T, C]
-  ) : Future[Unit] = {
-    val promise = Promise[Unit]()
-    ???
+  ) : Future[T] = {
+    val promise = Promise[T]()
 
-    booo
-
-
+    subject
+      .subscription
+      .onComplete({ _ =>
+        plugInput.onNext(
+          Input(
+            Some(
+              PlugRequestImpl(
+                request
+              )
+            ),
+            promise
+          )
+        )
+      })
 
     promise.future
   }

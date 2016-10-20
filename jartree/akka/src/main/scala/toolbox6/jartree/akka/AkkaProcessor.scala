@@ -1,6 +1,5 @@
 package toolbox6.jartree.akka
 
-import javax.json.JsonObject
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
 import akka.actor.ActorSystem
@@ -9,10 +8,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Route
 import akka.stream.{ActorAttributes, ActorMaterializer, Materializer}
 import akka.stream.scaladsl.{Keep, Sink, StreamConverters}
-import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
-import toolbox6.jartree.akka
 import toolbox6.jartree.servletapi.Processor
 
 import scala.collection.JavaConversions

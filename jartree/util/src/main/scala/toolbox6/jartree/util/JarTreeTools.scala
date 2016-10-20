@@ -5,9 +5,9 @@ import toolbox6.jartree.api.{JarPlugResponse, JarPlugger, JarUpdatable}
 import toolbox6.javaapi.AsyncValue
 import toolbox6.javaimpl.JavaImpl
 
-trait Closable {
-  def close() : Unit
-}
+//trait Closable {
+//  def close() : Unit
+//}
 /**
   * Created by Student on 06/10/2016.
   */
@@ -20,12 +20,12 @@ object JarTreeTools {
     }
   }
 
-  def closableResponse[T <: JarUpdatable with Closable](o: => T, previous: T) = {
-    new JarPlugResponse[T] {
-      override def instance(): T = o
-      override def andThen(): Unit = previous.close()
-    }
-  }
+//  def closableResponse[T <: JarUpdatable with Closable](o: => T, previous: T) = {
+//    new JarPlugResponse[T] {
+//      override def instance(): T = o
+//      override def andThen(): Unit = previous.close()
+//    }
+//  }
 
   def andThenResponse[T <: JarUpdatable](o: => T, cb: () => Unit) = {
     new JarPlugResponse[T] {

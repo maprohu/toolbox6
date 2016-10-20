@@ -134,8 +134,8 @@ object JarTreePackaging {
   case class RunHierarchy(
     namedModule: Module,
     parent: Option[CaseClassLoaderKey] = None,
-    runClassName: String,
-    children: CaseClassLoaderKey => Map[String, RunHierarchy] = _ => Map()
+    runClassName: String
+//    children: CaseClassLoaderKey => Map[String, RunHierarchy] = _ => Map()
   ) {
     def forWar : RunMavenHierarchy = {
       forTarget(
@@ -154,8 +154,8 @@ object JarTreePackaging {
       RunMavenHierarchy(
         mavenHierarchy,
         parent,
-        runClassName,
-        cl => children(cl).mapValues(_.forTarget(targetContains))
+        runClassName
+//        cl => children(cl).mapValues(_.forTarget(targetContains))
       )
     }
 
@@ -164,11 +164,12 @@ object JarTreePackaging {
   case class RunMavenHierarchy(
     mavenHierarchy: MavenHierarchy,
     parent: Option[CaseClassLoaderKey],
-    runClassName: String,
-    children: CaseClassLoaderKey => Map[String, RunMavenHierarchy] = _ => Map()
+    runClassName: String
+//    children: CaseClassLoaderKey => Map[String, RunMavenHierarchy] = _ => Map()
   ) {
     def hierarchies : Seq[MavenHierarchy] = {
-      mavenHierarchy +: children(classLoader).values.to[Seq].flatMap(_.hierarchies)
+      Seq(mavenHierarchy)
+//      mavenHierarchy +: children(classLoader).values.to[Seq].flatMap(_.hierarchies)
     }
 
     def classLoader : CaseClassLoaderKey = {

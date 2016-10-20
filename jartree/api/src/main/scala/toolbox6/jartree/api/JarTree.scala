@@ -69,7 +69,7 @@ trait JarPlugger[T <: JarUpdatable, -C] {
 }
 
 
-trait PlugRequest[T <: JarUpdatable, C] {
+trait PlugRequest[T <: JarUpdatable, -C] {
   def request(): ClassRequest[JarPlugger[T, C]]
   def param(): Array[Byte]
 }

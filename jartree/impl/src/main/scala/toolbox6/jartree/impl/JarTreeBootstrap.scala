@@ -26,36 +26,35 @@ import scala.util.Try
   * Created by martonpapp on 15/10/16.
   */
 object JarTreeBootstrap extends LazyLogging with LogTools {
-  type CTX = ScalaInstanceResolver
+//  type CTX = ScalaInstanceResolver
 
-  case class Config[Processor <: JarUpdatable, Context](
+  case class Config[Processor <: JarUpdatable, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
     contextProvider: JarTree => Context,
     voidProcessor : Processor,
     name: String,
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup: PlugRequestImpl[Processor, Context],
-    runtimeVersion: String,
+    initialStartup: PlugRequestImpl[Processor, CtxApi],
     closer: Processor => Unit
   )
 
-  case class Runtime[Processor <: JarUpdatable, Context <: CTX](
+  case class Runtime[Processor <: JarUpdatable, CtxApi <: InstanceResolver, CtxImpl <: CtxApi with ScalaInstanceResolver](
     stop: Cancelable,
     jarTree: JarTree,
-    ctx: Context,
-    processorSocket: SimpleJarSocket[Processor, Context]
+    ctx: CtxImpl,
+    processorSocket: SimpleJarSocket[Processor, CtxApi, CtxImpl]
   )
-  def init[Processor <: JarUpdatable, Context <: CTX](
-    config : Config[Processor, Context]
+  def init[Processor <: JarUpdatable, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
+    config : Config[Processor, CtxApi, Context]
   )(implicit
     scheduler: Scheduler
-  ) : Runtime[Processor, Context] = {
+  ) : Runtime[Processor, CtxApi, Context] = {
     import config._
     logger.info("starting {}", name)
 
     type Plugger = JarPlugger[Processor, Context]
-    type Startup = PlugRequestImpl[Processor, Context]
+    type Startup = PlugRequestImpl[Processor, CtxApi]
 
     var processor : () => Processor = null
 
@@ -140,11 +139,11 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
     val context : Context = contextProvider(jarTree)
 
-    val processorSocket = new SimpleJarSocket[Processor, Context ](
+    val processorSocket = new SimpleJarSocket[Processor, CtxApi, Context](
       voidProcessor,
       context,
-      new JarPlugger[Processor, Context] {
-        override def pullAsync(previous: Processor, param: Array[Byte], context: Context): AsyncValue[JarPlugResponse[Processor]] = {
+      new JarPlugger[Processor, CtxApi] {
+        override def pullAsync(previous: Processor, param: Array[Byte], context: CtxApi): AsyncValue[JarPlugResponse[Processor]] = {
           JavaImpl.asyncSuccess(
             new JarPlugResponse[Processor] {
               override def instance(): Processor = voidProcessor

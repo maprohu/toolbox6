@@ -39,6 +39,12 @@ object Toolbox6Modules extends MavenCentralModule(
     )
   }
 
+  object Pickling extends ScalaModule(
+    "pickling",
+    mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
+  ) {
+  }
+
   object Logging extends ScalaModule(
     "logging",
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
@@ -64,6 +70,7 @@ object Toolbox6Modules extends MavenCentralModule(
   object Packaging extends ScalaModule(
     "packaging",
     MavenModulesBuilder,
+    Pickling,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.apache.maven.shared:maven-invoker:2.2`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`
@@ -111,6 +118,7 @@ object JarTreeModules {
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
     Toolbox6Modules.JavaImpl
   ) {
+    lazy val Latest = R1
     object R1 extends Release(
       Api.R1,
       mvn.`commons-io:commons-io:jar:2.5`,
@@ -152,12 +160,12 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R1,
-    ServletApi.R1,
+    Impl,
+    ServletApi,
     Toolbox6Modules.Logging.R1,
-    ManagementApi.R1,
-    ManagementUtils.R1,
-    Wiring.R1,
+    ManagementApi,
+    ManagementUtils,
+    Wiring,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
@@ -191,7 +199,8 @@ object JarTreeModules {
     Util,
     mvn.`io.monix:monix_2.11:jar:2.0.4`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
-    Logging
+    Logging,
+    mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
     object R1 extends Release(
       Api.R1,
@@ -213,7 +222,9 @@ object JarTreeModules {
   object ManagementUtils extends ScalaModule(
     "managementutils",
     ManagementApi,
-    Common.R1
+    Common.R1,
+    Wiring,
+    ServletApi
   ) {
     object R1 extends Release(
       ManagementApi.R1,
@@ -231,7 +242,7 @@ object JarTreeModules {
 
   object Akka extends ScalaModule(
     "akka",
-    ServletApi.R1,
+    ServletApi,
     AkkaModules.Http.R1
   ) {
     object R1 extends Release(
@@ -243,7 +254,7 @@ object JarTreeModules {
   object Testing extends ScalaModule(
     "testing",
     Api,
-    ServletApi.R1,
+    ServletApi,
     Packaging
   )
 

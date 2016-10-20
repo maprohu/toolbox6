@@ -11,8 +11,14 @@ object RunTools {
   val UTF8 = Charset.forName("UTF-8")
 
   def runBytes(what: => String) : Array[Byte] = {
-    try {
+    runByteArray {
       what.getBytes(UTF8)
+    }
+  }
+
+  def runByteArray(what: => Array[Byte]) : Array[Byte] = {
+    try {
+      what
     } catch {
       case ex : Throwable =>
         val bs = new ByteArrayOutputStream()

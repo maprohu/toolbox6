@@ -23,6 +23,7 @@ object RunToolbox6 {
     Toolbox6Modules.JavaImpl,
     Toolbox6Modules.Macros,
     Toolbox6Modules.Common,
+    Toolbox6Modules.Pickling,
     Toolbox6Modules.Jms,
     Toolbox6Modules.Logging,
     Toolbox6Modules.Packaging,

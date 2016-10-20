@@ -1,7 +1,9 @@
 package toolbox6.jartree.client
 
+import java.nio.ByteBuffer
+
 import toolbox6.jartree.managementapi.JarTreeManagement
-import toolbox6.jartree.managementutils.JarTreeManagementUtils
+import toolbox6.jartree.managementutils.{JarTreeManagementUtils, QueryResult}
 import weblogic.jndi.Environment
 
 
@@ -26,14 +28,18 @@ object RunJarTreeQuery {
         .asInstanceOf[JarTreeManagement]
 
 
+    import boopickle.Default._
+
+    val q = Unpickle[QueryResult]
+      .fromBytes(
+        ByteBuffer.wrap(
+          management.query()
+        )
+      )
+
 
     println(
-      upickle.json.write(
-        upickle.json.read(
-          management.query()
-        ),
-        2
-      )
+      q
     )
 
 //    val cb = new LogListener {

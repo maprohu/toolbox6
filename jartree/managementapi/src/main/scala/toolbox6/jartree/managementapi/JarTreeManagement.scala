@@ -28,7 +28,7 @@ trait JarTreeManagement extends java.rmi.Remote {
   ) : Array[Byte]
 
   @throws(classOf[RemoteException])
-  def query() : String
+  def query() : Array[Byte]
 
 //  @throws(classOf[RemoteException])
 //  def executeByteArray(

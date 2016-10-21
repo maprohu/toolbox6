@@ -40,7 +40,7 @@ object JarTreeTools {
 
     new JarPlugger[T, C] {
 //      override def pull(previous: T, param: Array[Byte], context: C): JarPlugResponse[T] = response
-      override def pullAsync(previous: T, param: Array[Byte], context: C): AsyncValue[JarPlugResponse[T]] = JavaImpl.asyncSuccess(response)
+      override def pullAsync(previous: T, context: C): AsyncValue[JarPlugResponse[T]] = JavaImpl.asyncSuccess(response)
     }
   }
 

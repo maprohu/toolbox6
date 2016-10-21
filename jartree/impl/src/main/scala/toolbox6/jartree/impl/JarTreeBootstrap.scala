@@ -158,7 +158,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       voidProcessor,
       context,
       new JarPlugger[Processor, CtxApi] {
-        override def pullAsync(previous: Processor, param: Array[Byte], context: CtxApi): AsyncValue[JarPlugResponse[Processor]] = {
+        override def pullAsync(previous: Processor, context: CtxApi): AsyncValue[JarPlugResponse[Processor]] = {
           JavaImpl.asyncSuccess(
             new JarPlugResponse[Processor] {
               override def instance(): Processor = voidProcessor

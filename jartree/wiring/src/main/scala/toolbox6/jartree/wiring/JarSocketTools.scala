@@ -85,7 +85,7 @@ class SimpleJarSocket[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: 
           response <- JavaImpl.unwrapFuture(
             plugger.pullAsync(
               st.instance.instance,
-              request.map(_.param).orNull,
+//              request.map(_.param).orNull,
               context
             )
           )

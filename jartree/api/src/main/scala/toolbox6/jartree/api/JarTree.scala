@@ -60,10 +60,10 @@ trait JarUpdatable {
   def updateAsync(param: Array[Byte]) : AsyncValue[Unit]
 }
 
-trait JarPlugger[T <: JarUpdatable, -C] {
+trait JarPlugger[T, -C] {
   def pullAsync(
     previous: T,
-    param: Array[Byte],
+//    param: Array[Byte],
     context: C
   ) : AsyncValue[JarPlugResponse[T]]
 }

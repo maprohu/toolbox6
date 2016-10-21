@@ -28,14 +28,21 @@ import scala.util.Try
 object JarTreeBootstrap extends LazyLogging with LogTools {
 //  type CTX = ScalaInstanceResolver
 
+
+  case class Initial[T <: JarUpdatable, C](
+    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
+    initialStartup: PlugRequestImpl[T, C]
+  )
+
   case class Config[Processor <: JarUpdatable, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
     contextProvider: JarTree => Context,
     voidProcessor : Processor,
     name: String,
     dataPath: String,
     version : Int = 1,
-    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup: PlugRequestImpl[Processor, CtxApi],
+    initial: Option[Initial[Processor, CtxApi]],
+//    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
+//    initialStartup: PlugRequestImpl[Processor, CtxApi],
     closer: Processor => Unit
   )
 
@@ -82,14 +89,20 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
         )
     }
 
-    def readStartup : Startup = this.synchronized {
-      import boopickle.Default._
-      Unpickle[Startup].fromBytes(
-        ByteBufferTools
-          .readFile(
-            startupFile
+    def readStartup : Option[Startup] = this.synchronized {
+      if (startupFile.exists()) {
+        Some {
+          import boopickle.Default._
+          Unpickle[Startup].fromBytes(
+            ByteBufferTools
+              .readFile(
+                startupFile
+              )
           )
-      )
+        }
+      } else {
+        None
+      }
     }
 
     val cache = if (
@@ -104,23 +117,25 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
       val cache = JarCache(cacheDir)
 
-      embeddedJars
-        .foreach({
-          case (key, jar) =>
-            quietly {
-              cache.putStream(
-                key,
-                jar
-              )
-            }
-        })
+      initial.foreach { i => import i._
+        embeddedJars
+          .foreach({
+            case (key, jar) =>
+              quietly {
+                cache.putStream(
+                  key,
+                  jar
+                )
+              }
+          })
 
-      quietly {
-        writeStartup(
-          initialStartup
-        )
+        quietly {
+          writeStartup(
+            initialStartup
+          )
+        }
+
       }
-
       new PrintWriter(versionFile) {
         write(version.toString)
         close
@@ -171,9 +186,11 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
     val startupRequest = readStartup
 
-    processorSocket.plug(
-      startupRequest
-    )
+    startupRequest.foreach { sr =>
+      processorSocket.plug(
+        sr
+      )
+    }
 
     stopper += Cancelable({
       () => processorSocket.clear()

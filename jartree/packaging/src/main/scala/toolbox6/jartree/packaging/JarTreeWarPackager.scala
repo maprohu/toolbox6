@@ -236,15 +236,15 @@ object JarTreeWarPackager {
 //        println(configString)
         import toolbox6.pickling.PicklingTools._
 
-        IO.write(
-          new File(runtimeDir, JarTreeBootstrapConfig.ConfigFile),
-          pickle(
-            PlugRequestImpl(
-              runRequest,
-              paramObject
-            )
-          )
-        )
+//        IO.write(
+//          new File(runtimeDir, JarTreeBootstrapConfig.ConfigFile),
+//          pickle(
+//            PlugRequestImpl(
+//              runRequest,
+//              paramObject
+//            )
+//          )
+//        )
       }
     ){ dir =>
       postProcessor(new File(dir, s"target/${name}.war"))

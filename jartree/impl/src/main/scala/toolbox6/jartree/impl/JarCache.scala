@@ -33,7 +33,23 @@ class JarCache(
   def getAsync(
     id: String
   ) : Future[File] = {
-    locks.get(id)
+    locks
+      .transformAndExtract({ l =>
+        l
+          .get(id)
+          .map(f => (f, l))
+          .getOrElse {
+            val file = toManagedFile(id)
+
+            if (file.exists()) {
+              val fut = Future.successful(file)
+
+              (fut, l.updated(id, fut))
+            } else {
+              (Future.failed(new Exception(s"not cached: ${id}")), l)
+            }
+          }
+      })
   }
 
   def putAsync(

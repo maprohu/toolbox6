@@ -9,7 +9,7 @@ import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import com.typesafe.scalalogging.LazyLogging
 import toolbox6.common.ManagementTools
 import toolbox6.jartree.api._
-import toolbox6.jartree.impl.JarTreeBootstrap.Config
+import toolbox6.jartree.impl.JarTreeBootstrap.{Config, Initial}
 import toolbox6.jartree.impl.{JarCache, JarTree, JarTreeBootstrap, JarTreeBootstrapConfig}
 import toolbox6.jartree.managementapi.JarTreeManagement
 import toolbox6.jartree.managementutils.{JarTreeManagementUtils, QueryResult}
@@ -67,15 +67,19 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
               name = name,
               dataPath = dataPath,
               version = version,
-              embeddedJars =
-                embeddedJars
-                  .map({ jar =>
-                    (
-                      jar.key,
-                      () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
-                    )
-                  }),
-              initialStartup = plugger,
+              initial = Some(
+                Initial(
+                  embeddedJars =
+                    embeddedJars
+                      .map({ jar =>
+                        (
+                          jar.key,
+                          () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
+                          )
+                      }),
+                  initialStartup = plugger
+                )
+              ),
               closer = _.close()
             )
           )

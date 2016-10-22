@@ -7,10 +7,12 @@ import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
 import com.typesafe.scalalogging.LazyLogging
+import monix.execution.Cancelable
+import monix.execution.cancelables.CompositeCancelable
 import toolbox6.common.ManagementTools
 import toolbox6.jartree.api._
-import toolbox6.jartree.impl.JarTreeBootstrap.{Config, Initial}
-import toolbox6.jartree.impl.{JarCache, JarTree, JarTreeBootstrap, JarTreeBootstrapConfig}
+import toolbox6.jartree.impl.JarTreeBootstrap.Config
+import toolbox6.jartree.impl._
 import toolbox6.jartree.managementapi.JarTreeManagement
 import toolbox6.jartree.managementutils.{JarTreeManagementUtils, QueryResult}
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
@@ -37,17 +39,17 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
   val VoidProcessor : Processor = new Processor {
     override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
     override def close(): Unit = ()
-    override def updateAsync(param: Array[Byte]): AsyncValue[Unit] = JavaImpl.asyncSuccess()
+//    override def updateAsync(param: Array[Byte]): AsyncValue[Unit] = JavaImpl.asyncSuccess()
   }
 
   case class Running(
     service: (HttpServletRequest, HttpServletResponse) => Unit,
-    stop: () => Unit
+    stop: Cancelable
   )
 
   var running = Running(
     service = (_, _) => (),
-    stop = () => ()
+    stop = Cancelable.empty
   )
 
   override def init(config: ServletConfig): Unit = {
@@ -67,24 +69,20 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
               name = name,
               dataPath = dataPath,
               version = version,
-              initial = Some(
-                Initial(
-                  embeddedJars =
-                    embeddedJars
-                      .map({ jar =>
-                        (
-                          jar.key,
-                          () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
-                          )
-                      }),
-                  initialStartup = plugger
-                )
-              ),
+              embeddedJars =
+                embeddedJars
+                  .map({ jar =>
+                    (
+                      jar.key,
+                      () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
+                    )
+                  }),
+              initialStartup = startup.request[Processor, JarTreeServletContext],
               closer = _.close()
             )
           )
 
-        setupManagement(
+        val stopManagement = setupManagement(
           name = name,
           jarTree = rt.jarTree,
           processorSocket = rt.processorSocket,
@@ -93,14 +91,17 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
 
         running = Running(
           service = (req, res) => rt.processorSocket.currentInstance.instance.service(req, res),
-          stop = () => rt.stop.cancel()
+          stop = CompositeCancelable(
+            stopManagement,
+            rt.stop
+          )
         )
       })
 
   }
 
   override def destroy(): Unit = {
-    running.stop()
+    running.stop.cancel()
     super.destroy()
   }
 

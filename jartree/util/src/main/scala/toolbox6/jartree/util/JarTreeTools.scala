@@ -1,7 +1,7 @@
 package toolbox6.jartree.util
 
 
-import toolbox6.jartree.api.{JarPlugResponse, JarPlugger, JarUpdatable}
+import toolbox6.jartree.api.{JarPlugResponse, JarPlugger}
 import toolbox6.javaapi.AsyncValue
 import toolbox6.javaimpl.JavaImpl
 
@@ -13,7 +13,7 @@ import toolbox6.javaimpl.JavaImpl
   */
 object JarTreeTools {
 
-  def noopResponse[T <: JarUpdatable](o: => T) = {
+  def noopResponse[T](o: => T) = {
     new JarPlugResponse[T] {
       override def instance(): T = o
       override def andThen(): Unit = ()
@@ -27,7 +27,7 @@ object JarTreeTools {
 //    }
 //  }
 
-  def andThenResponse[T <: JarUpdatable](o: => T, cb: () => Unit) = {
+  def andThenResponse[T](o: => T, cb: () => Unit) = {
     new JarPlugResponse[T] {
       override def instance(): T = o
       override def andThen(): Unit = cb()
@@ -35,7 +35,7 @@ object JarTreeTools {
   }
 
 
-  def noopCleaner[T <: JarUpdatable, C](init: T) = {
+  def noopCleaner[T, C](init: T) = {
     val response = noopResponse(init)
 
     new JarPlugger[T, C] {

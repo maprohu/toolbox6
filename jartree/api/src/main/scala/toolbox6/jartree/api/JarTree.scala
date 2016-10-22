@@ -43,6 +43,7 @@ trait ClassRequest[+T] {
 //
 //}
 
+
 trait InstanceResolver {
   def resolveAsync[T](request: ClassRequest[T]) : AsyncValue[T]
 }
@@ -56,9 +57,9 @@ trait JarPlugResponse[+T] {
   def andThen() : Unit
 }
 
-trait JarUpdatable {
-  def updateAsync(param: Array[Byte]) : AsyncValue[Unit]
-}
+//trait JarUpdatable {
+//  def updateAsync(param: Array[Byte]) : AsyncValue[Unit]
+//}
 
 trait JarPlugger[T, -C] {
   def pullAsync(
@@ -69,12 +70,12 @@ trait JarPlugger[T, -C] {
 }
 
 
-trait PlugRequest[T <: JarUpdatable, -C] {
+trait PlugRequest[T, -C] {
   def request(): ClassRequest[JarPlugger[T, C]]
-  def param(): Array[Byte]
+//  def param(): Array[Byte]
 }
 
-trait JarSocket[T <: JarUpdatable, C] {
+trait JarSocket[T, C] {
   def plugAsync(
     request: PlugRequest[T, C]
   ) : AsyncValue[T]

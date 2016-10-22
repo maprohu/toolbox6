@@ -10,7 +10,7 @@ import ch.qos.logback.core.encoder.LayoutWrappingEncoder
 import ch.qos.logback.core.rolling.{FixedWindowRollingPolicy, RollingFileAppender, SizeBasedTriggeringPolicy}
 import ch.qos.logback.core.spi.ContextAwareBase
 import org.slf4j.Logger
-import toolbox6.jartree.servlet.JarTreeServletConfig
+import toolbox6.jartree.impl.{JarTreeBootstrap, JarTreeBootstrapConfig}
 
 /**
   * Created by martonpapp on 26/06/16.
@@ -33,9 +33,9 @@ class LogbackConfigurator extends ContextAwareBase with Configurator {
 
   override def configure(lc: LoggerContext): Unit = {
 
-    JarTreeServletConfig
+    JarTreeBootstrapConfig
       .jconfig
-      .map({ case (jconfig, _) =>
+      .map({ case jconfig =>
         val logdir = new File(jconfig.logPath)
         val appname = jconfig.name
 

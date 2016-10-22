@@ -18,6 +18,7 @@
         <module>akka</module>
         <module>ui</module>
         <module>android</module>
+        <module>environment</module>
         <module>javaapi</module>
         <module>javaimpl</module>
         <module>macros</module>

@@ -104,12 +104,12 @@ object JarTreePackaging {
 
   }
 
-  lazy val rootJars = JarTreeWarPackager.modulesInParent.map(getId)
-
+//  lazy val rootJars = JarTreeWarPackager.modulesInParent.map(getId)
+//
   def getJars(clk: Option[CaseClassLoaderKey]) : Set[CaseJarKey] = {
     clk
       .map(c => getJars(c.parentOpt) ++ c.jarsSeq)
-      .getOrElse(rootJars)
+      .getOrElse(Set())
   }
 
   def hierarchyToClassLoader(
@@ -124,6 +124,7 @@ object JarTreePackaging {
         .map(getId)
         .filterNot(parentJars.contains)
         .distinct
+        .to[Vector]
 
     CaseClassLoaderKey(
       jars,
@@ -137,11 +138,11 @@ object JarTreePackaging {
     runClassName: String
 //    children: CaseClassLoaderKey => Map[String, RunHierarchy] = _ => Map()
   ) {
-    def forWar : RunMavenHierarchy = {
-      forTarget(
-        JarTreeWarPackager.modulesInParent.contains
-      )
-    }
+//    def forWar : RunMavenHierarchy = {
+//      forTarget(
+//        JarTreeWarPackager.modulesInParent.contains
+//      )
+//    }
 
     def forTarget(
       targetContains: MavenCoordinatesImpl => Boolean

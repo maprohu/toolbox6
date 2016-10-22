@@ -16,6 +16,10 @@ object Toolbox6Modules extends MavenCentralModule(
 
   implicit val Root = RootModuleContainer("toolbox6")
 
+  object Environment extends ScalaModule(
+    "environment"
+  )
+
   object JavaApi extends ScalaModule(
     "javaapi"
   )
@@ -41,6 +45,7 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Pickling extends ScalaModule(
     "pickling",
+    Common,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
   }
@@ -138,7 +143,8 @@ object JarTreeModules {
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
     Toolbox6Modules.Common,
     mvn.`commons-io:commons-io:jar:2.2`,
-    Toolbox6Modules.JavaImpl
+    Toolbox6Modules.JavaImpl,
+    Toolbox6Modules.Pickling
   ) {
     object R1 extends Release(
       Api.R1,
@@ -162,7 +168,7 @@ object JarTreeModules {
     "servlet",
     Impl,
     ServletApi,
-    Toolbox6Modules.Logging.R1,
+    Toolbox6Modules.Logging,
     ManagementApi,
     ManagementUtils,
     Wiring,
@@ -183,7 +189,7 @@ object JarTreeModules {
 
   object Webapp extends ScalaModule(
     "webapp",
-    Servlet.R1,
+    Servlet,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
   ) {
     object R1 extends Release(
@@ -222,7 +228,7 @@ object JarTreeModules {
   object ManagementUtils extends ScalaModule(
     "managementutils",
     ManagementApi,
-    Common.R1,
+    Common,
     Wiring,
     ServletApi
   ) {

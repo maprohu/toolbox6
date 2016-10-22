@@ -26,14 +26,14 @@ object ByteBufferTools {
     }
   }
 
-  def writeFile(buffers: Array[ByteBuffer], file: File) : Unit = {
-    val channel = new FileOutputStream(file).getChannel
-    try {
-      channel.write(buffers)
-    } finally {
-      channel.close()
-    }
-  }
+//  def writeFile(buffers: Array[ByteBuffer], file: File) : Unit = {
+//    val channel = new FileOutputStream(file).getChannel
+//    try {
+//      channel.write(buffers)
+//    } finally {
+//      channel.close()
+//    }
+//  }
 
   def writeFile(buffer: ByteBuffer, file: File) : Unit = {
     val channel = new FileOutputStream(file).getChannel

@@ -1,13 +1,8 @@
 package toolbox6.jartree.packaging
 
 import java.io.File
-import java.util
-import javax.management.{Notification, NotificationListener, ObjectName}
-import javax.management.remote.{JMXConnectorFactory, JMXServiceURL}
-import javax.naming.Context
 
 import weblogic.deploy.api.tools.deployer.Deployer
-import weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean
 
 /**
   * Created by martonpapp on 02/10/16.

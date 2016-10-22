@@ -53,8 +53,7 @@ object JarTreeClient {
 
 //    val reg = management.registerLogListener(cb)
 
-    val runMavenHierarchy : RunMavenHierarchy =
-      runHierarchy.forWar
+    val runMavenHierarchy : RunMavenHierarchy = ???
 
     val jars = JarTreePackaging.resolverJars(runMavenHierarchy)
 

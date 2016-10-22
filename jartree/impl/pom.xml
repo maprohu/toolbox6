@@ -158,6 +158,11 @@
             <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-pickling</artifactId>
+            <version>2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.11.8</version>

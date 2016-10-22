@@ -80,7 +80,7 @@ object CaseJarKey {
 
 }
 
-case class CaseClassLoaderKey(
+final case class CaseClassLoaderKey(
   jarsSeq: Seq[CaseJarKey],
   parentOpt: Option[CaseClassLoaderKey]
 ) extends ClassLoaderKey {

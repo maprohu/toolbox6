@@ -17,20 +17,19 @@ import toolbox6.javaimpl.JavaImpl
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-case class PlugRequestImpl[T <: JarUpdatable, C](
-  request: ClassRequestImpl[JarPlugger[T, C]],
-  param: Array[Byte]
+case class PlugRequestImpl[T, C](
+  request: ClassRequestImpl[JarPlugger[T, C]]
+//  param: Array[Byte]
 ) extends PlugRequest[T, C]
 
 object PlugRequestImpl {
-  def apply[T <: JarUpdatable, C](
+  def apply[T, C](
     request: PlugRequest[T, C]
   ) : PlugRequestImpl[T, C] = {
     PlugRequestImpl(
       ClassRequestImpl(
         request.request()
-      ),
-      request.param()
+      )
     )
   }
 
@@ -43,7 +42,7 @@ object PlugRequestImpl {
 //  request: Option[PlugRequestImpl[T, C]]
 //)
 
-class SimpleJarSocket[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
+class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
   init: T,
   context: Context,
   cleaner: JarPlugger[T, CtxApi],
@@ -85,7 +84,6 @@ class SimpleJarSocket[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: 
           response <- JavaImpl.unwrapFuture(
             plugger.pullAsync(
               st.instance.instance,
-//              request.map(_.param).orNull,
               context
             )
           )
@@ -116,20 +114,20 @@ class SimpleJarSocket[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: 
           logger.warn(s"cleaning empty socket")
           Future.successful(st)
 
-        case (Some(current), Some(pr)) if current.request == pr.request =>
-          logger.info(s"updating: ${current.request}")
-          for {
-            _ <- JavaImpl.unwrapFuture(
-              st
-                .instance
-                .instance
-                .updateAsync(
-                  pr.param
-                )
-            )
-          } yield {
-            st
-          }
+//        case (Some(current), Some(pr)) if current.request == pr.request =>
+//          logger.info(s"updating: ${current.request}")
+//          for {
+//            _ <- JavaImpl.unwrapFuture(
+//              st
+//                .instance
+//                .instance
+//                .updateAsync(
+//                  pr.param
+//                )
+//            )
+//          } yield {
+//            st
+//          }
 
         case (copt, or @ Some(pr)) =>
           logger.info(s"replacing: ${pr.request} (previous: ${copt})")
@@ -219,7 +217,7 @@ class SimpleJarSocket[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: 
 
 object SimpleJarSocket {
 
-  def noCleaner[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
+  def noCleaner[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
     init: T,
     context: Context
   )(implicit
@@ -233,7 +231,7 @@ object SimpleJarSocket {
 }
 
 
-case class NamedSocket[T <: JarUpdatable, C, S <: JarSocket[T, C]](
+case class NamedSocket[T, C, S <: JarSocket[T, C]](
   name: String,
   socket: JarSocket[T, C]
 )
@@ -245,7 +243,7 @@ object NamedSocket {
     context: C
   )
 
-  def noopClean[T <: JarUpdatable, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
+  def noopClean[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
     name: String,
     init: T
   )(implicit
@@ -264,38 +262,38 @@ object NamedSocket {
 
 }
 
-case class MultiUpdate[T <: JarUpdatable, C](
-  bindings: Map[String, PlugRequestImpl[T, C]]
-)
+//case class MultiUpdate[T, C](
+//  bindings: Map[String, PlugRequestImpl[T, C]]
+//)
 
 object JarSocketTools {
 
-  def multiUpdateAsync[T <: JarUpdatable, C, S <: JarSocket[T, C]](
-    param: Array[Byte],
-    sockets: NamedSocket[T, C, S]*
-  )(implicit
-    executionContext: ExecutionContext
-  ): AsyncValue[Unit] = {
-    import boopickle.Default._
-
-    val updates = Unpickle[MultiUpdate[T, C]].fromBytes(
-      ByteBuffer.wrap(param)
-    )
-
-    JavaImpl.wrapFuture(
-      Future
-        .sequence(
-          sockets
-            .map({ socket =>
-              JavaImpl.unwrapFuture(
-                socket.socket.plugAsync(
-                  updates.bindings(socket.name)
-                )
-              )
-            })
-        )
-        .map(_ => ())
-    )
-  }
+//  def multiUpdateAsync[T, C, S <: JarSocket[T, C]](
+//    param: Array[Byte],
+//    sockets: NamedSocket[T, C, S]*
+//  )(implicit
+//    executionContext: ExecutionContext
+//  ): AsyncValue[Unit] = {
+//    import boopickle.Default._
+//
+//    val updates = Unpickle[MultiUpdate[T, C]].fromBytes(
+//      ByteBuffer.wrap(param)
+//    )
+//
+//    JavaImpl.wrapFuture(
+//      Future
+//        .sequence(
+//          sockets
+//            .map({ socket =>
+//              JavaImpl.unwrapFuture(
+//                socket.socket.plugAsync(
+//                  updates.bindings(socket.name)
+//                )
+//              )
+//            })
+//        )
+//        .map(_ => ())
+//    )
+//  }
 
 }

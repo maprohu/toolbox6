@@ -14,7 +14,6 @@ import org.geotools.referencing.crs.{DefaultGeocentricCRS, DefaultGeographicCRS}
 import org.geotools.renderer.lite.StreamingRenderer
 import org.geotools.styling.BasicPolygonStyle
 import org.orbisgis.geoserver.h2gis.datastore.H2GISEmbeddedDataStoreFactory
-import osgi6.h2gis.impl.H2GisActivator
 
 import scala.collection.JavaConversions._
 

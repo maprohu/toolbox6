@@ -109,8 +109,28 @@
     <dependencies>
         <dependency>
             <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-gis-util</artifactId>
+            <version>2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
             <artifactId>toolbox6-logging</artifactId>
             <version>2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-opengis</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-coverage</artifactId>
+            <version>11.5</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
@@ -148,4 +168,14 @@
             <version>2.11.8</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>geotools</id>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
+        </repository>
+        <repository>
+            <id>boundles</id>
+            <url>http://repo.boundlessgeo.com/main</url>
+        </repository>
+    </repositories>
 </project>

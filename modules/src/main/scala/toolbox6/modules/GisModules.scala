@@ -17,13 +17,17 @@ object GisModules {
 
   object Geotools extends ScalaModule(
     "geotools",
-    Toolbox6Modules.Logging
-//    mvn.`org.geotools:gt-referencing:jar:11.5`,
-//    mvn.`org.geotools:gt-api:jar:11.5`,
-//    mvn.`org.geotools:gt-render:jar:11.5`,
-//    mvn.`org.geotools:gt-epsg-wkt:jar:11.5`,
-//    mvn.`org.geotools:gt-jdbc:jar:11.5`,
-//    mvn.`org.geotools:gt-metadata:jar:11.5`
+    Util,
+    Toolbox6Modules.Logging,
+    mvn.`org.geotools:gt-opengis:jar:11.5`,
+    mvn.`org.geotools:gt-main:jar:11.5`,
+    mvn.`org.geotools:gt-coverage:jar:11.5`,
+    mvn.`org.geotools:gt-referencing:jar:11.5`,
+    mvn.`org.geotools:gt-api:jar:11.5`,
+    mvn.`org.geotools:gt-render:jar:11.5`,
+    mvn.`org.geotools:gt-epsg-wkt:jar:11.5`,
+    mvn.`org.geotools:gt-jdbc:jar:11.5`,
+    mvn.`org.geotools:gt-metadata:jar:11.5`
   )
 
 

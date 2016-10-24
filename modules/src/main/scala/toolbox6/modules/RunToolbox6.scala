@@ -49,7 +49,9 @@ object RunToolbox6 {
     UiModules.Swing,
     UiModules.Android,
     AndroidModules.Packaging,
-    AndroidModules.LibInstaller
+    AndroidModules.LibInstaller,
+    GisModules.Util,
+    GisModules.Geotools
 
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,

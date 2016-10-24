@@ -1,7 +1,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6</groupId>
-    <artifactId>toolbox6-jartree-akka</artifactId>
+    <artifactId>toolbox6-gis-geotools</artifactId>
     <version>2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <build>
@@ -109,18 +109,38 @@
     <dependencies>
         <dependency>
             <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-servletapi</artifactId>
+            <artifactId>toolbox6-logging</artifactId>
             <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-common</artifactId>
-            <version>2-SNAPSHOT</version>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>11.5</version>
         </dependency>
         <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-akka-http</artifactId>
-            <version>2-SNAPSHOT</version>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-api</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-render</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-wkt</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-jdbc</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-metadata</artifactId>
+            <version>11.5</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

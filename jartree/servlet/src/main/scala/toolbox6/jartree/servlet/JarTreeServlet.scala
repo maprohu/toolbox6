@@ -9,7 +9,7 @@ import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
 import monix.execution.cancelables.CompositeCancelable
-import toolbox6.common.ManagementTools
+import toolbox6.common.{HygienicThread, ManagementTools}
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.impl._
@@ -18,8 +18,6 @@ import toolbox6.jartree.managementutils.{JarTreeManagementUtils, QueryResult}
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
-import toolbox6.javaapi.AsyncValue
-import toolbox6.javaimpl.JavaImpl
 import toolbox6.logging.LogTools
 
 import scala.concurrent.duration.Duration
@@ -54,15 +52,17 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
 
   override def init(config: ServletConfig): Unit = {
     super.init(config)
-    import monix.execution.Scheduler.Implicits.global
 
-    JarTreeBootstrapConfig
-      .jconfig
-      .foreach({ bootstrapConfig =>
-        import bootstrapConfig._
+    HygienicThread.execute {
+      import monix.execution.Scheduler.Implicits.global
 
-        val rt = JarTreeBootstrap
-          .init[Processor, JarTreeServletContext, ScalaJarTreeServletContext](
+      JarTreeBootstrapConfig
+        .jconfig
+        .foreach({ bootstrapConfig =>
+          import bootstrapConfig._
+
+          val rt = JarTreeBootstrap
+            .init[Processor, JarTreeServletContext, ScalaJarTreeServletContext](
             Config(
               contextProvider = jt => new ScalaJarTreeServletContext(jt),
               voidProcessor = VoidProcessor,
@@ -75,33 +75,35 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
                     (
                       jar.key,
                       () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
-                    )
+                      )
                   }),
               initialStartup = startup.request[Processor, JarTreeServletContext],
               closer = _.close()
             )
           )
 
-        val stopManagement = setupManagement(
-          name = name,
-          jarTree = rt.jarTree,
-          processorSocket = rt.processorSocket,
-          webappVersion = self.getClass.getPackage.getImplementationVersion
-        )
-
-        running = Running(
-          service = (req, res) => rt.processorSocket.currentInstance.instance.service(req, res),
-          stop = CompositeCancelable(
-            stopManagement,
-            rt.stop
+          val stopManagement = setupManagement(
+            name = name,
+            jarTree = rt.jarTree,
+            processorSocket = rt.processorSocket,
+            webappVersion = self.getClass.getPackage.getImplementationVersion
           )
-        )
-      })
 
+          running = Running(
+            service = (req, res) => rt.processorSocket.currentInstance.instance.service(req, res),
+            stop = CompositeCancelable(
+              stopManagement,
+              rt.stop
+            )
+          )
+        })
+    }
   }
 
   override def destroy(): Unit = {
-    running.stop.cancel()
+    HygienicThread.execute {
+      running.stop.cancel()
+    }
     super.destroy()
   }
 
@@ -282,54 +284,62 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
       new JarTreeManagement {
         @throws(classOf[RemoteException])
         override def verifyCache(ids: Array[String]): Array[Int] = {
-          ids
-            .zipWithIndex
-            .collect({
-              case (id, idx) if !jarTree.cache.contains(id) => idx
-            })
+          HygienicThread.execute {
+            ids
+              .zipWithIndex
+              .collect({
+                case (id, idx) if !jarTree.cache.contains(id) => idx
+              })
+          }
         }
 
         @throws(classOf[RemoteException])
         override def putCache(id: String, data: Array[Byte]): Unit = {
-          jarTree.cache.putStream(
-            CaseJarKey(id),
-            () => new ByteArrayInputStream(data)
-          )
+          HygienicThread.execute {
+            jarTree.cache.putStream(
+              CaseJarKey(id),
+              () => new ByteArrayInputStream(data)
+            )
+          }
         }
 
         import boopickle.Default._
 
         @throws(classOf[RemoteException])
         override def plug(request: Array[Byte]): Array[Byte] = {
-          RunTools.runBytes {
-            val req =
-              Unpickle[PlugRequestImpl[Processor, JarTreeServletContext]].fromBytes(
-                ByteBuffer.wrap(request)
+          HygienicThread.execute {
+            RunTools.runBytes {
+              val req =
+                Unpickle[PlugRequestImpl[Processor, JarTreeServletContext]].fromBytes(
+                  ByteBuffer.wrap(request)
+                )
+
+              Await.result(
+                processorSocket.plug(
+                  req
+                ),
+                Duration.Inf
               )
 
-            Await.result(
-              processorSocket.plug(
-                req
-              ),
-              Duration.Inf
-            )
-
-            "plugged"
+              "plugged"
+            }
           }
         }
 
         @throws(classOf[RemoteException])
         override def query(): Array[Byte] = {
-          RunTools.runByteArray {
-            val bb = Pickle.intoBytes(
-              QueryResult(
-                request = processorSocket.query(),
-                webappVersion = webappVersion
+          HygienicThread.execute {
+            RunTools.runByteArray {
+              val bb = Pickle.intoBytes(
+                QueryResult(
+                  request = processorSocket.query(),
+                  webappVersion = webappVersion
+                )
               )
-            )
-            val ba = Array.ofDim[Byte](bb.remaining())
-            bb.get(ba)
-            ba
+              val ba = Array.ofDim[Byte](bb.remaining())
+              bb.get(ba)
+              ba
+            }
           }
         }
       }

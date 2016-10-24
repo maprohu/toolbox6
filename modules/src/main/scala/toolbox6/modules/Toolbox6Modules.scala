@@ -249,7 +249,8 @@ object JarTreeModules {
   object Akka extends ScalaModule(
     "akka",
     ServletApi,
-    AkkaModules.Http.R1
+    Toolbox6Modules.Common,
+    AkkaModules.Http
   ) {
     object R1 extends Release(
       ServletApi.R1,

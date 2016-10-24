@@ -10,6 +10,7 @@ import akka.stream.{ActorAttributes, ActorMaterializer, Materializer}
 import akka.stream.scaladsl.{Keep, Sink, StreamConverters}
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
+import toolbox6.common.HygienicThread
 import toolbox6.jartree.servletapi.Processor
 
 import scala.collection.JavaConversions
@@ -48,30 +49,31 @@ abstract class AkkaProcessor(
   private val handler = Route.asyncHandler(route(this))
 
   override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    import actorSystem.dispatcher
-    try {
-      Await.result(
-        for {
-          r <- handler(
-            AkkaProcessor.wrapRequest(req)
-          )
-          u <- AkkaProcessor.unwrapResponse(
-            r,
-            resp
-          )
-        } yield {
-          u
-        },
-        Duration.Inf
-      )
-    } catch {
-      case ex : Throwable =>
-        logger.error(ex.getMessage, ex)
-        Try(resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR))
-        Try(resp.setContentType("text/plain"))
-        Try(resp.getWriter.print("ERROR"))
+    HygienicThread.execute {
+      import actorSystem.dispatcher
+      try {
+        Await.result(
+          for {
+            r <- handler(
+              AkkaProcessor.wrapRequest(req)
+            )
+            u <- AkkaProcessor.unwrapResponse(
+              r,
+              resp
+            )
+          } yield {
+            u
+          },
+          Duration.Inf
+        )
+      } catch {
+        case ex : Throwable =>
+          logger.error(ex.getMessage, ex)
+          Try(resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR))
+          Try(resp.setContentType("text/plain"))
+          Try(resp.getWriter.print("ERROR"))
+      }
     }
-
   }
 
   override def close(): Unit = {

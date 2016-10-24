@@ -51,7 +51,8 @@ object RunToolbox6 {
     AndroidModules.Packaging,
     AndroidModules.LibInstaller,
     GisModules.Util,
-    GisModules.Geotools
+    GisModules.Geotools,
+    ScalajsModules.Analyzer.java8
 
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,

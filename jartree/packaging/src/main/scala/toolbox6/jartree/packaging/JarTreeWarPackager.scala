@@ -3,6 +3,7 @@ package toolbox6.jartree.packaging
 import java.io.File
 
 import maven.modules.builder.{Module, NamedModule}
+import maven.modules.utils.Repo
 import sbt.io.IO
 import toolbox6.jartree.api.JarPlugger
 import toolbox6.jartree.impl.{EmbeddedJar, JarTreeBootstrapConfig, Startup}
@@ -191,6 +192,16 @@ object JarTreeWarPackager {
             input.runtime.pomDependency
             }
           </dependencies>
+          <repositories>
+            {
+            input.startup.repos.map { r =>
+              <repository>
+                <id>{r.id}</id>
+                <url>{r.url}</url>
+              </repository>
+            }
+            }
+          </repositories>
         </project>
       },
       preBuild = { dir =>

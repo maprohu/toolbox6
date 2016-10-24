@@ -19,6 +19,7 @@
         <module>ui</module>
         <module>android</module>
         <module>gis</module>
+        <module>scalajs</module>
         <module>environment</module>
         <module>javaapi</module>
         <module>javaimpl</module>

@@ -10,6 +10,13 @@ object ScalajsModules {
 
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "scalajs")
 
+  object Analyzer extends ScalaModule(
+    "analyzer",
+    mvn.`org.scala-lang:scala-reflect:jar:2.11.8`,
+    mvn.`org.scala-js:scalajs-library_2.11:jar:0.6.12`,
+    mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`
+  )
+
 }
 
 object FacadeModules {

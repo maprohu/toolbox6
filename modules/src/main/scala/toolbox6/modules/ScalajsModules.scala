@@ -10,6 +10,22 @@ object ScalajsModules {
 
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "scalajs")
 
+  object Shared extends ScalaModule(
+    "shared"
+  )
+
+  object Client extends ScalaModule(
+    "client",
+    Shared
+  )
+
+  object Server extends ScalaModule(
+    "server",
+    Shared,
+    mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
+    mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
+  )
+
   object Analyzer extends ScalaModule(
     "analyzer",
     mvn.`org.scala-lang:scala-reflect:jar:2.11.8`,

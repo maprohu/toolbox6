@@ -66,7 +66,7 @@ package object environment {
         get(qualifiers:_*).get
       } catch {
         case ex : Throwable =>
-          throw new Exception(s"error getting value for: ${qualifiers.mkString("\n")}" , ex)
+          throw new Exception(s"error getting value for: \n${qualifiers.mkString("\n")}" , ex)
 
       }
     }

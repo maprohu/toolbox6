@@ -250,7 +250,8 @@ object JarTreeModules {
     "akka",
     ServletApi,
     Toolbox6Modules.Common,
-    AkkaModules.Http
+    AkkaModules.Http,
+    Toolbox6Modules.Logging
   ) {
     object R1 extends Release(
       ServletApi.R1,

@@ -12,6 +12,7 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
 import toolbox6.common.HygienicThread
 import toolbox6.jartree.servletapi.Processor
+import toolbox6.logging.LogTools
 
 import scala.collection.JavaConversions
 import scala.concurrent.duration.Duration
@@ -23,7 +24,7 @@ import scala.util.Try
   */
 abstract class AkkaProcessor(
   route: AkkaProcessor.Provider
-) extends Processor with LazyLogging with AkkaProcessor.Input { self =>
+) extends Processor with LazyLogging with LogTools with AkkaProcessor.Input { self =>
 
   implicit val actorSystem = ActorSystem(
     self.getClass.getName.replace('.', '_'),
@@ -46,7 +47,8 @@ abstract class AkkaProcessor(
   )
   implicit val materializer = ActorMaterializer()
 
-  private val handler = Route.asyncHandler(route(this))
+  private val (createdRoute, stopRoute) = route(this)
+  private val handler = Route.asyncHandler(createdRoute)
 
   override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     HygienicThread.execute {
@@ -77,6 +79,7 @@ abstract class AkkaProcessor(
   }
 
   override def close(): Unit = {
+    quietly { stopRoute() }
     actorSystem.shutdown()
     actorSystem.awaitTermination()
   }
@@ -85,11 +88,11 @@ abstract class AkkaProcessor(
 object AkkaProcessor {
 
   trait Input {
-    implicit def actorSystem : ActorSystem
-    implicit def materializer : Materializer
+    implicit val actorSystem : ActorSystem
+    implicit val materializer : Materializer
   }
 
-  type Provider = Input => Route
+  type Provider = Input => (Route, () => Unit)
 
   def wrapRequest(req: HttpServletRequest) : HttpRequest = {
     import JavaConversions._

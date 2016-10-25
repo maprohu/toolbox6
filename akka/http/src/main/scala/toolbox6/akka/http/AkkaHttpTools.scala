@@ -2,6 +2,7 @@ package toolbox6.akka.http
 
 import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.http.scaladsl.model.Uri.Path
+import akka.http.scaladsl.server.{PathMatchers, _}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 
@@ -14,6 +15,16 @@ import scala.concurrent.duration._
 object AkkaHttpTools {
 
   object Implicits {
+
+    implicit def segmentsToPathMatcher(segments: TraversableOnce[String]) : PathMatcher0 = {
+      if (segments.isEmpty) {
+        PathMatchers.Neutral
+      } else {
+        import akka.http.scaladsl.server.Directives._
+        segments.map(segmentStringToPathMatcher).reduce(_ / _)
+      }
+    }
+
     implicit class UriOps(uri: Uri) {
       def mapPath(fn: Path => Path): Uri = {
         uri.copy(path = fn(uri.path))

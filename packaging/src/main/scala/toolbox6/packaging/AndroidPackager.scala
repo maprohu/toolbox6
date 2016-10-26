@@ -2,6 +2,8 @@ package toolbox6.packaging
 
 import java.io.File
 
+import maven.modules.builder.{HasMavenCoordinates, MavenTools}
+
 import scala.xml.{Node, XML}
 
 /**

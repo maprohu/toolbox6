@@ -2,19 +2,19 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
-import maven.modules.builder.{Module, NamedModule}
+import maven.modules.builder.{MavenTools, Module, NamedModule}
 import maven.modules.utils.Repo
 import sbt.io.IO
 import toolbox6.jartree.api.JarPlugger
 import toolbox6.jartree.impl.{EmbeddedJar, JarTreeBootstrapConfig, Startup}
 import toolbox6.modules.JarTreeModules
-import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy, MavenTools}
 
 import scala.xml.{Elem, NodeSeq, XML}
 import toolbox6.packaging.PackagingTools.Implicits._
 import toolbox6.jartree.packaging.JarTreePackaging.RunHierarchy
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.wiring.PlugRequestImpl
+import toolbox6.packaging.MavenHierarchy
 
 
 /**

@@ -4,7 +4,7 @@ import java.io.{FileInputStream, InputStream}
 import java.nio.charset.Charset
 import java.util.jar.JarFile
 
-import maven.modules.builder.{Module, NamedModule}
+import maven.modules.builder.{HasMavenCoordinates, MavenCoordinatesImpl, Module, NamedModule}
 import monix.execution.atomic.Atomic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
@@ -12,7 +12,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven
 import toolbox6.jartree.api.JarKey
 import toolbox6.jartree.impl.JarCache
 import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey, ClassRequestImpl, JsonTools}
-import toolbox6.packaging.{HasMavenCoordinates, MavenCoordinatesImpl, MavenHierarchy}
+import toolbox6.packaging.MavenHierarchy
 import upickle.Js
 
 import scala.collection.immutable.{IndexedSeq, Map, Seq}

@@ -3,6 +3,7 @@ package toolbox6.jartree.akka
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Route
@@ -15,7 +16,7 @@ import toolbox6.jartree.servletapi.Processor
 import toolbox6.logging.LogTools
 
 import scala.collection.JavaConversions
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
@@ -80,8 +81,9 @@ abstract class AkkaProcessor(
 
   override def close(): Unit = {
     quietly { stopRoute() }
-    actorSystem.shutdown()
-    actorSystem.awaitTermination()
+    quietly { Await.result(Http().shutdownAllConnectionPools(), 30.seconds) }
+    quietly { actorSystem.shutdown() }
+    quietly { actorSystem.awaitTermination() }
   }
 }
 

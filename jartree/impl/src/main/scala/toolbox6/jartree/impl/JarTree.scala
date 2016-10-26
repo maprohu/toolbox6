@@ -33,7 +33,7 @@ class JarTree(
   )
   private val classLoaderMap = Atomic(Map.empty[CaseClassLoaderKey, Holder])
 
-  def clear() = synchronized {
+  def clear() = {
     classLoaderMap.set(Map.empty)
   }
 

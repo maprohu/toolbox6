@@ -8,10 +8,18 @@ import toolbox6.jartree.wiring.PlugRequestImpl
   */
 object JarTreeManagementUtils {
 
+  val MonitoringName = "monitoring"
+
+  def bindingNamePath(
+    app: String
+  ) = {
+    Seq(app)
+  }
+
   def bindingName(
     app: String
   ) = {
-    s"${app}.monitoring"
+    (bindingNamePath(app) :+ MonitoringName).mkString(".")
   }
 
 }

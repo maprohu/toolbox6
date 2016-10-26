@@ -13,9 +13,11 @@ import toolbox6.jartree.api._
 import toolbox6.jartree.util.{ClassRequestImpl, JarTreeTools, JsonTools, ScalaInstanceResolver}
 import toolbox6.javaapi.AsyncValue
 import toolbox6.javaimpl.JavaImpl
+import toolbox6.logging.LogTools
+import scala.concurrent.duration._
 
 import scala.collection.immutable.Seq
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 
 case class PlugRequestImpl[T, C](
   request: ClassRequestImpl[JarPlugger[T, C]]
@@ -49,7 +51,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
   preProcessor: Option[PlugRequestImpl[T, CtxApi]] => Future[Unit] = (_:Option[PlugRequestImpl[T, CtxApi]]) => Future.successful()
 )(implicit
   scheduler: Scheduler
-) extends JarSocket[T, CtxApi] with LazyLogging {
+) extends JarSocket[T, CtxApi] with LazyLogging with LogTools {
 
   case class Input(
     request: Option[PlugRequestImpl[T, CtxApi]],
@@ -73,7 +75,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
 
   @volatile var currentInstance : Instance = Instance(init, None)
 
-  val stopProcessor = subject
+  private val stopProcessor = subject
     .flatScan(State(currentInstance, None))({ (st, req) =>
       def pull(
         plugger: JarPlugger[T, CtxApi],
@@ -211,6 +213,15 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
 
   def clear() = {
     send(None)
+  }
+
+  def stop() = {
+    logger.info("clearing socket")
+    quietly { Await.result(clear(), 30.second) }
+    logger.info("stopping socket processor")
+    subject.onComplete()
+    quietly { Await.result(stopProcessor, 30.second) }
+    logger.info("socket stopped")
   }
 
 }

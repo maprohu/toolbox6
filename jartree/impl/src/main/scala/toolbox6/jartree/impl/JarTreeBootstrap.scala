@@ -19,8 +19,9 @@ import toolbox6.javaimpl.JavaImpl
 import toolbox6.logging.LogTools
 import toolbox6.pickling.PicklingTools
 import upickle.Js
+import scala.concurrent.duration._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.{Codec, Source}
 import scala.util.Try
 
@@ -62,7 +63,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
     implicit val codec = Codec.UTF8
 
-    val stopper = CompositeCancelable()
+//    val stopper = CompositeCancelable()
 
     val dir = new File(dataPath)
     val startupFile = new File(dir, JarTreeBootstrapConfig.StartupFile)
@@ -170,12 +171,17 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       startupRequest
     )
 
-    stopper += Cancelable({
-      () => processorSocket.clear()
-    })
 
     Runtime(
-      stopper,
+      Cancelable({
+        { () =>
+          logger.info("stopping jartree bootstrap")
+          processorSocket.stop()
+          logger.info("clearing jartree")
+          jarTree.clear()
+          logger.info("jartree bootstrap stopped")
+        }
+      }),
       jarTree,
       context,
       processorSocket

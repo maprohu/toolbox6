@@ -2,6 +2,10 @@ package toolbox6.common
 
 import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
 
+import com.typesafe.scalalogging.LazyLogging
+import monix.execution.{Scheduler, UncaughtExceptionReporter}
+import monix.execution.schedulers.{AsyncScheduler, ExecutionModel}
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Promise}
 
@@ -31,7 +35,7 @@ object HygienicThread {
     Await.result(promise.future, timeout)
   }
 
-  def createExecutionContext(maxSize: Int = 32) = {
+  def createExecutionContext(maxSize: Int = 32) : (ExecutionContext, () => Unit) = {
     val pool = new ThreadPoolExecutor(
       0,
       maxSize,
@@ -50,6 +54,26 @@ object HygienicThread {
     }
 
     (ec, shut)
+  }
+
+  lazy private val (globalExecutionContext, globalStopper) = createExecutionContext()
+
+  object Implicits extends LazyLogging {
+
+    implicit lazy val global: Scheduler =
+      AsyncScheduler(
+        Scheduler.DefaultScheduledExecutor,
+        globalExecutionContext,
+        UncaughtExceptionReporter({ ex =>
+          logger.warn(ex.getMessage, ex)
+        }),
+        ExecutionModel.Default
+      )
+
+  }
+
+  def stopGlobal() = {
+    globalStopper()
   }
 
 }

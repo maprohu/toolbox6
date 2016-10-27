@@ -13,8 +13,6 @@ import toolbox6.common.{HygienicThread, ManagementTools}
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.impl._
-import toolbox6.jartree.managementapi.JarTreeManagement
-import toolbox6.jartree.managementutils.{JarTreeManagementUtils, QueryResult}
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
@@ -26,7 +24,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 /**
   * Created by martonpapp on 01/10/16.
   */
-class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
+abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
 
   class ScalaJarTreeServletContext(jarTree: JarTree) extends JarTreeServletContext with ScalaInstanceResolver {
     override def servletConfig(): ServletConfig = self.getServletConfig
@@ -107,6 +105,52 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
     running.service(req, resp)
   }
 
+
+//  class JarTreeManagementImpl(
+//    jarTree: JarTree,
+//    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext, ScalaJarTreeServletContext],
+//    webappVersion: String
+//  )(implicit
+//    executionContext: ExecutionContext
+//  ) extends JarTreeManagement {
+//    @throws(classOf[RemoteException])
+//    override def verifyCache(ids: Array[String]): Array[Int] = {
+//      HygienicThread.execute {
+
+//      }
+//    }
+//
+//    @throws(classOf[RemoteException])
+//    override def putCache(id: String, data: Array[Byte]): Unit = {
+//      HygienicThread.execute {
+
+//      }
+//    }
+//
+//    import boopickle.Default._
+//
+//    @throws(classOf[RemoteException])
+//    override def plug(request: Array[Byte]): Array[Byte] = {
+//      HygienicThread.execute {
+
+//      }
+//    }
+//
+//    @throws(classOf[RemoteException])
+//    override def query(): Array[Byte] = {
+//      HygienicThread.execute {
+//        RunTools.runByteArray {
+//          val bb = Pickle.intoBytes(
+
+//          )
+//          val ba = Array.ofDim[Byte](bb.remaining())
+//          bb.get(ba)
+//          ba
+//        }
+//      }
+//    }
+//  }
+
   def setupManagement(
     name: String,
     jarTree: JarTree,
@@ -114,76 +158,43 @@ class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =
     webappVersion: String
   )(implicit
     executionContext: ExecutionContext
-  ) = {
-    ManagementTools.bind(
-      existing = Seq(),
-      path = JarTreeManagementUtils.bindingNamePath(name),
-      name = JarTreeManagementUtils.MonitoringName,
-      new JarTreeManagement {
-        @throws(classOf[RemoteException])
-        override def verifyCache(ids: Array[String]): Array[Int] = {
-          HygienicThread.execute {
-            ids
-              .zipWithIndex
-              .collect({
-                case (id, idx) if !jarTree.cache.contains(id) => idx
-              })
-          }
-        }
-
-        @throws(classOf[RemoteException])
-        override def putCache(id: String, data: Array[Byte]): Unit = {
-          HygienicThread.execute {
-            jarTree.cache.putStream(
-              CaseJarKey(id),
-              () => new ByteArrayInputStream(data)
-            )
-          }
-        }
-
-        import boopickle.Default._
-
-        @throws(classOf[RemoteException])
-        override def plug(request: Array[Byte]): Array[Byte] = {
-          HygienicThread.execute {
-            RunTools.runBytes {
-              val req =
-                Unpickle[PlugRequestImpl[Processor, JarTreeServletContext]].fromBytes(
-                  ByteBuffer.wrap(request)
-                )
-
-              Await.result(
-                processorSocket.plug(
-                  req
-                ),
-                Duration.Inf
-              )
-
-              "plugged"
-            }
-          }
-        }
-
-        @throws(classOf[RemoteException])
-        override def query(): Array[Byte] = {
-          HygienicThread.execute {
-            RunTools.runByteArray {
-              val bb = Pickle.intoBytes(
-                QueryResult(
-                  request = processorSocket.query(),
-                  webappVersion = webappVersion
-                )
-              )
-              val ba = Array.ofDim[Byte](bb.remaining())
-              bb.get(ba)
-              ba
-            }
-          }
-        }
-      }
-    )
-
-  }
+  ) : Cancelable
+//  = {
+//
+//    val instance = new JarTreeManagementImpl(
+//      jarTree,
+//      processorSocket,
+//      webappVersion
+//    )
+//
+//    val ccl = Thread.currentThread().getContextClassLoader
+//    val unbind = try {
+//      Thread.currentThread().setContextClassLoader(classOf[HttpServlet].getClassLoader)
+//
+//      ManagementTools.bind(
+//        existing = Seq(),
+//        path = JarTreeManagementUtils.bindingNamePath(name),
+//        name = JarTreeManagementUtils.MonitoringName,
+//        instance
+//      )
+//    } finally {
+//      Thread.currentThread().setContextClassLoader(ccl)
+//    }
+//
+//    CompositeCancelable(
+//      unbind,
+//      Cancelable({ () =>
+//        quietly {
+//          val om = OIDManager.getInstance()
+//          om.removeServerReference(
+//            om.getServerReference(instance)
+//          )
+//        }
+//      })
+//    )
+//
+//
+//  }
 
 
 }

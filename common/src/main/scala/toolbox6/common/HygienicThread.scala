@@ -3,7 +3,7 @@ package toolbox6.common
 import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
 
 import com.typesafe.scalalogging.LazyLogging
-import monix.execution.{Scheduler, UncaughtExceptionReporter}
+import monix.execution.{Cancelable, Scheduler, UncaughtExceptionReporter}
 import monix.execution.schedulers.{AsyncScheduler, ExecutionModel}
 
 import scala.concurrent.duration._
@@ -75,6 +75,8 @@ object HygienicThread {
   def stopGlobal() = {
     globalStopper()
   }
+
+  val cancelGlobal = Cancelable(() => stopGlobal())
 
 }
 

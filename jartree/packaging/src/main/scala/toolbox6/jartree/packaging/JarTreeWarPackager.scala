@@ -38,6 +38,7 @@ object JarTreeWarPackager {
   )
 
   def run[T](
+    servletClassName : String,
     input: Input
   )(
     postProcessor: File => T
@@ -45,6 +46,7 @@ object JarTreeWarPackager {
     import input._
 
     val output = process(
+      servletClassName,
       input
     )
 
@@ -101,6 +103,7 @@ object JarTreeWarPackager {
   }
 
   def process(
+    servletClassName : String,
     input : Input
   ) = {
     import input._
@@ -212,7 +215,7 @@ object JarTreeWarPackager {
                    version="2.5">
             <servlet>
               <servlet-name>jartree</servlet-name>
-              <servlet-class>toolbox6.jartree.webapp.WebappServlet</servlet-class>
+              <servlet-class>{servletClassName}</servlet-class>
               <load-on-startup>1</load-on-startup>
             </servlet>
             <servlet-mapping>

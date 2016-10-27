@@ -220,7 +220,8 @@ object JarTreeModules {
 
 
   object ManagementApi extends ScalaModule(
-    "managementapi"
+    "managementapi",
+    Wiring
   ) {
     object R1 extends Release(
     )

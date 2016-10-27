@@ -24,7 +24,4 @@ object JarTreeManagementUtils {
 
 }
 
-case class QueryResult(
-  request: Option[PlugRequestImpl[Processor, JarTreeServletContext]],
-  webappVersion: String
-)
+

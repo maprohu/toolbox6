@@ -1,55 +1,36 @@
 package toolbox6.jartree.managementapi
 
-import java.rmi.RemoteException
+import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
+import toolbox6.jartree.util.CaseClassLoaderKey
+import toolbox6.jartree.wiring.PlugRequestImpl
 
+sealed trait Request
+sealed trait Response
 
-trait JarTreeManagement extends java.rmi.Remote {
+case class VerifyCache(
+  ids: Seq[String]
+) extends Request
 
-//  @throws(classOf[RemoteException])
-//  def sayHello() : String
-//
-//  @throws(classOf[RemoteException])
-//  def registerLogListener(listener: LogListener) : Registration
+case class CacheVerified(
+  idxs: Seq[Int]
+) extends Response
 
-  @throws(classOf[RemoteException])
-  def verifyCache(
-    ids: Array[String]
-  ) : Array[Int]
+case class PutCache(
+  id: String,
+  data: Array[Byte]
+) extends Request
 
-  @throws(classOf[RemoteException])
-  def putCache(
-    id: String,
-    data: Array[Byte]
-  ) : Unit
+case class Plug(
+  request: PlugRequestImpl[Processor, JarTreeServletContext]
+//  classLoader: CaseClassLoaderKey,
+//  className: String
+) extends Request
 
-  @throws(classOf[RemoteException])
-  def plug(
-    plugRequest: Array[Byte]
-  ) : Array[Byte]
+case object Done extends Response
 
-  @throws(classOf[RemoteException])
-  def query() : Array[Byte]
+case object Query extends Request
 
-//  @throws(classOf[RemoteException])
-//  def executeByteArray(
-//    runRequestImplJson: String,
-//    input: Array[Byte]
-//  ) : Array[Byte]
-
-}
-
-//trait LogListener extends java.rmi.Remote {
-//
-//  @throws(classOf[RemoteException])
-//  def entry(msg: String)
-//
-//}
-
-//trait Registration extends java.rmi.Remote {
-//
-//  @throws(classOf[RemoteException])
-//  def unregister() : Unit
-//
-//}
-
-
+case class QueryResult(
+  request: Option[PlugRequestImpl[Processor, JarTreeServletContext]],
+  webappVersion: String
+) extends Response

@@ -22,6 +22,7 @@ package object environment {
   class Dictionary[Q <: Qualifier, V](
     items: (Qualification[Q], V)*
   ) {
+    def this(qs: Seq[(Qualification[Q], V)]) = this(qs:_*)
 
     private val map : Map[Set[Q], V] =
       items

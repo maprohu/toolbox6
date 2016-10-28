@@ -5,8 +5,6 @@ import com.typesafe.scalalogging.LazyLogging
 import monix.execution.atomic.Atomic
 import toolbox6.jartree.api._
 import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey}
-import toolbox6.javaapi.AsyncValue
-import toolbox6.javaimpl.JavaImpl
 
 import scala.collection.mutable
 import scala.collection.immutable._
@@ -174,11 +172,9 @@ class JarTree(
     }
   }
 
-  override def resolveAsync[T](request: ClassRequest[T]): AsyncValue[T] = {
-    JavaImpl.wrapFuture(
-      resolve(
-        request
-      )
+  override def resolveAsync[T](request: ClassRequest[T]) = {
+    resolve(
+      request
     )
   }
 }

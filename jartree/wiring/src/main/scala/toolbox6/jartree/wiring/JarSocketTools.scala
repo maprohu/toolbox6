@@ -11,8 +11,6 @@ import monix.reactive.subjects.{PublishSubject, PublishToOneSubject}
 import rx.{Rx, Var}
 import toolbox6.jartree.api._
 import toolbox6.jartree.util.{ClassRequestImpl, JarTreeTools, JsonTools, ScalaInstanceResolver}
-import toolbox6.javaapi.AsyncValue
-import toolbox6.javaimpl.JavaImpl
 import toolbox6.logging.LogTools
 import scala.concurrent.duration._
 
@@ -77,12 +75,11 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
         request: Option[PlugRequestImpl[T, CtxApi]]
       ) : Future[State] = {
         for {
-          response <- JavaImpl.unwrapFuture(
+          response <-
             plugger.pullAsync(
               st.instance.instance,
               context
             )
-          )
         } yield {
           val instance = response.instance()
           val stInstance = Instance(
@@ -136,7 +133,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
       st.out.foreach(_.cleanup())
     })
 
-  override def plugAsync(request: PlugRequest[T, CtxApi]): AsyncValue[T] = JavaImpl.wrapFuture(plug(request))
+  override def plugAsync(request: PlugRequest[T, CtxApi]) = plug(request)
 
   val plugInput = BufferedSubscriber[Input](
     Subscriber(subject, scheduler),

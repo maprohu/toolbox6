@@ -14,8 +14,6 @@ import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
-import toolbox6.javaapi.AsyncValue
-import toolbox6.javaimpl.JavaImpl
 import toolbox6.logging.LogTools
 import toolbox6.pickling.PicklingTools
 import upickle.Js
@@ -38,7 +36,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup: PlugRequestImpl[Processor, CtxApi],
+    initialStartup: Option[PlugRequestImpl[Processor, CtxApi]],
     closer: Processor => Unit
   )
 
@@ -57,7 +55,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     logger.info("starting {}", name)
 
     type Plugger = JarPlugger[Processor, Context]
-    type StartupRequest = PlugRequestImpl[Processor, CtxApi]
+    type StartupRequest = Option[PlugRequestImpl[Processor, CtxApi]]
 
     var processor : () => Processor = null
 
@@ -73,19 +71,26 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     def writeStartup(
       startup: StartupRequest
     ) : Unit = this.synchronized {
+      import PicklingTools._
       import Startup._
-      PicklingTools.toFile[Startup](
-        Startup(
-          startup
-        ),
+      val stopt =
+        startup.map(s =>
+          Startup(
+            s
+          )
+        )
+      PicklingTools.toFile[Option[Startup]](
+        stopt,
         startupFile
       )
     }
 
     def readStartup : StartupRequest = this.synchronized {
+      import PicklingTools._
       import Startup._
-      PicklingTools.fromFile[Startup](startupFile)
-        .request[Processor, CtxApi]
+      PicklingTools
+        .fromFile[Option[Startup]](startupFile)
+        .map(_.request[Processor, CtxApi])
     }
 
     val cache = if (
@@ -139,8 +144,8 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       voidProcessor,
       context,
       new JarPlugger[Processor, CtxApi] {
-        override def pullAsync(previous: Processor, context: CtxApi): AsyncValue[JarPlugResponse[Processor]] = {
-          JavaImpl.asyncSuccess(
+        override def pullAsync(previous: Processor, context: CtxApi): Future[JarPlugResponse[Processor]] = {
+          Future.successful(
             new JarPlugResponse[Processor] {
               override def instance(): Processor = voidProcessor
               override def andThen(): Unit = closer(previous)
@@ -149,7 +154,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
         }
       },
       preProcessor = { propt =>
-        propt.foreach(o => writeStartup(o))
+        propt.foreach(o => writeStartup(Some(o)))
         Future.successful()
       }
     )
@@ -167,9 +172,11 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
     val startupRequest = readStartup
 
-    processorSocket.plug(
-      startupRequest
-    )
+    startupRequest.foreach { sr =>
+      processorSocket.plug(
+        sr
+      )
+    }
 
 
     Runtime(

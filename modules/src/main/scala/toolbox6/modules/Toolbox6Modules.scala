@@ -143,8 +143,8 @@ object JarTreeModules {
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "jartree")
 
   object Api extends ScalaModule(
-    "api",
-    Toolbox6Modules.JavaApi.R1
+    "api"
+//    Toolbox6Modules.JavaApi.R1
   ) {
     object R2 extends Release(
       Toolbox6Modules.JavaApi.R1
@@ -156,8 +156,8 @@ object JarTreeModules {
 
   object Util extends ScalaModule(
     "util",
-    Api.R2,
-    Toolbox6Modules.JavaImpl.R1,
+    Api,
+//    Toolbox6Modules.JavaImpl.R1,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
@@ -179,12 +179,12 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
-    Api.R2,
-    Util.R2,
+    Api,
+    Util,
     Toolbox6Modules.Logging.R2,
-    Wiring.R2,
+    Wiring,
     Toolbox6Modules.Common,
-    Toolbox6Modules.JavaImpl.R1,
+//    Toolbox6Modules.JavaImpl.R1,
     Toolbox6Modules.Pickling.R1,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`io.monix:monix-eval_2.11:jar:2.0.4`,
@@ -213,7 +213,7 @@ object JarTreeModules {
 
   object ServletApi extends ScalaModule(
     "servletapi",
-    Api.R2,
+    Api,
     mvn.`javax.servlet:servlet-api:jar:2.5`
   ) {
     object R2 extends Release(
@@ -277,9 +277,9 @@ object JarTreeModules {
 
   object Wiring extends ScalaModule(
     "wiring",
-    Api.R2,
-    ServletApi.R2,
-    Util.R2,
+    Api,
+    ServletApi,
+    Util,
     Toolbox6Modules.Logging.R2,
     mvn.`io.monix:monix_2.11:jar:2.0.4`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,

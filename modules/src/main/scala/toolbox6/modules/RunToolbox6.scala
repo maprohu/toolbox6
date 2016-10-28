@@ -20,8 +20,8 @@ object RunToolbox6 {
 
   val Modules = Seq[ConfiguredModule](
     Toolbox6Modules.Environment,
-    Toolbox6Modules.JavaApi,
-    Toolbox6Modules.JavaImpl,
+//    Toolbox6Modules.JavaApi,
+//    Toolbox6Modules.JavaImpl,
     Toolbox6Modules.Macros,
     Toolbox6Modules.Common,
     Toolbox6Modules.Pickling,

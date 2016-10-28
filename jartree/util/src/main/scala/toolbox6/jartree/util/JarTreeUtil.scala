@@ -7,8 +7,6 @@ import java.util
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import toolbox6.jartree.api._
-import toolbox6.javaapi.AsyncValue
-import toolbox6.javaimpl.JavaImpl
 import upickle.Js
 import upickle.Js.Obj
 
@@ -136,6 +134,6 @@ object ClassRequestImpl {
 trait ScalaInstanceResolver extends InstanceResolver {
   implicit def executionContext: ExecutionContext
   def resolve[T](request: ClassRequest[T]) : Future[T]
-  def resolveAsync[T](request: ClassRequest[T]) : AsyncValue[T] = JavaImpl.wrapFuture(resolve(request))
+  def resolveAsync[T](request: ClassRequest[T]) = resolve[T](request)
 
 }

@@ -2,12 +2,9 @@ package toolbox6.jartree.util
 
 
 import toolbox6.jartree.api.{JarPlugResponse, JarPlugger}
-import toolbox6.javaapi.AsyncValue
-import toolbox6.javaimpl.JavaImpl
 
-//trait Closable {
-//  def close() : Unit
-//}
+import scala.concurrent.Future
+
 /**
   * Created by Student on 06/10/2016.
   */
@@ -20,12 +17,6 @@ object JarTreeTools {
     }
   }
 
-//  def closableResponse[T <: JarUpdatable with Closable](o: => T, previous: T) = {
-//    new JarPlugResponse[T] {
-//      override def instance(): T = o
-//      override def andThen(): Unit = previous.close()
-//    }
-//  }
 
   def andThenResponse[T](o: => T, cb: () => Unit) = {
     new JarPlugResponse[T] {
@@ -39,8 +30,7 @@ object JarTreeTools {
     val response = noopResponse(init)
 
     new JarPlugger[T, C] {
-//      override def pull(previous: T, param: Array[Byte], context: C): JarPlugResponse[T] = response
-      override def pullAsync(previous: T, context: C): AsyncValue[JarPlugResponse[T]] = JavaImpl.asyncSuccess(response)
+      override def pullAsync(previous: T, context: C) = Future.successful(response)
     }
   }
 

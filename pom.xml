@@ -21,8 +21,6 @@
         <module>gis</module>
         <module>scalajs</module>
         <module>environment</module>
-        <module>javaapi</module>
-        <module>javaimpl</module>
         <module>macros</module>
         <module>common</module>
         <module>pickling</module>

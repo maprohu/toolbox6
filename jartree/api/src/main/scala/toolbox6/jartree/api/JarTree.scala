@@ -1,6 +1,6 @@
 package toolbox6.jartree.api
 
-import toolbox6.javaapi.AsyncValue
+import scala.concurrent.Future
 
 
 
@@ -45,7 +45,7 @@ trait ClassRequest[+T] {
 
 
 trait InstanceResolver {
-  def resolveAsync[T](request: ClassRequest[T]) : AsyncValue[T]
+  def resolveAsync[T](request: ClassRequest[T]) : Future[T]
 }
 
 //trait JarRunnableByteArray[C <: AnyRef] {
@@ -66,7 +66,7 @@ trait JarPlugger[T, -C] {
     previous: T,
 //    param: Array[Byte],
     context: C
-  ) : AsyncValue[JarPlugResponse[T]]
+  ) : Future[JarPlugResponse[T]]
 }
 
 
@@ -78,7 +78,7 @@ trait PlugRequest[T, -C] {
 trait JarSocket[T, C] {
   def plugAsync(
     request: PlugRequest[T, C]
-  ) : AsyncValue[T]
+  ) : Future[T]
 
   def get() : T
 }

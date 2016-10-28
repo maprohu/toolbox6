@@ -1,6 +1,7 @@
 package toolbox6.modules
 
 import maven.modules.builder.ModuleRelease
+import toolbox6.modules
 
 /**
   * Created by pappmar on 13/10/2016.
@@ -25,7 +26,40 @@ object RunToolbox6Release {
     JarTreeModules.Akka.R1,
     AkkaModules.Json4s.R1,
     Toolbox6Modules.Macros.R1,
-    Toolbox6Modules.Jms.R1
+    Toolbox6Modules.Jms.R1,
+
+
+    Toolbox6Modules.Environment.R1,
+    Toolbox6Modules.JavaApi.R1,
+    Toolbox6Modules.JavaImpl.R1,
+    Toolbox6Modules.Logging.R2,
+    Toolbox6Modules.Common.R2,
+    Toolbox6Modules.Pickling.R1,
+    Toolbox6Modules.Jms.R1,
+    Toolbox6Modules.Packaging.R1,
+    Toolbox6Modules.Macros.R2,
+
+    AkkaModules.Http.R2,
+
+    JarTreeModules.Api.R2,
+    JarTreeModules.Util.R2,
+    JarTreeModules.ServletApi.R2,
+    JarTreeModules.Wiring.R2,
+    JarTreeModules.Impl.R2,
+    JarTreeModules.ManagementApi.R2,
+    JarTreeModules.ManagementUtils.R2,
+    JarTreeModules.Servlet.R2,
+    JarTreeModules.Webapp.R2,
+    JarTreeModules.Packaging.R1,
+    JarTreeModules.Client.R1,
+    JarTreeModules.Akka.R2
+
+
+
+
+
+
+
 
 
 

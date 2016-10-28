@@ -15,6 +15,11 @@ object AkkaModules {
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`com.typesafe.akka:akka-slf4j_2.11:2.3.15`
   ) {
+    object R2 extends Release(
+      mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
+      mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
+      mvn.`com.typesafe.akka:akka-slf4j_2.11:2.3.15`
+    )
     object R1 extends Release(
       mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
       mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,

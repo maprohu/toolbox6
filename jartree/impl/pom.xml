@@ -110,12 +110,37 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-api</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-util</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-jartree-wiring</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-common</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-javaimpl</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-pickling</artifactId>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
@@ -123,19 +148,9 @@
             <version>3.4.0</version>
         </dependency>
         <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-logging</artifactId>
-            <version>2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>io.monix</groupId>
             <artifactId>monix-eval_2.11</artifactId>
             <version>2.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-jartree-wiring</artifactId>
-            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>me.chrons</groupId>
@@ -143,24 +158,9 @@
             <version>1.2.4</version>
         </dependency>
         <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-common</artifactId>
-            <version>2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-javaimpl</artifactId>
-            <version>2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-pickling</artifactId>
-            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

@@ -12,7 +12,7 @@ import scala.concurrent.{Await, ExecutionContext, Promise}
 /**
   * Created by martonpapp on 09/07/16.
   */
-object HygienicThread {
+object HygienicThread extends LazyLogging {
 
 
   def execute[T]( task: => T, timeout: Duration = 10.minutes, classLoader: Option[ClassLoader] = None ) : T = {
@@ -56,27 +56,32 @@ object HygienicThread {
     (ec, shut)
   }
 
-  lazy private val (globalExecutionContext, globalStopper) = createExecutionContext()
+//  lazy private val (globalExecutionContext, globalStopper) = createExecutionContext()
 
-  object Implicits extends LazyLogging {
-
-    implicit lazy val global: Scheduler =
-      AsyncScheduler(
-        Scheduler.DefaultScheduledExecutor,
-        globalExecutionContext,
-        UncaughtExceptionReporter({ ex =>
-          logger.warn(ex.getMessage, ex)
-        }),
-        ExecutionModel.Default
-      )
-
+  def createSchduler() : (Scheduler, () => Unit) = {
+    val (ec, stopper) = createExecutionContext()
+    val sch = AsyncScheduler(
+      Scheduler.DefaultScheduledExecutor,
+      ec,
+      UncaughtExceptionReporter({ ex =>
+        logger.warn(ex.getMessage, ex)
+      }),
+      ExecutionModel.Default
+    )
+    (sch, stopper)
   }
 
-  def stopGlobal() = {
-    globalStopper()
-  }
+//  object Implicits extends LazyLogging {
+//
+//    implicit lazy val global: Scheduler =
+//
+//  }
 
-  val cancelGlobal = Cancelable(() => stopGlobal())
+//  def stopGlobal() = {
+//    globalStopper()
+//  }
+//
+//  val cancelGlobal = Cancelable(() => stopGlobal())
 
 }
 

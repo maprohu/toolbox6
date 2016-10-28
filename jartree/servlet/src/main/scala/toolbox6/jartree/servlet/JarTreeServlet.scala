@@ -26,16 +26,15 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   */
 abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
 
-  class ScalaJarTreeServletContext(jarTree: JarTree) extends JarTreeServletContext with ScalaInstanceResolver {
+  class ScalaJarTreeServletContext(jarTree: JarTree, ec: ExecutionContext) extends JarTreeServletContext with ScalaInstanceResolver {
     override def servletConfig(): ServletConfig = self.getServletConfig
-    override implicit def executionContext: ExecutionContext = HygienicThread.Implicits.global
+    override implicit def executionContext: ExecutionContext = ec
     override def resolve[T](request: ClassRequest[T]): Future[T] = jarTree.resolve(request)
   }
 
   val VoidProcessor : Processor = new Processor {
     override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
     override def close(): Unit = ()
-//    override def updateAsync(param: Array[Byte]): AsyncValue[Unit] = JavaImpl.asyncSuccess()
   }
 
   case class Running(
@@ -51,7 +50,9 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
   override def init(config: ServletConfig): Unit = {
     super.init(config)
 
-    import HygienicThread.Implicits.global
+    implicit val (sch, stopEC) = HygienicThread.createSchduler()
+
+
     JarTreeBootstrapConfig
       .jconfig
       .foreach({ bootstrapConfig =>
@@ -60,7 +61,7 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
         val rt = JarTreeBootstrap
           .init[Processor, JarTreeServletContext, ScalaJarTreeServletContext](
           Config(
-            contextProvider = jt => new ScalaJarTreeServletContext(jt),
+            contextProvider = jt => new ScalaJarTreeServletContext(jt, sch),
             voidProcessor = VoidProcessor,
             name = name,
             dataPath = dataPath,
@@ -89,7 +90,8 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
           service = (req, res) => rt.processorSocket.currentInstance.instance.service(req, res),
           stop = CompositeCancelable(
             stopManagement,
-            rt.stop
+            rt.stop,
+            Cancelable(() => quietly { stopEC() } )
           )
         )
       })
@@ -97,7 +99,6 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
 
   override def destroy(): Unit = {
     quietly { running.stop.cancel() }
-    quietly { HygienicThread.stopGlobal() }
     super.destroy()
   }
 

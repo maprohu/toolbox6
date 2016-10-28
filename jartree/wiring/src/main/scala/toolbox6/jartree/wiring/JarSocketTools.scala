@@ -38,12 +38,6 @@ object PlugRequestImpl {
 
 }
 
-
-//case class Plugged[T <: JarUpdatable, C](
-//  instance: Future[T],
-//  request: Option[PlugRequestImpl[T, C]]
-//)
-
 class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
   init: T,
   context: Context,
@@ -116,21 +110,6 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
           logger.warn(s"cleaning empty socket")
           Future.successful(st)
 
-//        case (Some(current), Some(pr)) if current.request == pr.request =>
-//          logger.info(s"updating: ${current.request}")
-//          for {
-//            _ <- JavaImpl.unwrapFuture(
-//              st
-//                .instance
-//                .instance
-//                .updateAsync(
-//                  pr.param
-//                )
-//            )
-//          } yield {
-//            st
-//          }
-
         case (copt, or @ Some(pr)) =>
           logger.info(s"replacing: ${pr.request} (previous: ${copt})")
           for {
@@ -156,16 +135,6 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
     .foreach({ st =>
       st.out.foreach(_.cleanup())
     })
-
-//  private val initPlugged = Plugged[T, C](init, None)
-//
-//  private val rxVar = Var(initPlugged)
-//
-//  val dynamic : Rx[Plugged[T, C]] = rxVar
-//
-//  private val atomic = Atomic(
-//    initPlugged
-//  )
 
   override def plugAsync(request: PlugRequest[T, CtxApi]): AsyncValue[T] = JavaImpl.wrapFuture(plug(request))
 
@@ -273,38 +242,4 @@ object NamedSocket {
 
 }
 
-//case class MultiUpdate[T, C](
-//  bindings: Map[String, PlugRequestImpl[T, C]]
-//)
 
-object JarSocketTools {
-
-//  def multiUpdateAsync[T, C, S <: JarSocket[T, C]](
-//    param: Array[Byte],
-//    sockets: NamedSocket[T, C, S]*
-//  )(implicit
-//    executionContext: ExecutionContext
-//  ): AsyncValue[Unit] = {
-//    import boopickle.Default._
-//
-//    val updates = Unpickle[MultiUpdate[T, C]].fromBytes(
-//      ByteBuffer.wrap(param)
-//    )
-//
-//    JavaImpl.wrapFuture(
-//      Future
-//        .sequence(
-//          sockets
-//            .map({ socket =>
-//              JavaImpl.unwrapFuture(
-//                socket.socket.plugAsync(
-//                  updates.bindings(socket.name)
-//                )
-//              )
-//            })
-//        )
-//        .map(_ => ())
-//    )
-//  }
-
-}

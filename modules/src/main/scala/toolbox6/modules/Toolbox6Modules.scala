@@ -62,7 +62,7 @@ object Toolbox6Modules extends MavenCentralModule(
 
   object Pickling extends ScalaModule(
     "pickling",
-    Common.R2,
+    Common,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
     object R1 extends Release(
@@ -183,7 +183,7 @@ object JarTreeModules {
     Util.R2,
     Toolbox6Modules.Logging.R2,
     Wiring.R2,
-    Toolbox6Modules.Common.R2,
+    Toolbox6Modules.Common,
     Toolbox6Modules.JavaImpl.R1,
     Toolbox6Modules.Pickling.R1,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
@@ -234,6 +234,7 @@ object JarTreeModules {
     ManagementApi.R2,
     ManagementUtils.R2,
     Wiring.R2,
+    Toolbox6Modules.Common,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
@@ -317,7 +318,7 @@ object JarTreeModules {
   object ManagementUtils extends ScalaModule(
     "managementutils",
     ManagementApi.R2,
-    Toolbox6Modules.Common.R2,
+    Toolbox6Modules.Common,
     Wiring.R2,
     ServletApi.R2
   ) {
@@ -351,7 +352,7 @@ object JarTreeModules {
   object Akka extends ScalaModule(
     "akka",
     ServletApi.R2,
-    Toolbox6Modules.Common.R2,
+    Toolbox6Modules.Common,
     AkkaModules.Http.R2,
     Toolbox6Modules.Logging.R2
   ) {

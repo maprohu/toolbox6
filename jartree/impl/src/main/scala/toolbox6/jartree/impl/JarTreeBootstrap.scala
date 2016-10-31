@@ -98,7 +98,11 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
         .toOption
         .forall(_ < version)
     ) {
+      logger.info("deleting old data directory: {}", dataPath)
       Try(FileUtils.deleteDirectory(dir))
+      if (dir.exists()) {
+        logger.warn("could not delete old directory: {}", dataPath)
+      }
       dir.mkdirs()
 
       logger.info("creating new data directory: {}", dataPath)

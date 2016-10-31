@@ -1,8 +1,5 @@
 package toolbox6.jartree.servlet
 
-import java.io.ByteArrayInputStream
-import java.nio.ByteBuffer
-import java.rmi.RemoteException
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
@@ -18,7 +15,6 @@ import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
 import toolbox6.logging.LogTools
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
@@ -74,7 +70,7 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
                     () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
                     )
                 }),
-            initialStartup = startup.request[Processor, JarTreeServletContext],
+            initialStartup = Some(startup.request[Processor, JarTreeServletContext]),
             closer = _.close()
           )
         )

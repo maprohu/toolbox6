@@ -90,7 +90,11 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
             stInstance,
             Some(
               StateOut(
-                () => response.andThen()
+                { () =>
+                  logger.info("calling plugging andThen")
+                  response.andThen()
+                  logger.info("plugging andThen complete")
+                }
               )
             )
           )

@@ -26,6 +26,7 @@ import scala.util.Try
 abstract class AkkaProcessor(
   route: AkkaProcessor.Provider
 ) extends Processor with LazyLogging with LogTools with AkkaProcessor.Input { self =>
+  logger.info("creating akka processor")
 
   implicit val actorSystem = ActorSystem(
     self.getClass.getName.replace('.', '_'),
@@ -80,6 +81,7 @@ abstract class AkkaProcessor(
   }
 
   override def close(): Unit = {
+    logger.info("closing akka processor")
     quietly { stopRoute() }
     quietly { Await.result(Http().shutdownAllConnectionPools(), 30.seconds) }
     quietly { actorSystem.shutdown() }

@@ -144,7 +144,6 @@ object JarTreeModules {
 
   object Api extends ScalaModule(
     "api"
-//    Toolbox6Modules.JavaApi.R1
   ) {
     object R2 extends Release(
       Toolbox6Modules.JavaApi.R1
@@ -187,7 +186,7 @@ object JarTreeModules {
 //    Toolbox6Modules.JavaImpl.R1,
     Toolbox6Modules.Pickling.R1,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
-    mvn.`io.monix:monix-eval_2.11:jar:2.0.4`,
+    mvn.`io.monix:monix-eval_2.11:jar:2.0.5`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
     mvn.`commons-io:commons-io:jar:2.2`
   ) {
@@ -228,14 +227,14 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R2,
-    ServletApi.R2,
+    Impl,
+    ServletApi,
     Toolbox6Modules.Logging.R2,
-    ManagementApi.R2,
-    ManagementUtils.R2,
-    Wiring.R2,
+    ManagementApi,
+    ManagementUtils,
+    Wiring,
     Toolbox6Modules.Common,
-    mvn.`io.monix:monix-execution_2.11:jar:2.0.2`,
+    mvn.`io.monix:monix-execution_2.11:jar:2.0.5`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
     object R2 extends Release(
@@ -262,7 +261,7 @@ object JarTreeModules {
 
   object Webapp extends ScalaModule(
     "webapp",
-    Servlet.R2,
+    Servlet,
     mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
   ) {
     object R2 extends Release(
@@ -281,7 +280,7 @@ object JarTreeModules {
     ServletApi,
     Util,
     Toolbox6Modules.Logging.R2,
-    mvn.`io.monix:monix_2.11:jar:2.0.4`,
+    mvn.`io.monix:monix_2.11:jar:2.0.5`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
@@ -306,7 +305,7 @@ object JarTreeModules {
 
   object ManagementApi extends ScalaModule(
     "managementapi",
-    Wiring.R2
+    Wiring
   ) {
     object R2 extends Release(
       Wiring.R2
@@ -317,10 +316,10 @@ object JarTreeModules {
 
   object ManagementUtils extends ScalaModule(
     "managementutils",
-    ManagementApi.R2,
+    ManagementApi,
     Toolbox6Modules.Common,
-    Wiring.R2,
-    ServletApi.R2
+    Wiring,
+    ServletApi
   ) {
     object R2 extends Release(
       ManagementApi.R2,
@@ -351,7 +350,7 @@ object JarTreeModules {
 
   object Akka extends ScalaModule(
     "akka",
-    ServletApi.R2,
+    ServletApi,
     Toolbox6Modules.Common,
     AkkaModules.Http.R2,
     Toolbox6Modules.Logging.R2
@@ -379,9 +378,9 @@ object JarTreeModules {
     "packaging",
     Toolbox6Modules,
     Toolbox6Modules.Packaging.R1,
-    ServletApi.R2,
-    Util.R2,
-    Servlet.R2,
+    ServletApi,
+    Util,
+    Servlet,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,

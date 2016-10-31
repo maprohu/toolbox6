@@ -110,12 +110,12 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-impl</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-servletapi</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
@@ -125,17 +125,17 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-managementapi</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-managementutils</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-wiring</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>io.monix</groupId>
             <artifactId>monix-execution_2.11</artifactId>
-            <version>2.0.2</version>
+            <version>2.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.lihaoyi</groupId>

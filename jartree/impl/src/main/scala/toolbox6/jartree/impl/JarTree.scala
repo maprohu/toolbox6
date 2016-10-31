@@ -168,6 +168,7 @@ class JarTree(
       logger.info(s"instantiating: ${request}")
       val runClass = cl.loadClass(request.className)
       val instance = runClass.newInstance().asInstanceOf[T]
+      logger.info(s"instantiated: ${instance}")
       instance
     }
   }

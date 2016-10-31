@@ -31,6 +31,7 @@ object RunToolbox6DeleteAllReleasesDanger {
 
     dirs
       .foreach({ d =>
+        println(s"deleting: ${d}")
         rm(d)
       })
 

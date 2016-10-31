@@ -4,7 +4,6 @@ import java.rmi.RemoteException
 
 import maven.modules.builder.NamedModule
 import org.apache.commons.io.IOUtils
-import toolbox6.jartree.managementutils.JarTreeManagementUtils
 import toolbox6.jartree.packaging.JarTreePackaging.{RunHierarchy, RunMavenHierarchy}
 import toolbox6.jartree.packaging.{JarTreePackaging, JarTreeWarPackager}
 import toolbox6.jartree.util.{CaseClassLoaderKey, ClassRequestImpl, JsonTools}

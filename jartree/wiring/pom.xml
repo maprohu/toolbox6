@@ -125,7 +125,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-logging</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.monix</groupId>

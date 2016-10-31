@@ -1,6 +1,6 @@
 package toolbox6.modules
 
-import maven.modules.builder.ModuleRelease
+import maven.modules.builder.{ModuleRelease, NamedModule}
 import toolbox6.modules
 
 /**
@@ -8,51 +8,51 @@ import toolbox6.modules
   */
 object RunToolbox6Release {
 
-  val Releases = Seq(
-    Toolbox6Modules.Common.R1,
-    Toolbox6Modules.Logging.R1,
-
-    JarTreeModules.Api.R1,
-    JarTreeModules.ServletApi.R1,
-    JarTreeModules.Util.R1,
-    JarTreeModules.Wiring.R1,
-    JarTreeModules.ManagementApi.R1,
-    JarTreeModules.ManagementUtils.R1,
-    JarTreeModules.Impl.R1,
-    JarTreeModules.Servlet.R1,
-    JarTreeModules.Webapp.R1,
-
-    AkkaModules.Http.R1,
-    JarTreeModules.Akka.R1,
-    AkkaModules.Json4s.R1,
-    Toolbox6Modules.Macros.R1,
-    Toolbox6Modules.Jms.R1,
-
-
-    Toolbox6Modules.Environment.R1,
-    Toolbox6Modules.JavaApi.R1,
-    Toolbox6Modules.JavaImpl.R1,
-    Toolbox6Modules.Logging.R2,
-    Toolbox6Modules.Common.R2,
-    Toolbox6Modules.Pickling.R1,
-    Toolbox6Modules.Jms.R1,
-    Toolbox6Modules.Packaging.R1,
-    Toolbox6Modules.Macros.R2,
-
-    AkkaModules.Http.R2,
-
-    JarTreeModules.Api.R2,
-    JarTreeModules.Util.R2,
-    JarTreeModules.ServletApi.R2,
-    JarTreeModules.Wiring.R2,
-    JarTreeModules.Impl.R2,
-    JarTreeModules.ManagementApi.R2,
-    JarTreeModules.ManagementUtils.R2,
-    JarTreeModules.Servlet.R2,
-    JarTreeModules.Webapp.R2,
-    JarTreeModules.Packaging.R1,
-    JarTreeModules.Client.R1,
-    JarTreeModules.Akka.R2
+  val Releases = Seq[NamedModule#Release](
+//    Toolbox6Modules.Common.R1,
+//    Toolbox6Modules.Logging.R1,
+//
+//    JarTreeModules.Api.R1,
+//    JarTreeModules.ServletApi.R1,
+//    JarTreeModules.Util.R1,
+//    JarTreeModules.Wiring.R1,
+//    JarTreeModules.ManagementApi.R1,
+//    JarTreeModules.ManagementUtils.R1,
+//    JarTreeModules.Impl.R1,
+//    JarTreeModules.Servlet.R1,
+//    JarTreeModules.Webapp.R1,
+//
+//    AkkaModules.Http.R1,
+//    JarTreeModules.Akka.R1,
+//    AkkaModules.Json4s.R1,
+//    Toolbox6Modules.Macros.R1,
+//    Toolbox6Modules.Jms.R1,
+//
+//
+//    Toolbox6Modules.Environment.R1,
+//    Toolbox6Modules.JavaApi.R1,
+//    Toolbox6Modules.JavaImpl.R1,
+//    Toolbox6Modules.Logging.R2,
+//    Toolbox6Modules.Common.R2,
+//    Toolbox6Modules.Pickling.R1,
+//    Toolbox6Modules.Jms.R1,
+//    Toolbox6Modules.Packaging.R1,
+//    Toolbox6Modules.Macros.R2,
+//
+//    AkkaModules.Http.R2,
+//
+//    JarTreeModules.Api.R2,
+//    JarTreeModules.Util.R2,
+//    JarTreeModules.ServletApi.R2,
+//    JarTreeModules.Wiring.R2,
+//    JarTreeModules.Impl.R2,
+//    JarTreeModules.ManagementApi.R2,
+//    JarTreeModules.ManagementUtils.R2,
+//    JarTreeModules.Servlet.R2,
+//    JarTreeModules.Webapp.R2,
+//    JarTreeModules.Packaging.R1,
+//    JarTreeModules.Client.R1,
+//    JarTreeModules.Akka.R2
 
 
 

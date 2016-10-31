@@ -22,7 +22,6 @@
         <module>webapp</module>
         <module>wiring</module>
         <module>managementapi</module>
-        <module>managementutils</module>
         <module>client</module>
         <module>akka</module>
         <module>testing</module>

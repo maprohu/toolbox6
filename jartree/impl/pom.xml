@@ -120,7 +120,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-logging</artifactId>
-            <version>1.2</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
@@ -135,7 +135,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-pickling</artifactId>
-            <version>1.1</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>

@@ -2,7 +2,8 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
-import maven.modules.builder.{MavenTools, Module, NamedModule}
+import maven.modules.builder.MavenTools.ProjectDef
+import maven.modules.builder.{MavenCoordinatesImpl, MavenTools, Module, NamedModule}
 import maven.modules.utils.Repo
 import sbt.io.IO
 import toolbox6.jartree.api.JarPlugger
@@ -61,11 +62,11 @@ object JarTreeWarPackager {
 
 
 
-  case class Output(
-    pom : Elem,
-    preBuild : File => Unit
-
-  )
+//  case class Output(
+//    pom : Elem,
+//    preBuild : File => Unit
+//
+//  )
 
   val PackagesFromContainer = Seq(
     mvn.`javax.servlet:servlet-api:jar:2.5`,
@@ -105,7 +106,7 @@ object JarTreeWarPackager {
   def process(
     servletClassName : String,
     input : Input
-  ) = {
+  ) : ProjectDef = {
     import input._
 
     val (runRequest, hierarchyJars) =
@@ -122,14 +123,20 @@ object JarTreeWarPackager {
           (maven, s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar")
         })
 
-    Output(
+    val coords =
+      MavenCoordinatesImpl(
+        groupId = name,
+        artifactId = s"${name}-war",
+        version = version
+      )
+
+    ProjectDef(
+      coordinates = coords,
       pom = {
         <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
           <modelVersion>4.0.0</modelVersion>
 
-          <groupId>{name}</groupId>
-          <artifactId>{name}</artifactId>
-          <version>{version}</version>
+          {coords.asPomCoordinates}
           <packaging>war</packaging>
           <build>
             <finalName>{name}</finalName>

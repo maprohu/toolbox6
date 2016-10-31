@@ -39,7 +39,7 @@ object RunToolbox6 {
     JarTreeModules.Webapp,
     JarTreeModules.Wiring,
     JarTreeModules.ManagementApi,
-    JarTreeModules.ManagementUtils,
+//    JarTreeModules.ManagementUtils,
     JarTreeModules.Client,
     JarTreeModules.Akka,
     JarTreeModules.Testing,

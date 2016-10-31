@@ -2,18 +2,21 @@ package toolbox6.modules
 
 import maven.modules.builder._
 import maven.modules.utils.MavenCentralModule
+import mvnmod.modules.MvnmodModules
 
 
 /**
   * Created by martonpapp on 29/08/16.
   */
-object Toolbox6Modules extends MavenCentralModule(
-  "toolbox6-modules",
-  "toolbox6-modules",
-  "1.0.0"
-) {
+object Toolbox6Modules {
 
   implicit val Root = RootModuleContainer("toolbox6")
+
+  object Modules extends ScalaModule(
+    "modules",
+    MvnmodModules.Modules,
+    MvnmodModules.Builder
+  )
 
   object Environment extends ScalaModule(
     "environment"
@@ -335,13 +338,13 @@ object JarTreeModules {
 
   object Client extends ScalaModule(
     "client",
-    Toolbox6Modules,
+    Toolbox6Modules.Modules,
     ManagementUtils.R2,
     Packaging.R1,
     mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
   ) {
     object R1 extends Release(
-      Toolbox6Modules,
+      Toolbox6Modules.Modules,
       ManagementUtils.R2,
       Packaging.R1,
       mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
@@ -376,7 +379,7 @@ object JarTreeModules {
 
   object Packaging extends ScalaModule(
     "packaging",
-    Toolbox6Modules,
+    Toolbox6Modules.Modules,
     Toolbox6Modules.Packaging.R1,
     ServletApi,
     Util,
@@ -389,7 +392,7 @@ object JarTreeModules {
     mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
   ) {
     object R1 extends Release(
-      Toolbox6Modules,
+      Toolbox6Modules.Modules,
       Toolbox6Modules.Packaging.R1,
       ServletApi.R2,
       Util.R2,

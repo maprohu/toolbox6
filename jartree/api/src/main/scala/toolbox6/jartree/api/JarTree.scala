@@ -1,5 +1,7 @@
 package toolbox6.jartree.api
 
+import java.io.File
+
 import scala.concurrent.Future
 import scala.collection.immutable._
 
@@ -42,3 +44,11 @@ trait JarSocket[T, C] {
   def get() : T
 }
 
+
+trait JarCacheLike {
+
+  def getAsync(
+    id: String
+  ) : Future[File]
+
+}

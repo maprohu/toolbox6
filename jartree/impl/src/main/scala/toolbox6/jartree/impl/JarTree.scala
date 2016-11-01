@@ -20,7 +20,7 @@ object JarTree {
 
 class JarTree(
   val parentClassLoader: ClassLoader,
-  val cache: JarCache
+  val cache: JarCacheLike
 )(implicit
   executionContext: ExecutionContext
 ) extends InstanceResolver with LazyLogging {

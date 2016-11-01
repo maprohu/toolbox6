@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import monix.execution.atomic.Atomic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
-import toolbox6.jartree.api.JarKey
+import toolbox6.jartree.api.{JarCacheLike, JarKey}
 import toolbox6.jartree.util.CaseJarKey
 import toolbox6.logging.LogTools
 
@@ -23,7 +23,7 @@ import scala.util.Try
 
 class JarCache(
   val root: File
-) extends LazyLogging with LogTools {
+) extends JarCacheLike with LazyLogging with LogTools {
 
   root.mkdirs()
 

@@ -4,9 +4,8 @@ import java.io.File
 
 import sbt.io.IO
 import toolbox6.common.ByteBufferTools
+import toolbox6.jartree.api.{ClassRequest, PlugRequest}
 import toolbox6.jartree.impl.Startup
-import toolbox6.jartree.util.{CaseClassLoaderKey, ClassRequestImpl}
-import toolbox6.jartree.wiring.PlugRequestImpl
 
 import scala.collection.immutable._
 
@@ -20,12 +19,9 @@ object RunPickling {
 
     val bs = pickle(
       Startup(
-        PlugRequestImpl(
-          ClassRequestImpl(
-            CaseClassLoaderKey(
-              Seq(),
-              None
-            ),
+        PlugRequest(
+          ClassRequest(
+            Seq(),
             "class"
           )
         )

@@ -13,7 +13,7 @@ import toolbox6.common.ByteBufferTools
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util._
-import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
+import toolbox6.jartree.wiring.{ SimpleJarSocket}
 import toolbox6.logging.LogTools
 import toolbox6.pickling.PicklingTools
 import upickle.Js
@@ -22,6 +22,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.{Codec, Source}
 import scala.util.Try
+import scala.collection.immutable._
 
 /**
   * Created by martonpapp on 15/10/16.
@@ -35,8 +36,8 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     name: String,
     dataPath: String,
     version : Int = 1,
-    embeddedJars: Seq[(CaseJarKey, () => InputStream)],
-    initialStartup: Option[PlugRequestImpl[Processor, CtxApi]],
+    embeddedJars: Seq[(JarKey, () => InputStream)],
+    initialStartup: Option[PlugRequest[Processor, CtxApi]],
     closer: Processor => Unit
   )
 
@@ -55,7 +56,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     logger.info("starting {}", name)
 
     type Plugger = JarPlugger[Processor, Context]
-    type StartupRequest = Option[PlugRequestImpl[Processor, CtxApi]]
+    type StartupRequest = Option[PlugRequest[Processor, CtxApi]]
 
     var processor : () => Processor = null
 
@@ -252,15 +253,15 @@ object JarTreeBootstrapConfig {
 
 case class EmbeddedJar(
   classpathResource: String,
-  key: CaseJarKey
+  key: JarKey
 )
 
 case class Startup(
-  classLoader: CaseClassLoaderKey,
+  classLoader: Seq[JarKey],
   className: String
 ) {
-  def request[T, C] = PlugRequestImpl[T, C](
-    ClassRequestImpl[JarPlugger[T, C]](
+  def request[T, C] = PlugRequest[T, C](
+    ClassRequest[JarPlugger[T, C]](
       classLoader,
       className
     )
@@ -272,9 +273,9 @@ object Startup {
   implicit val pickler : PicklingTools.Pickler[Startup] = generatePickler[Startup]
 
   def apply[T, C](
-    request: PlugRequestImpl[T, C]
+    request: PlugRequest[T, C]
   ) : Startup = Startup(
-    request.request.classLoader,
+    request.request.jars,
     request.request.className
   )
 }

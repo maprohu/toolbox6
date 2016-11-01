@@ -4,7 +4,6 @@ package toolbox6.jartree.impl
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.atomic.Atomic
 import toolbox6.jartree.api._
-import toolbox6.jartree.util.{CaseClassLoaderKey, CaseJarKey}
 
 import scala.collection.mutable
 import scala.collection.immutable._
@@ -25,6 +24,7 @@ class JarTree(
 )(implicit
   executionContext: ExecutionContext
 ) extends InstanceResolver with LazyLogging {
+  type CaseClassLoaderKey = Seq[JarKey]
 
   class Holder(
     val future : Future[WeakReference[ClassLoader]]
@@ -69,15 +69,14 @@ class JarTree(
             .getOrElse({
               logger.info(s"creating classloader: ${key}")
 
-              val parentFuture =
-                key
-                  .parentOpt
-                  .map(pk => get(pk))
-                  .getOrElse(Future.successful(parentClassLoader))
+//              val parentFuture =
+//                key
+//                  .parentOpt
+//                  .map(pk => get(pk))
+//                  .getOrElse(Future.successful(parentClassLoader))
 
               val jarFutures =
                 key
-                  .jarsSeq
                   .map({ jk =>
                     cache.getAsync(jk.uniqueId)
                   })
@@ -86,14 +85,13 @@ class JarTree(
 
               val future : Future[ClassLoader] =
                 for {
-                  parent <- parentFuture
                   jars <- Future.sequence(jarFutures)
                 } yield {
                   new ParentLastUrlClassloader(
                     jars.map({ jar =>
                       jar.toURI.toURL
                     }),
-                    parent
+                    parentClassLoader
                   )
                 }
 
@@ -163,7 +161,7 @@ class JarTree(
     logger.info(s"resolving: ${request}")
 
     for {
-      cl <- get(CaseClassLoaderKey(request.classLoader))
+      cl <- get(request.jars)
     } yield {
       logger.info(s"instantiating: ${request}")
       val runClass = cl.loadClass(request.className)

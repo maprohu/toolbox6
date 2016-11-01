@@ -1,6 +1,6 @@
 package toolbox6.modules
 
-import maven.modules.builder.{JavaModule, ScalaModule, SubModuleContainer}
+import maven.modules.builder.{ScalaModule, SubModuleContainer}
 
 /**
   * Created by pappmar on 30/08/2016.

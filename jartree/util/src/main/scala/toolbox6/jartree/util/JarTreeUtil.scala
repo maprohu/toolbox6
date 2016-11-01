@@ -20,29 +20,29 @@ import scala.concurrent.{ExecutionContext, Future}
 
 //sealed trait CaseJarKey extends JarKey
 
-case class CaseJarKey(
-  uniqueId: String
-) extends JarKey
+//case class CaseJarKey(
+//  uniqueId: String
+//) extends JarKey
 
 object CaseJarKey {
-  def apply(
-    jarKey: JarKey
-  ) : CaseJarKey = {
-    CaseJarKey(
-      jarKey.uniqueId()
-    )
-  }
+//  def apply(
+//    jarKey: JarKey
+//  ) : JarKey = {
+//    JarKey(
+//      jarKey.uniqueId()
+//    )
+//  }
 
   def apply(
     file: File
-  ) : CaseJarKey = {
+  ) : JarKey = {
     apply(() => new FileInputStream(file))
   }
 
   def apply(
     bytes: () => InputStream
-  ) : CaseJarKey = {
-    apply(
+  ) : JarKey = {
+    JarKey(
       hashToString(
         calculateHash(
           bytes()
@@ -78,58 +78,58 @@ object CaseJarKey {
 
 }
 
-final case class CaseClassLoaderKey(
-  jarsSeq: Seq[CaseJarKey],
-  parentOpt: Option[CaseClassLoaderKey]
-) extends ClassLoaderKey {
-  override val jars: util.Collection[JarKey] = jarsSeq
-  override val parent: ClassLoaderKey = parentOpt.orNull
-}
-
-object CaseClassLoaderKey {
-  def apply(clk: ClassLoaderKey) : CaseClassLoaderKey = apply(
-    jarsSeq = clk.jars().to[Seq].map(CaseJarKey.apply),
-    parentOpt = Option(clk.parent()).map(CaseClassLoaderKey.apply)
-  )
-}
-
-final case class ClassRequestImpl[+T](
-  classLoader: CaseClassLoaderKey,
-  className: String
-) extends ClassRequest[T]
-
-object ClassRequestImpl {
-  def fromString[T](str: String) : ClassRequestImpl[T] = {
-    upickle.default.read[ClassRequestImpl[Any]](str)
-      .asInstanceOf[ClassRequestImpl[T]]
-  }
-
-//  def fromJavax[T](o: JsonObject) : ClassRequestImpl[T] = {
-//    upickle.default.readJs[ClassRequestImpl[Any]](
-//      JsonTools.fromJavax(o)
-//    ).asInstanceOf[ClassRequestImpl[T]]
+//final case class CaseClassLoaderKey(
+//  jarsSeq: Seq[CaseJarKey],
+//  parentOpt: Option[CaseClassLoaderKey]
+//) extends ClassLoaderKey {
+//  override val jars: util.Collection[JarKey] = jarsSeq
+//  override val parent: ClassLoaderKey = parentOpt.orNull
+//}
+//
+//object CaseClassLoaderKey {
+//  def apply(clk: ClassLoaderKey) : CaseClassLoaderKey = apply(
+//    jarsSeq = clk.jars().to[Seq].map(CaseJarKey.apply),
+//    parentOpt = Option(clk.parent()).map(CaseClassLoaderKey.apply)
+//  )
+//}
+//
+//final case class ClassRequestImpl[+T](
+//  classLoader: CaseClassLoaderKey,
+//  className: String
+//) extends ClassRequest[T]
+//
+//object ClassRequestImpl {
+//  def fromString[T](str: String) : ClassRequestImpl[T] = {
+//    upickle.default.read[ClassRequestImpl[Any]](str)
+//      .asInstanceOf[ClassRequestImpl[T]]
 //  }
-
-  def toString[T](req: ClassRequestImpl[T]) : String = {
-    upickle.default.write(req, 2)
-  }
-
-  def toJsObj[T](req: ClassRequestImpl[T]) : Js.Obj = {
-    upickle.default.writeJs(req).asInstanceOf[Js.Obj]
-  }
-
-  def apply[T](req: ClassRequest[T]) : ClassRequestImpl[T] = {
-    apply[T](
-      req.classLoader(),
-      req.className()
-    )
-  }
-
-  def apply[T](
-    classLoaderKey: ClassLoaderKey,
-    className: String
-  ) : ClassRequestImpl[T] = ClassRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
-}
+//
+////  def fromJavax[T](o: JsonObject) : ClassRequestImpl[T] = {
+////    upickle.default.readJs[ClassRequestImpl[Any]](
+////      JsonTools.fromJavax(o)
+////    ).asInstanceOf[ClassRequestImpl[T]]
+////  }
+//
+//  def toString[T](req: ClassRequestImpl[T]) : String = {
+//    upickle.default.write(req, 2)
+//  }
+//
+//  def toJsObj[T](req: ClassRequestImpl[T]) : Js.Obj = {
+//    upickle.default.writeJs(req).asInstanceOf[Js.Obj]
+//  }
+//
+//  def apply[T](req: ClassRequest[T]) : ClassRequestImpl[T] = {
+//    apply[T](
+//      req.classLoader(),
+//      req.className()
+//    )
+//  }
+//
+//  def apply[T](
+//    classLoaderKey: ClassLoaderKey,
+//    className: String
+//  ) : ClassRequestImpl[T] = ClassRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
+//}
 
 trait ScalaInstanceResolver extends InstanceResolver {
   implicit def executionContext: ExecutionContext

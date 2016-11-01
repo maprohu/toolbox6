@@ -124,19 +124,19 @@ class JarCache(
   }
 
   def get(
-    hash: CaseJarKey
+    hash: JarKey
   ) = {
     Await.result(getAsync(hash.uniqueId), Duration.Inf)
   }
 
-  private def toJarFile(hash: CaseJarKey) : File = {
+  private def toJarFile(hash: JarKey) : File = {
     val file = toManagedFile(hash.uniqueId)
     file.getParentFile.mkdirs()
     file
   }
 
   def putStream(
-    hash: CaseJarKey,
+    hash: JarKey,
     stream: () => InputStream
   )(implicit
     executionContext: ExecutionContext

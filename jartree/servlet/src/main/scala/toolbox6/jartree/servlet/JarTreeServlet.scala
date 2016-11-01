@@ -12,7 +12,7 @@ import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.impl._
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util._
-import toolbox6.jartree.wiring.{PlugRequestImpl, SimpleJarSocket}
+import toolbox6.jartree.wiring.{SimpleJarSocket}
 import toolbox6.logging.LogTools
 
 import scala.concurrent.{Await, ExecutionContext, Future}

@@ -4,8 +4,6 @@ import java.io.File
 
 import toolbox6.common.ByteBufferTools
 import toolbox6.jartree.impl.Startup
-import toolbox6.jartree.util.{CaseClassLoaderKey, ClassRequestImpl}
-import toolbox6.jartree.wiring.PlugRequestImpl
 
 import scala.collection.immutable._
 

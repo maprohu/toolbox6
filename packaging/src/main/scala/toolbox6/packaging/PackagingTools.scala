@@ -43,22 +43,22 @@ final case class MavenHierarchy(
 }
 
 object MavenHierarchy {
-  implicit def namedModuleToHierarchy(module: NamedModule) : MavenHierarchy = {
-    MavenHierarchy(
-      HasMavenCoordinates.namedModule2coords(module),
-      module.deps.to[Seq].map(moduleToHierarchy)
-    )
-  }
+//  implicit def namedModuleToHierarchy(module: NamedModule) : MavenHierarchy = {
+//    MavenHierarchy(
+//      HasMavenCoordinates.namedModule2coords(module),
+//      module.deps.to[Seq].map(moduleToHierarchy)
+//    )
+//  }
 
-  implicit def moduleToHierarchy(module: Module) : MavenHierarchy = {
-    MavenHierarchy(
-      HasMavenCoordinates.module2coords(module),
-      module
-        .deps
-        .filterNot(_.provided)
-        .map(moduleToHierarchy)
-    )
-  }
+//  implicit def moduleToHierarchy(module: Module) : MavenHierarchy = {
+//    MavenHierarchy(
+//      HasMavenCoordinates.module2coords(module),
+//      module
+//        .deps
+//        .filterNot(_.provided)
+//        .map(moduleToHierarchy)
+//    )
+//  }
 
   implicit def fromCLK(clk: MavenCentralModule) : MavenHierarchy = {
     MavenHierarchy(

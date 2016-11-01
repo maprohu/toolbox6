@@ -3,7 +3,7 @@ package toolbox6.jartree.packaging
 import java.io.File
 
 import maven.modules.builder.MavenTools.ProjectDef
-import maven.modules.builder.{MavenCoordinatesImpl, MavenTools, Module, NamedModule}
+import maven.modules.builder._
 import maven.modules.utils.Repo
 import sbt.io.IO
 import toolbox6.jartree.api.JarPlugger
@@ -12,9 +12,7 @@ import toolbox6.modules.JarTreeModules
 
 import scala.xml.{Elem, NodeSeq, XML}
 import toolbox6.packaging.PackagingTools.Implicits._
-import toolbox6.jartree.packaging.JarTreePackaging.RunHierarchy
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
-import toolbox6.jartree.wiring.PlugRequestImpl
 import toolbox6.packaging.MavenHierarchy
 
 
@@ -35,7 +33,8 @@ object JarTreeWarPackager {
     dataDirVersion : Int = 1,
     startup: NamedModule,
     runClassName: String,
-    runtime: NamedModule = JarTreeModules.Webapp
+    runtime: NamedModule,
+    container: NamedModule
   )
 
   def run[T](
@@ -68,40 +67,40 @@ object JarTreeWarPackager {
 //
 //  )
 
-  val PackagesFromContainer = Seq(
-    mvn.`javax.servlet:servlet-api:jar:2.5`,
-    mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
-    mvn.`com.oracle:wlthint3client:jar:10.3.6.0`,
-    mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
-  )
+//  val PackagesFromContainer = Seq(
+//    mvn.`javax.servlet:servlet-api:jar:2.5`,
+//    mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
+//    mvn.`com.oracle:wlthint3client:jar:10.3.6.0`,
+//    mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
+//  )
 
-  def requestAndParamAndJars(
-    startup: NamedModule,
-    runClassName: String,
-    runtime: NamedModule = JarTreeModules.Webapp
-  ) = {
-    val modulesInParent =
-      PackagesFromContainer
-        .map(p => p:MavenHierarchy)
-        .flatMap(_.jars)
-        .to[Set] ++
-        (runtime:MavenHierarchy).jars
-
-    val runHierarchy =
-      RunHierarchy(
-        startup,
-        None,
-        runClassName
-      ).forTarget(modulesInParent.contains)
-
-
-    val embeddedJars =
-      runHierarchy.jars
-
-    val runRequest = runHierarchy.request[JarPlugger[Processor, JarTreeServletContext]]
-
-    (runRequest, embeddedJars)
-  }
+//  def requestAndParamAndJars(
+//    startup: NamedModule,
+//    runClassName: String,
+//    runtime: NamedModule = JarTreeModules.Webapp
+//  ) = {
+//    val modulesInParent =
+//      PackagesFromContainer
+//        .map(p => p:MavenHierarchy)
+//        .flatMap(_.jars)
+//        .to[Set] ++
+//        (runtime:MavenHierarchy).jars
+//
+//    val runHierarchy =
+//      RunHierarchy(
+//        startup,
+//        None,
+//        runClassName
+//      ).forTarget(modulesInParent.contains)
+//
+//
+//    val embeddedJars =
+//      runHierarchy.jars
+//
+//    val runRequest = runHierarchy.request[JarPlugger[Processor, JarTreeServletContext]]
+//
+//    (runRequest, embeddedJars)
+//  }
 
   def process(
     servletClassName : String,
@@ -109,18 +108,30 @@ object JarTreeWarPackager {
   ) : ProjectDef = {
     import input._
 
-    val (runRequest, hierarchyJars) =
-      requestAndParamAndJars(
-        startup,
-        runClassName,
-        runtime
+    val path =
+      ModulePath(
+        runtime,
+        Some(
+          ModulePath(
+            container,
+            None
+          )
+        )
       )
-
     val embeddedJars =
-      hierarchyJars
+      startup
+        .asModule
+        .forTarget(
+          path
+        )
+        .classPath
         .zipWithIndex
         .map({ case (maven, idx) =>
-          (maven, s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar")
+          (
+            maven,
+            s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar",
+            JarTreePackaging.getId(maven)
+          )
         })
 
     val coords =
@@ -169,7 +180,7 @@ object JarTreeWarPackager {
                     <configuration>
                       <artifactItems>
                         {
-                        embeddedJars.map({ case (jar, fn) =>
+                        embeddedJars.map({ case (jar, fn, _) =>
                           <artifactItem>
                             {jar.asPomCoordinates}
                             <overWrite>true</overWrite>
@@ -188,9 +199,9 @@ object JarTreeWarPackager {
           <dependencyManagement>
             <dependencies>
               {
-              PackagesFromContainer.map({ p =>
+              container.deps.map({ (m:Module) =>
                 <dependency>
-                  {p.asPomCoordinates}
+                  {m.asPomCoordinates}
                   <scope>provided</scope>
                 </dependency>
               })
@@ -253,17 +264,18 @@ object JarTreeWarPackager {
               dataPath = dataPath,
               logPath = logPath,
               version = dataDirVersion,
-              embeddedJars = embeddedJars.map({ case (coords, fn) =>
+              embeddedJars = embeddedJars.map({ case (_, fn, id) =>
                 EmbeddedJar(
                   s"${JarsDirName}/${fn}",
-                  JarTreePackaging.getId(coords)
+                  id
                 )
               }),
               startup =
                 Startup(
-                  PlugRequestImpl(
-                    runRequest
-                  )
+                  embeddedJars.map({
+                    case (_, _, id) => id
+                  }),
+                  runClassName
                 ),
               stdout = false,
               debug = false

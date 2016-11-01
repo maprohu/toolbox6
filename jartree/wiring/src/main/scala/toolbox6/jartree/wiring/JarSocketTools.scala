@@ -10,43 +10,43 @@ import monix.reactive.observers.{BufferedSubscriber, Subscriber}
 import monix.reactive.subjects.{PublishSubject, PublishToOneSubject}
 import rx.{Rx, Var}
 import toolbox6.jartree.api._
-import toolbox6.jartree.util.{ClassRequestImpl, JarTreeTools, JsonTools, ScalaInstanceResolver}
+import toolbox6.jartree.util.{JarTreeTools, JsonTools, ScalaInstanceResolver}
 import toolbox6.logging.LogTools
 import scala.concurrent.duration._
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 
-case class PlugRequestImpl[T, C](
-  request: ClassRequestImpl[JarPlugger[T, C]]
-//  param: Array[Byte]
-) extends PlugRequest[T, C]
-
-object PlugRequestImpl {
-  def apply[T, C](
-    request: PlugRequest[T, C]
-  ) : PlugRequestImpl[T, C] = {
-    PlugRequestImpl(
-      ClassRequestImpl(
-        request.request()
-      )
-    )
-  }
-
-
-}
+//case class PlugRequest[T, C](
+//  request: ClassRequestImpl[JarPlugger[T, C]]
+////  param: Array[Byte]
+//) extends PlugRequest[T, C]
+//
+//object PlugRequestImpl {
+//  def apply[T, C](
+//    request: PlugRequest[T, C]
+//  ) : PlugRequestImpl[T, C] = {
+//    PlugRequestImpl(
+//      ClassRequestImpl(
+//        request.request()
+//      )
+//    )
+//  }
+//
+//
+//}
 
 class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
   init: T,
   context: Context,
   cleaner: JarPlugger[T, CtxApi],
-  preProcessor: Option[PlugRequestImpl[T, CtxApi]] => Future[Unit] = (_:Option[PlugRequestImpl[T, CtxApi]]) => Future.successful()
+  preProcessor: Option[PlugRequest[T, CtxApi]] => Future[Unit] = (_:Option[PlugRequest[T, CtxApi]]) => Future.successful()
 )(implicit
   scheduler: Scheduler
 ) extends JarSocket[T, CtxApi] with LazyLogging with LogTools {
 
   case class Input(
-    request: Option[PlugRequestImpl[T, CtxApi]],
+    request: Option[PlugRequest[T, CtxApi]],
     promise: Promise[T]
   )
 
@@ -62,7 +62,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
 
   case class Instance(
     instance: T,
-    request: Option[PlugRequestImpl[T, CtxApi]]
+    request: Option[PlugRequest[T, CtxApi]]
   )
 
   @volatile var currentInstance : Instance = Instance(init, None)
@@ -72,7 +72,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
       def pull(
         plugger: JarPlugger[T, CtxApi],
 //        param: Array[Byte],
-        request: Option[PlugRequestImpl[T, CtxApi]]
+        request: Option[PlugRequest[T, CtxApi]]
       ) : Future[State] = {
         for {
           response <-
@@ -145,7 +145,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
   )
 
   def send(
-    request: Option[PlugRequestImpl[T, CtxApi]]
+    request: Option[PlugRequest[T, CtxApi]]
   ) = {
     logger.info(s"plugging: ${request}")
 
@@ -170,9 +170,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
   ) : Future[T] = {
     send(
       Some(
-        PlugRequestImpl(
-          request
-        )
+        request
       )
     )
   }

@@ -131,6 +131,7 @@ object JarTreePackaging {
       parent
     )
   }
+  
 
   case class RunHierarchy(
     namedModule: Module,

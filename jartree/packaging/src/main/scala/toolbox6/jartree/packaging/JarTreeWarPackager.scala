@@ -256,32 +256,32 @@ object JarTreeWarPackager {
 
         import toolbox6.pickling.PicklingTools._
 
-        IO.write(
-          new File(runtimeDir, JarTreeBootstrapConfig.ConfigFile),
-          pickle(
-            JarTreeBootstrapConfig(
-              name = name,
-              dataPath = dataPath,
-              logPath = logPath,
-              version = dataDirVersion,
-              embeddedJars = embeddedJars.map({ case (_, fn, id) =>
-                EmbeddedJar(
-                  s"${JarsDirName}/${fn}",
-                  id
-                )
-              }),
-              startup =
-                Startup(
-                  embeddedJars.map({
-                    case (_, _, id) => id
-                  }),
-                  runClassName
-                ),
-              stdout = false,
-              debug = false
-            )
-          )
-        )
+//        IO.write(
+//          new File(runtimeDir, JarTreeBootstrapConfig.ConfigFile),
+//          pickle(
+//            JarTreeBootstrapConfig(
+//              name = name,
+//              dataPath = dataPath,
+//              logPath = logPath,
+//              version = dataDirVersion,
+//              embeddedJars = embeddedJars.map({ case (_, fn, id) =>
+//                EmbeddedJar(
+//                  s"${JarsDirName}/${fn}",
+//                  id
+//                )
+//              }),
+//              startup =
+//                Startup(
+//                  embeddedJars.map({
+//                    case (_, _, id) => id
+//                  }),
+//                  runClassName
+//                ),
+//              stdout = false,
+//              debug = false
+//            )
+//          )
+//        )
       }
 
     )

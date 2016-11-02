@@ -78,5 +78,6 @@ trait JarCacheLike {
 case class JarTreeContext(
   name: String,
   log: Option[Path],
+  storage: Option[Path],
   cache: JarCacheLike
 )

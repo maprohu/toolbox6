@@ -40,7 +40,8 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     embeddedJars: Seq[(JarKey, () => InputStream)],
     initialStartup: Option[PlugRequest[Processor, CtxApi]],
     closer: Processor => Unit,
-    logFile: Option[Path] = None
+    logFile: Option[Path] = None,
+    storageDir: Option[Path] = None
   )
 
   case class Runtime[Processor, CtxApi](
@@ -152,6 +153,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     val jarTreeContext = JarTreeContext(
       name = name,
       log = logFile,
+      storage = storageDir,
       cache = cache
     )
 

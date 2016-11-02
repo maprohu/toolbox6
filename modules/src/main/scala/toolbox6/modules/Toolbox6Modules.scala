@@ -139,6 +139,8 @@ object Toolbox6Modules {
     mvn.`com.lihaoyi:scalatex-site_2.11:jar:0.3.6`
   )
 
+
+
 }
 
 object JarTreeModules {

@@ -42,54 +42,53 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
     stop = Cancelable.empty
   )
 
+  def jarTreeBootstrapConfig : JarTreeBootstrapConfig
+
   override def init(config: ServletConfig): Unit = {
     super.init(config)
 
     implicit val (sch, stopEC) = HygienicThread.createSchduler()
 
 
-    JarTreeBootstrapConfig
-      .jconfig
-      .foreach({ bootstrapConfig =>
-        import bootstrapConfig._
+    val bootstrapConfig = jarTreeBootstrapConfig
+    import bootstrapConfig._
 
-        val rt = JarTreeBootstrap
-          .init[Processor, JarTreeServletContext](
-          Config(
-            contextProvider = jt => new ScalaJarTreeServletContext(jt, sch),
-            voidProcessor = VoidProcessor,
-            name = name,
-            dataPath = dataPath,
-            version = version,
-            embeddedJars =
-              embeddedJars
-                .map({ jar =>
-                  (
-                    jar.key,
-                    () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
-                    )
-                }),
-            initialStartup = Some(startup.request[Processor, JarTreeServletContext]),
-            closer = _.close()
-          )
-        )
+    val rt = JarTreeBootstrap
+      .init[Processor, JarTreeServletContext](
+      Config(
+        contextProvider = (jt, ctx) => new ScalaJarTreeServletContext(jt, sch),
+        voidProcessor = VoidProcessor,
+        name = name,
+        dataPath = dataPath,
+        version = version,
+        embeddedJars =
+          embeddedJars
+            .map({ jar =>
+              (
+                jar.key,
+                () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
+                )
+            }),
+        initialStartup = Some(startup.request[Processor, JarTreeServletContext]),
+        closer = _.close()
+      )
+    )
 
-        val stopManagement = setupManagement(
-          name = name,
-          jarTree = rt.jarTree,
-          processorSocket = rt.processorSocket,
-          webappVersion = self.getClass.getPackage.getImplementationVersion
-        )
+    val stopManagement = setupManagement(
+      name = name,
+      jarTree = rt.jarTree,
+      processorSocket = rt.processorSocket,
+      webappVersion = self.getClass.getPackage.getImplementationVersion
+    )
 
-        running = Running(
-          service = (req, res) => rt.processorSocket.currentInstance.instance.service(req, res),
-          stop = CompositeCancelable(
-            stopManagement,
-            rt.stop,
-            Cancelable(() => quietly { stopEC() } )
-          )
-        )
-      })
+    running = Running(
+      service = (req, res) => rt.processorSocket.currentInstance.instance.service(req, res),
+      stop = CompositeCancelable(
+        stopManagement,
+        rt.stop,
+        Cancelable(() => quietly { stopEC() } )
+      )
+    )
   }
 
   override def destroy(): Unit = {

@@ -9,7 +9,7 @@ import monix.execution.atomic.Atomic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import org.jboss.shrinkwrap.resolver.api.maven.Maven
-import toolbox6.jartree.api.JarKey
+import toolbox6.jartree.api.{ClassRequest, JarKey}
 import toolbox6.jartree.impl.JarCache
 import toolbox6.packaging.{MavenHierarchy, PackagingTools}
 import upickle.Js
@@ -228,5 +228,16 @@ object JarTreePackaging {
       })
       .toIndexedSeq
   }
+
+  def request[T](
+    classPath: Seq[HasMavenCoordinates],
+    className: String
+  ) = {
+    ClassRequest[T](
+      classPath.map(getId),
+      className
+    )
+  }
+
 
 }

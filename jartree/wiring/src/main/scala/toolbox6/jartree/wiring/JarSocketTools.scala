@@ -10,10 +10,12 @@ import monix.reactive.observers.{BufferedSubscriber, Subscriber}
 import monix.reactive.subjects.{PublishSubject, PublishToOneSubject}
 import rx.{Rx, Var}
 import toolbox6.jartree.api._
-import toolbox6.jartree.util.{JarTreeTools, JsonTools, ScalaInstanceResolver}
+import toolbox6.jartree.util.JarTreeTools
+//import toolbox6.jartree.impl.JarTreeTools
+//import toolbox6.jartree.util.{JsonTools, ScalaInstanceResolver}
 import toolbox6.logging.LogTools
-import scala.concurrent.duration._
 
+import scala.concurrent.duration._
 import scala.collection.immutable.Seq
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 
@@ -36,14 +38,21 @@ import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 //
 //}
 
-class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
+case class Input[T, CtxApi](
   init: T,
-  context: Context,
+  context: CtxApi,
   cleaner: JarPlugger[T, CtxApi],
+  resolver: ClassLoaderResolver,
+  classLoader: ClassLoader,
   preProcessor: Option[PlugRequest[T, CtxApi]] => Future[Unit] = (_:Option[PlugRequest[T, CtxApi]]) => Future.successful()
+)
+
+class SimpleJarSocket[T, CtxApi](
+  input: Input[T, CtxApi]
 )(implicit
   scheduler: Scheduler
 ) extends JarSocket[T, CtxApi] with LazyLogging with LogTools {
+  import input._
 
   case class Input(
     request: Option[PlugRequest[T, CtxApi]],
@@ -71,19 +80,21 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
     .flatScan(State(currentInstance, None))({ (st, req) =>
       def pull(
         plugger: JarPlugger[T, CtxApi],
-//        param: Array[Byte],
+        pluggerClassLoader: ClassLoader,
         request: Option[PlugRequest[T, CtxApi]]
       ) : Future[State] = {
         for {
           response <-
-            plugger.pullAsync(
-              st.instance.instance,
-              context
+            plugger.pull(
+              PullParams(
+                st.instance.instance,
+                pluggerClassLoader,
+                context
+              )
             )
         } yield {
-          val instance = response.instance()
           val stInstance = Instance(
-            instance,
+            response.instance,
             request
           )
           State(
@@ -105,7 +116,7 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
       val future = (st.instance.request, req.request) match {
         case (Some(cr), None) =>
           logger.info(s"cleaning up: ${cr}")
-          pull(cleaner, None)
+          pull(cleaner, classLoader, None)
 
         case (None, None) =>
           logger.warn(s"cleaning empty socket")
@@ -114,9 +125,19 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
         case (copt, or @ Some(pr)) =>
           logger.info(s"replacing: ${pr.request} (previous: ${copt})")
           for {
-            plugger <- context.resolve(pr.request)
+            pluggerClassLoader <- {
+              resolver
+                .resolve(pr.request.jars)
+            }
+            plugger = {
+              JarTreeTools
+                .instantiate[JarPlugger[T, CtxApi]](
+                  pluggerClassLoader,
+                  pr.request.className
+                )
+            }
             _ = logger.info(s"resolved: ${plugger}")
-            newState <- pull(plugger, or)
+            newState <- pull(plugger, pluggerClassLoader,  or)
           } yield {
             newState
           }
@@ -196,16 +217,18 @@ class SimpleJarSocket[T, CtxApi <: InstanceResolver, Context <: CtxApi with Scal
 
 object SimpleJarSocket {
 
-  def noCleaner[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
-    init: T,
-    context: Context
-  )(implicit
-    scheduler: Scheduler
-  ) : SimpleJarSocket[T, CtxApi, Context] = new SimpleJarSocket[T, CtxApi, Context](
-    init,
-    context,
-    JarTreeTools.noopCleaner[T, CtxApi](init)
-  )
+//  def noCleaner[T, CtxApi](
+//    init: T,
+//    context: CtxApi,
+//    resolver: ClassLoaderResolver
+//  )(implicit
+//    scheduler: Scheduler
+//  ) : SimpleJarSocket[T, CtxApi] = new SimpleJarSocket[T, CtxApi](
+//    init,
+//    context,
+//    JarTreeTools.noopCleaner[T, CtxApi](init),
+//    resolver
+//  )
 
 }
 
@@ -218,26 +241,28 @@ case class NamedSocket[T, C, S <: JarSocket[T, C]](
 
 object NamedSocket {
 
-  case class Input[C <: ScalaInstanceResolver](
-    context: C
-  )
+//  case class Input[C](
+//    context: C,
+//    resolver: ClassLoaderResolver
+//  )
 
-  def noopClean[T, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
-    name: String,
-    init: T
-  )(implicit
-    input: Input[Context],
-    scheduler: Scheduler
-  ) : NamedSocket[T , CtxApi, SimpleJarSocket[T, CtxApi, Context]] = {
-    import input._
-    NamedSocket(
-      name,
-      SimpleJarSocket.noCleaner(
-        init,
-        context
-      )
-    )
-  }
+//  def noopClean[T, CtxApi](
+//    name: String,
+//    init: T
+//  )(implicit
+//    input: Input[CtxApi],
+//    scheduler: Scheduler
+//  ) : NamedSocket[T , CtxApi, SimpleJarSocket[T, CtxApi]] = {
+//    import input._
+//    NamedSocket(
+//      name,
+//      SimpleJarSocket.noCleaner(
+//        init,
+//        context,
+//        resolver
+//      )
+//    )
+//  }
 
 }
 

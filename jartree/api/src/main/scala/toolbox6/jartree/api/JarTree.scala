@@ -1,6 +1,7 @@
 package toolbox6.jartree.api
 
 import java.io.File
+import java.nio.file.Path
 
 import scala.concurrent.Future
 import scala.collection.immutable._
@@ -10,24 +11,45 @@ case class JarKey(
   uniqueId: String
 )
 
+case class JarSeq(
+  jars: Seq[JarKey]
+)
+
 case class ClassRequest[+T](
-  jars: Seq[JarKey],
+  jars: JarSeq,
   className: String
 )
 
-trait InstanceResolver {
-  def resolveAsync[T](request: ClassRequest[T]) : Future[T]
+object ClassRequest {
+  def apply[T](
+    jars: Seq[JarKey],
+    className: String
+  ) : ClassRequest[T] = {
+    ClassRequest[T](
+      JarSeq(jars),
+      className
+    )
+  }
 }
 
-trait JarPlugResponse[+T] {
-  def instance() : T
-  def andThen() : Unit
+
+trait ClassLoaderResolver {
+  def resolve(request: JarSeq) : Future[ClassLoader]
 }
 
+case class JarPlugResponse[+T](
+  instance: T,
+  andThen: () => Unit
+)
+
+case class PullParams[T, +C](
+  previous: T,
+  classLoader: ClassLoader,
+  context: C
+)
 trait JarPlugger[T, -C] {
-  def pullAsync(
-    previous: T,
-    context: C
+  def pull(
+    params: PullParams[T, C]
   ) : Future[JarPlugResponse[T]]
 }
 
@@ -52,3 +74,9 @@ trait JarCacheLike {
   ) : Future[File]
 
 }
+
+case class JarTreeContext(
+  name: String,
+  log: Option[Path],
+  cache: JarCacheLike
+)

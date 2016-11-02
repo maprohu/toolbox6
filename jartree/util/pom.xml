@@ -103,9 +103,6 @@
             </plugin>
         </plugins>
     </build>
-    <dependencyManagement>
-        <dependencies> </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>toolbox6</groupId>
@@ -126,6 +123,11 @@
             <groupId>com.lihaoyi</groupId>
             <artifactId>upickle_2.11</artifactId>
             <version>0.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>toolbox6</groupId>
+            <artifactId>toolbox6-logging</artifactId>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

@@ -162,7 +162,8 @@ object JarTreeModules {
 //    Toolbox6Modules.JavaImpl.R1,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
-    mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
+    mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
+    Toolbox6Modules.Logging
   ) {
 //    object R2 extends Release(
 //      Api.R2,

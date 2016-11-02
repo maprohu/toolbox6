@@ -22,10 +22,9 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   */
 abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
 
-  class ScalaJarTreeServletContext(jarTree: JarTree, ec: ExecutionContext) extends JarTreeServletContext with ScalaInstanceResolver {
+  class ScalaJarTreeServletContext(jarTree: JarTree, ec: ExecutionContext) extends JarTreeServletContext {
     override def servletConfig(): ServletConfig = self.getServletConfig
-    override implicit def executionContext: ExecutionContext = ec
-    override def resolve[T](request: ClassRequest[T]): Future[T] = jarTree.resolve(request)
+    override def resolve(request: JarSeq): Future[ClassLoader] = jarTree.resolve(request)
   }
 
   val VoidProcessor : Processor = new Processor {
@@ -55,7 +54,7 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
         import bootstrapConfig._
 
         val rt = JarTreeBootstrap
-          .init[Processor, JarTreeServletContext, ScalaJarTreeServletContext](
+          .init[Processor, JarTreeServletContext](
           Config(
             contextProvider = jt => new ScalaJarTreeServletContext(jt, sch),
             voidProcessor = VoidProcessor,
@@ -151,7 +150,7 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
   def setupManagement(
     name: String,
     jarTree: JarTree,
-    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext, ScalaJarTreeServletContext],
+    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext],
     webappVersion: String
   )(implicit
     executionContext: ExecutionContext

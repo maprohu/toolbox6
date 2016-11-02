@@ -2,6 +2,7 @@ package toolbox6.jartree.impl
 
 import java.io._
 import java.nio.ByteBuffer
+import java.nio.file.Path
 import java.rmi.RemoteException
 
 import boopickle.Pickler
@@ -13,12 +14,12 @@ import toolbox6.common.ByteBufferTools
 import toolbox6.jartree.api._
 import toolbox6.jartree.impl.JarTreeBootstrap.Config
 import toolbox6.jartree.util._
-import toolbox6.jartree.wiring.{ SimpleJarSocket}
+import toolbox6.jartree.wiring.{Input, SimpleJarSocket}
 import toolbox6.logging.LogTools
 import toolbox6.pickling.PicklingTools
 import upickle.Js
-import scala.concurrent.duration._
 
+import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.{Codec, Source}
 import scala.util.Try
@@ -30,33 +31,34 @@ import scala.collection.immutable._
 object JarTreeBootstrap extends LazyLogging with LogTools {
 //  type CTX = ScalaInstanceResolver
 
-  case class Config[Processor, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
-    contextProvider: JarTree => Context,
+  case class Config[Processor, CtxApi](
+    contextProvider: (JarTree, JarTreeContext) => CtxApi,
     voidProcessor : Processor,
     name: String,
     dataPath: String,
     version : Int = 1,
     embeddedJars: Seq[(JarKey, () => InputStream)],
     initialStartup: Option[PlugRequest[Processor, CtxApi]],
-    closer: Processor => Unit
+    closer: Processor => Unit,
+    logFile: Option[Path] = None
   )
 
-  case class Runtime[Processor, CtxApi <: InstanceResolver, CtxImpl <: CtxApi with ScalaInstanceResolver](
+  case class Runtime[Processor, CtxApi](
     stop: Cancelable,
     jarTree: JarTree,
     jarCache: JarCache,
-    ctx: CtxImpl,
-    processorSocket: SimpleJarSocket[Processor, CtxApi, CtxImpl]
+    ctx: CtxApi,
+    processorSocket: SimpleJarSocket[Processor, CtxApi]
   )
-  def init[Processor, CtxApi <: InstanceResolver, Context <: CtxApi with ScalaInstanceResolver](
-    config : Config[Processor, CtxApi, Context]
+  def init[Processor, CtxApi](
+    config : Config[Processor, CtxApi]
   )(implicit
     scheduler: Scheduler
-  ) : Runtime[Processor, CtxApi, Context] = {
+  ) : Runtime[Processor, CtxApi] = {
     import config._
     logger.info("starting {}", name)
 
-    type Plugger = JarPlugger[Processor, Context]
+    type Plugger = JarPlugger[Processor, CtxApi]
     type StartupRequest = Option[PlugRequest[Processor, CtxApi]]
 
     var processor : () => Processor = null
@@ -139,30 +141,45 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       JarCache(cacheDir)
     }
 
+    val classLoader =
+      JarTreeBootstrap.getClass.getClassLoader
+
     val jarTree = new JarTree(
-      JarTreeBootstrap.getClass.getClassLoader,
+      classLoader,
       cache
     )
 
-    val context : Context = contextProvider(jarTree)
+    val jarTreeContext = JarTreeContext(
+      name = name,
+      log = logFile,
+      cache = cache
+    )
 
-    val processorSocket = new SimpleJarSocket[Processor, CtxApi, Context](
-      voidProcessor,
-      context,
-      new JarPlugger[Processor, CtxApi] {
-        override def pullAsync(previous: Processor, context: CtxApi): Future[JarPlugResponse[Processor]] = {
-          Future.successful(
-            new JarPlugResponse[Processor] {
-              override def instance(): Processor = voidProcessor
-              override def andThen(): Unit = closer(previous)
-            }
-          )
+    val context : CtxApi = contextProvider(jarTree, jarTreeContext)
+
+    val processorSocket = new SimpleJarSocket[Processor, CtxApi](
+      Input(
+        voidProcessor,
+        context,
+        new JarPlugger[Processor, CtxApi] {
+          override def pull(params: PullParams[Processor, CtxApi]): Future[JarPlugResponse[Processor]] = {
+            import params._
+            Future.successful(
+              JarPlugResponse[Processor](
+                voidProcessor,
+                () => closer(previous)
+              )
+            )
+          }
+        },
+        jarTree,
+        classLoader,
+        preProcessor = { propt =>
+          propt.foreach(o => writeStartup(Some(o)))
+          Future.successful()
         }
-      },
-      preProcessor = { propt =>
-        propt.foreach(o => writeStartup(Some(o)))
-        Future.successful()
-      }
+
+      )
     )
     processor = () => processorSocket.get()
 
@@ -206,48 +223,48 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
 object JarTreeBootstrapConfig {
 
-  var verbose = true
+//  var verbose = true
 
-  val ConfigFile = "jartreebootstrap.conf"
+//  val ConfigFile = "jartreebootstrap.conf"
   val VersionFile = "jartreebootstrap.version"
   val StartupFile = "jartreebootstrap.startup"
-  val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
+//  val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
 
 //  val RuntimeVersionAttribute = "runtimeVersion"
 //  val ConfigAttribute = "config"
 //  val ParamAttribute = "param"
 
-  lazy val jconfig : Option[JarTreeBootstrapConfig] =
-    try {
-      val is =
-        JarTreeBootstrapConfig
-          .getClass
-          .getClassLoader
-          .getResourceAsStream(
-            ConfigFile
-          )
-
-      import boopickle.Default._
-
-      Some(
-        Unpickle[JarTreeBootstrapConfig]
-          .fromBytes(
-            ByteBuffer
-              .wrap(
-                IOUtils
-                  .toByteArray(
-                    is
-                  )
-              )
-          )
-      )
-    } catch {
-      case ex : Throwable =>
-        if (verbose && System.getProperty(SuppressInitErrorSystemPropertyName) == null) {
-          ex.printStackTrace()
-        }
-        None
-    }
+//  lazy val jconfig : Option[JarTreeBootstrapConfig] =
+//    try {
+//      val is =
+//        JarTreeBootstrapConfig
+//          .getClass
+//          .getClassLoader
+//          .getResourceAsStream(
+//            ConfigFile
+//          )
+//
+//      import boopickle.Default._
+//
+//      Some(
+//        Unpickle[JarTreeBootstrapConfig]
+//          .fromBytes(
+//            ByteBuffer
+//              .wrap(
+//                IOUtils
+//                  .toByteArray(
+//                    is
+//                  )
+//              )
+//          )
+//      )
+//    } catch {
+//      case ex : Throwable =>
+//        if (verbose && System.getProperty(SuppressInitErrorSystemPropertyName) == null) {
+//          ex.printStackTrace()
+//        }
+//        None
+//    }
 
 
 
@@ -264,7 +281,7 @@ case class Startup(
 ) {
   def request[T, C] = PlugRequest[T, C](
     ClassRequest[JarPlugger[T, C]](
-      classLoader,
+      JarSeq(classLoader),
       className
     )
   )
@@ -277,7 +294,7 @@ object Startup {
   def apply[T, C](
     request: PlugRequest[T, C]
   ) : Startup = Startup(
-    request.request.jars,
+    request.request.jars.jars,
     request.request.className
   )
 }
@@ -289,17 +306,6 @@ case class JarTreeBootstrapConfig(
   version : Int,
   embeddedJars: Seq[EmbeddedJar],
   startup : Startup,
-//  startup : PlugRequestImpl[Processor, Context],
   stdout: Boolean,
   debug: Boolean
-) {
-//  def plugger[Processor <: JarUpdatable, Context] =
-//    PlugRequestImpl[Processor, Context](
-//      ClassRequestImpl[JarPlugger[Processor, Context]](
-//        startup.classLoader,
-//        startup.className
-//      ),
-//      startup.param
-//    )
-//    startup.asInstanceOf[PlugRequestImpl[Processor, Context]]
-}
+)

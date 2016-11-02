@@ -103,9 +103,6 @@
             </plugin>
         </plugins>
     </build>
-    <dependencyManagement>
-        <dependencies> </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>

@@ -131,9 +131,9 @@ object CaseJarKey {
 //  ) : ClassRequestImpl[T] = ClassRequestImpl(CaseClassLoaderKey(classLoaderKey), className)
 //}
 
-trait ScalaInstanceResolver extends InstanceResolver {
-  implicit def executionContext: ExecutionContext
-  def resolve[T](request: ClassRequest[T]) : Future[T]
-  def resolveAsync[T](request: ClassRequest[T]) = resolve[T](request)
-
-}
+//trait ScalaInstanceResolver extends ClassLoaderResolver {
+//  implicit def executionContext: ExecutionContext
+//  def resolve[T](request: ClassRequest[T]) : Future[T]
+//  def resolve[T](request: ClassRequest[T]) = resolve[T](request)
+//
+//}

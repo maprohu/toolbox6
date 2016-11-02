@@ -23,7 +23,7 @@ class JarTree(
   val cache: JarCacheLike
 )(implicit
   executionContext: ExecutionContext
-) extends InstanceResolver with LazyLogging {
+) extends ClassLoaderResolver with LazyLogging {
   type CaseClassLoaderKey = Seq[JarKey]
 
   class Holder(
@@ -35,9 +35,10 @@ class JarTree(
     classLoaderMap.set(Map.empty)
   }
 
-  def get(
-    key: CaseClassLoaderKey
+  override def resolve(
+    jars: JarSeq
   ) : Future[ClassLoader] = {
+    val key = jars.jars
 
     def inner(
       exclude: Option[Holder]
@@ -155,27 +156,27 @@ class JarTree(
 //  }
 
 
-  def resolve[T](
-    request: ClassRequest[T]
-  ) : Future[T] = {
-    logger.info(s"resolving: ${request}")
-
-    for {
-      cl <- get(request.jars)
-    } yield {
-      logger.info(s"instantiating: ${request}")
-      val runClass = cl.loadClass(request.className)
-      val instance = runClass.newInstance().asInstanceOf[T]
-      logger.info(s"instantiated: ${instance}")
-      instance
-    }
-  }
-
-  override def resolveAsync[T](request: ClassRequest[T]) = {
-    resolve(
-      request
-    )
-  }
+//  def resolve[T](
+//    request: ClassRequest[T]
+//  ) : Future[T] = {
+//    logger.info(s"resolving: ${request}")
+//
+//    for {
+//      cl <- get(request.jars)
+//    } yield {
+//      logger.info(s"instantiating: ${request}")
+//      val runClass = cl.loadClass(request.className)
+//      val instance = runClass.newInstance().asInstanceOf[T]
+//      logger.info(s"instantiated: ${instance}")
+//      instance
+//    }
+//  }
+//
+//  override def resolve[T](request: ClassRequest[T]) = {
+//    resolve(
+//      request
+//    )
+//  }
 }
 
 

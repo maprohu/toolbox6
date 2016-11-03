@@ -46,6 +46,7 @@ object Toolbox6Modules {
   object Common extends ScalaModule(
     "common",
     Logging,
+    mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`io.monix:monix_2.11:jar:2.0.4`,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
@@ -73,6 +74,11 @@ object Toolbox6Modules {
 //      mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
 //    )
   }
+
+  object Logback extends ScalaModule(
+    "logback",
+    mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
+  )
 
   object Logging extends ScalaModule(
     "logging",
@@ -184,6 +190,7 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
+    MvnmodModules.Builder,
     Api,
     Util,
     Toolbox6Modules.Logging,
@@ -237,7 +244,6 @@ object JarTreeModules {
     ServletApi,
     Toolbox6Modules.Logging,
     ManagementApi,
-//    ManagementUtils,
     Wiring,
     Toolbox6Modules.Common,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.5`,

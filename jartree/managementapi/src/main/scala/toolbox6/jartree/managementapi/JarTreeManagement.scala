@@ -1,6 +1,6 @@
 package toolbox6.jartree.managementapi
 
-import toolbox6.jartree.api.PlugRequest
+import toolbox6.jartree.api.{ClassRequest, JarPlugger}
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 
 sealed trait Request
@@ -20,9 +20,7 @@ case class PutCache(
 ) extends Request
 
 case class Plug(
-  request: PlugRequest[Processor, JarTreeServletContext]
-//  classLoader: CaseClassLoaderKey,
-//  className: String
+  request: ClassRequest[JarPlugger[Processor, JarTreeServletContext]]
 ) extends Request
 
 case object Done extends Response
@@ -30,6 +28,6 @@ case object Done extends Response
 case object Query extends Request
 
 case class QueryResult(
-  request: Option[PlugRequest[Processor, JarTreeServletContext]],
+  request: Option[ClassRequest[JarPlugger[Processor, JarTreeServletContext]]],
   webappVersion: String
 ) extends Response

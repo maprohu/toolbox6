@@ -1,25 +1,17 @@
 package toolbox6.jartree.impl
 
 import java.io._
-import java.nio.ByteBuffer
-import java.nio.file.Path
-import java.rmi.RemoteException
+import java.util.jar.{JarEntry, JarFile, JarInputStream}
 
-import boopickle.Pickler
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.{Cancelable, Scheduler}
-import monix.execution.cancelables.CompositeCancelable
+import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.{FileUtils, IOUtils}
-import toolbox6.common.ByteBufferTools
 import toolbox6.jartree.api._
-import toolbox6.jartree.impl.JarTreeBootstrap.Config
-import toolbox6.jartree.util._
 import toolbox6.jartree.wiring.{Input, SimpleJarSocket}
 import toolbox6.logging.LogTools
 import toolbox6.pickling.PicklingTools
-import upickle.Js
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.{Codec, Source}
 import scala.util.Try
@@ -31,17 +23,21 @@ import scala.collection.immutable._
 object JarTreeBootstrap extends LazyLogging with LogTools {
 //  type CTX = ScalaInstanceResolver
 
+  case class Initializer[Processor, CtxApi](
+    embeddedJars: Seq[(JarKey, () => InputStream)],
+    startup: Option[ClassRequest[JarPlugger[Processor, CtxApi]]]
+  )
+
   case class Config[Processor, CtxApi](
     contextProvider: (JarTree, JarTreeContext) => CtxApi,
     voidProcessor : Processor,
     name: String,
     dataPath: String,
-    version : Int = 1,
-    embeddedJars: Seq[(JarKey, () => InputStream)],
-    initialStartup: Option[PlugRequest[Processor, CtxApi]],
+    version : Option[String],
+    initializer: () => Initializer[Processor, CtxApi],
     closer: Processor => Unit,
-    logFile: Option[Path] = None,
-    storageDir: Option[Path] = None
+    logFile: Option[File] = None,
+    storageDir: Option[File] = None
   )
 
   case class Runtime[Processor, CtxApi](
@@ -60,7 +56,8 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
     logger.info("starting {}", name)
 
     type Plugger = JarPlugger[Processor, CtxApi]
-    type StartupRequest = Option[PlugRequest[Processor, CtxApi]]
+    type Startup = ClassRequest[Plugger]
+    type StartupRequest = Option[Startup]
 
     var processor : () => Processor = null
 
@@ -77,31 +74,25 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       startup: StartupRequest
     ) : Unit = this.synchronized {
       import PicklingTools._
-      import Startup._
-      val stopt =
-        startup.map(s =>
-          Startup(
-            s
-          )
-        )
-      PicklingTools.toFile[Option[Startup]](
-        stopt,
+      PicklingTools.toFile(
+        startup,
         startupFile
       )
     }
 
     def readStartup : StartupRequest = this.synchronized {
       import PicklingTools._
-      import Startup._
       PicklingTools
-        .fromFile[Option[Startup]](startupFile)
-        .map(_.request[Processor, CtxApi])
+        .fromFile[StartupRequest](startupFile)
     }
 
     val cache = if (
-      Try(Source.fromFile(versionFile).mkString.toInt)
-        .toOption
-        .forall(_ < version)
+      version
+        .forall({ v =>
+          Try(Source.fromFile(versionFile).mkString)
+            .toOption
+            .forall(_ != v)
+        })
     ) {
       logger.info("deleting old data directory: {}", dataPath)
       Try(FileUtils.deleteDirectory(dir))
@@ -113,6 +104,9 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       logger.info("creating new data directory: {}", dataPath)
 
       val cache = JarCache(cacheDir)
+
+      val initial = initializer()
+      import initial._
 
       embeddedJars
         .foreach({
@@ -127,7 +121,7 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
       quietly {
         writeStartup(
-          initialStartup
+          startup
         )
       }
 
@@ -224,12 +218,43 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
 
 
 object JarTreeBootstrapConfig {
+  val VersionFile = "jartreebootstrap.version"
+  val StartupFile = "jartreebootstrap.startup"
+
+  def getSnapshotHashId(
+    jar: () => InputStream
+  ) : String = {
+
+    val jf = new JarInputStream(jar())
+
+    try {
+      Iterator
+        .continually(jf.getNextJarEntry)
+        .takeWhile(_ != null)
+        .find(_.getName == "META-INF/build.timestamp")
+        .map({ e =>
+          Source
+            .fromInputStream(
+              jf,
+              "UTF-8"
+            )
+            .mkString
+        })
+        .getOrElse({
+          Base64.encodeBase64String(
+            JarCache.calculateHash(
+              jar()
+            )
+          )
+        })
+    } finally {
+      jf.close()
+    }
+  }
 
 //  var verbose = true
 
 //  val ConfigFile = "jartreebootstrap.conf"
-  val VersionFile = "jartreebootstrap.version"
-  val StartupFile = "jartreebootstrap.startup"
 //  val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
 
 //  val RuntimeVersionAttribute = "runtimeVersion"
@@ -270,6 +295,8 @@ object JarTreeBootstrapConfig {
 
 
 
+
+
 }
 
 case class EmbeddedJar(
@@ -277,37 +304,40 @@ case class EmbeddedJar(
   key: JarKey
 )
 
-case class Startup(
-  classLoader: Seq[JarKey],
-  className: String
-) {
-  def request[T, C] = PlugRequest[T, C](
-    ClassRequest[JarPlugger[T, C]](
-      JarSeq(classLoader),
-      className
-    )
-  )
-}
+//case class Startup(
+//  classLoader: Seq[JarKey],
+//  className: String
+//) {
+//  def request[T, C] = PlugRequest[T, C](
+//    ClassRequest[JarPlugger[T, C]](
+//      JarSeq(classLoader),
+//      className
+//    )
+//  )
+//}
+//
+//object Startup {
+//  import toolbox6.pickling.PicklingTools._
+//  implicit val pickler : PicklingTools.Pickler[Startup] = generatePickler[Startup]
+//
+//  def apply[T, C](
+//    request: PlugRequest[T, C]
+//  ) : Startup = Startup(
+//    request.request.jars.jars,
+//    request.request.className
+//  )
+//}
 
-object Startup {
-  import toolbox6.pickling.PicklingTools._
-  implicit val pickler : PicklingTools.Pickler[Startup] = generatePickler[Startup]
+case class JarTreeInitializer[T, C](
+  embeddedJars: Seq[EmbeddedJar],
+  startup : ClassRequest[JarPlugger[T, C]]
+)
 
-  def apply[T, C](
-    request: PlugRequest[T, C]
-  ) : Startup = Startup(
-    request.request.jars.jars,
-    request.request.className
-  )
-}
-
-case class JarTreeBootstrapConfig(
+case class JarTreeBootstrapConfig[T, C](
   name: String,
   dataPath: String,
   logPath: String,
-  version : Int,
-  embeddedJars: Seq[EmbeddedJar],
-  startup : Startup,
-  stdout: Boolean,
-  debug: Boolean
+  storagePath: Option[String],
+  version : Option[String],
+  initializer: () => JarTreeInitializer[T, C]
 )

@@ -54,13 +54,13 @@ trait JarPlugger[T, -C] {
 }
 
 
-case class PlugRequest[T, -C] (
-  request: ClassRequest[JarPlugger[T, C]]
-)
+//case class PlugRequest[T, -C] (
+//  request: ClassRequest[JarPlugger[T, C]]
+//)
 
-trait JarSocket[T, C] {
+trait JarSocket[T, +C] {
   def plugAsync(
-    request: PlugRequest[T, C]
+    request: ClassRequest[JarPlugger[T, C]]
   ) : Future[T]
 
   def get() : T
@@ -77,7 +77,7 @@ trait JarCacheLike {
 
 case class JarTreeContext(
   name: String,
-  log: Option[Path],
-  storage: Option[Path],
+  log: Option[File],
+  storage: Option[File],
   cache: JarCacheLike
 )

@@ -5,15 +5,11 @@ import java.io.File
 import maven.modules.builder.MavenTools.ProjectDef
 import maven.modules.builder._
 import maven.modules.utils.Repo
-import sbt.io.IO
-import toolbox6.jartree.api.JarPlugger
-import toolbox6.jartree.impl.{EmbeddedJar, JarTreeBootstrapConfig, Startup}
-import toolbox6.modules.JarTreeModules
+import toolbox6.jartree.impl.JarTree
+import toolbox6.jartree.servlet.JarTreeServlet
 
 import scala.xml.{Elem, NodeSeq, XML}
 import toolbox6.packaging.PackagingTools.Implicits._
-import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
-import toolbox6.packaging.MavenHierarchy
 
 
 /**
@@ -23,22 +19,24 @@ object JarTreeWarPackager {
 
 
 
-  val JarsDirName = "jars"
+//  val JarsDirName = "jars"
+
+  case class JarRef(
+    jar: HasMavenCoordinates,
+    classLoaderPath: String
+  )
 
   case class Input(
     name: String,
     version : String = "1.0.0",
-    dataPath : String,
-    logPath : String,
-    dataDirVersion : Int = 1,
-    startup: NamedModule,
-    runClassName: String,
-    runtime: NamedModule,
-    container: NamedModule
+    servletClassName : String,
+    jars: Seq[HasMavenCoordinates],
+    runtime: Module,
+    repos: Seq[Repo],
+    container: Module
   )
 
   def run[T](
-    servletClassName : String,
     input: Input
   )(
     postProcessor: File => T
@@ -46,7 +44,6 @@ object JarTreeWarPackager {
     import input._
 
     val output = process(
-      servletClassName,
       input
     )
 
@@ -103,36 +100,35 @@ object JarTreeWarPackager {
 //  }
 
   def process(
-    servletClassName : String,
     input : Input
   ) : ProjectDef = {
     import input._
 
-    val path =
-      ModulePath(
-        runtime,
-        Some(
-          ModulePath(
-            container,
-            None
-          )
-        )
-      )
-    val embeddedJars =
-      startup
-        .asModule
-        .forTarget(
-          path
-        )
-        .classPath
-        .zipWithIndex
-        .map({ case (maven, idx) =>
-          (
-            maven,
-            s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar",
-            JarTreePackaging.getId(maven)
-          )
-        })
+//    val path =
+//      ModulePath(
+//        runtime,
+//        Some(
+//          ModulePath(
+//            container,
+//            None
+//          )
+//        )
+//      )
+//    val embeddedJars =
+//      startup
+//        .asModule
+//        .forTarget(
+//          path
+//        )
+//        .classPath
+//        .zipWithIndex
+//        .map({ case (maven, idx) =>
+//          (
+//            maven,
+//            s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar",
+//            JarTreePackaging.getId(maven)
+//          )
+//        })
 
     val coords =
       MavenCoordinatesImpl(
@@ -180,16 +176,16 @@ object JarTreeWarPackager {
                     <configuration>
                       <artifactItems>
                         {
-                        embeddedJars.map({ case (jar, fn, _) =>
+                        jars.map({ jar =>
                           <artifactItem>
                             {jar.asPomCoordinates}
                             <overWrite>true</overWrite>
-                            <destFileName>{fn}</destFileName>
+                            <destFileName>{JarTree.jarClassLoaderFileName(jar)}</destFileName>
                           </artifactItem>
                         })
                         }
                       </artifactItems>
-                      <outputDirectory>target/classes/{JarsDirName}</outputDirectory>
+                      <outputDirectory>target/classes/{JarTree.JarsPathElement}</outputDirectory>
                     </configuration>
                   </execution>
                 </executions>
@@ -210,12 +206,12 @@ object JarTreeWarPackager {
           </dependencyManagement>
           <dependencies>
             {
-            input.runtime.pomDependency
+            input.runtime.asPomDependency
             }
           </dependencies>
           <repositories>
             {
-            input.startup.repos.map { r =>
+            repos.map { r =>
               <repository>
                 <id>{r.id}</id>
                 <url>{r.url}</url>
@@ -251,11 +247,11 @@ object JarTreeWarPackager {
           webXml
         )
 
-        val runtimeDir =
-          new File(dir, s"target/classes")
-
-        import toolbox6.pickling.PicklingTools._
-
+//        val runtimeDir =
+//          new File(dir, s"target/classes")
+//
+//        import toolbox6.pickling.PicklingTools._
+//
 //        IO.write(
 //          new File(runtimeDir, JarTreeBootstrapConfig.ConfigFile),
 //          pickle(

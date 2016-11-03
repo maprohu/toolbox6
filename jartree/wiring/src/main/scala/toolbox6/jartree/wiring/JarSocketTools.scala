@@ -44,7 +44,7 @@ case class Input[T, CtxApi](
   cleaner: JarPlugger[T, CtxApi],
   resolver: ClassLoaderResolver,
   classLoader: ClassLoader,
-  preProcessor: Option[PlugRequest[T, CtxApi]] => Future[Unit] = (_:Option[PlugRequest[T, CtxApi]]) => Future.successful()
+  preProcessor: Option[ClassRequest[JarPlugger[T, CtxApi]]] => Future[Unit] = (_:Any) => Future.successful()
 )
 
 class SimpleJarSocket[T, CtxApi](
@@ -55,7 +55,7 @@ class SimpleJarSocket[T, CtxApi](
   import input._
 
   case class Input(
-    request: Option[PlugRequest[T, CtxApi]],
+    request: Option[ClassRequest[JarPlugger[T, CtxApi]]],
     promise: Promise[T]
   )
 
@@ -71,7 +71,7 @@ class SimpleJarSocket[T, CtxApi](
 
   case class Instance(
     instance: T,
-    request: Option[PlugRequest[T, CtxApi]]
+    request: Option[ClassRequest[JarPlugger[T, CtxApi]]]
   )
 
   @volatile var currentInstance : Instance = Instance(init, None)
@@ -81,7 +81,7 @@ class SimpleJarSocket[T, CtxApi](
       def pull(
         plugger: JarPlugger[T, CtxApi],
         pluggerClassLoader: ClassLoader,
-        request: Option[PlugRequest[T, CtxApi]]
+        request: Option[ClassRequest[JarPlugger[T, CtxApi]]]
       ) : Future[State] = {
         for {
           response <-
@@ -123,17 +123,17 @@ class SimpleJarSocket[T, CtxApi](
           Future.successful(st)
 
         case (copt, or @ Some(pr)) =>
-          logger.info(s"replacing: ${pr.request} (previous: ${copt})")
+          logger.info(s"replacing: ${pr} (previous: ${copt})")
           for {
             pluggerClassLoader <- {
               resolver
-                .resolve(pr.request.jars)
+                .resolve(pr.jars)
             }
             plugger = {
               JarTreeTools
                 .instantiate[JarPlugger[T, CtxApi]](
                   pluggerClassLoader,
-                  pr.request.className
+                  pr.className
                 )
             }
             _ = logger.info(s"resolved: ${plugger}")
@@ -158,7 +158,7 @@ class SimpleJarSocket[T, CtxApi](
       st.out.foreach(_.cleanup())
     })
 
-  override def plugAsync(request: PlugRequest[T, CtxApi]) = plug(request)
+  override def plugAsync(request: ClassRequest[JarPlugger[T, CtxApi]]) = plug(request)
 
   val plugInput = BufferedSubscriber[Input](
     Subscriber(subject, scheduler),
@@ -166,7 +166,7 @@ class SimpleJarSocket[T, CtxApi](
   )
 
   def send(
-    request: Option[PlugRequest[T, CtxApi]]
+    request: Option[ClassRequest[JarPlugger[T, CtxApi]]]
   ) = {
     logger.info(s"plugging: ${request}")
 
@@ -187,7 +187,7 @@ class SimpleJarSocket[T, CtxApi](
 
   }
   def plug(
-    request: PlugRequest[T, CtxApi]
+    request: ClassRequest[JarPlugger[T, CtxApi]]
   ) : Future[T] = {
     send(
       Some(

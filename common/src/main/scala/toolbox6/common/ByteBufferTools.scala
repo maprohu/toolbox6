@@ -3,6 +3,8 @@ package toolbox6.common
 import java.io.{File, FileOutputStream, InputStream, RandomAccessFile}
 import java.nio.ByteBuffer
 
+import org.apache.commons.io.IOUtils
+
 /**
   * Created by pappmar on 17/10/2016.
   */
@@ -23,6 +25,15 @@ object ByteBufferTools {
       }
     } finally {
       raf.close()
+    }
+  }
+
+  def readInputStream(isp: () => InputStream) : ByteBuffer = {
+    val is = isp()
+    try {
+      ByteBuffer.wrap(IOUtils.toByteArray(is))
+    } finally {
+      is.close()
     }
   }
 

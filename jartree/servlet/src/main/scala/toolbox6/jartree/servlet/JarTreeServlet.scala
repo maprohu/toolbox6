@@ -1,18 +1,21 @@
 package toolbox6.jartree.servlet
 
+import java.io.File
+import java.nio.file.Paths
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
 import com.typesafe.scalalogging.LazyLogging
+import maven.modules.builder.{HasMavenCoordinates, Module}
 import monix.execution.Cancelable
 import monix.execution.cancelables.CompositeCancelable
 import toolbox6.common.{HygienicThread, ManagementTools}
 import toolbox6.jartree.api._
-import toolbox6.jartree.impl.JarTreeBootstrap.Config
+import toolbox6.jartree.impl.JarTreeBootstrap.{Config, Initializer}
 import toolbox6.jartree.impl._
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.util._
-import toolbox6.jartree.wiring.{SimpleJarSocket}
+import toolbox6.jartree.wiring.SimpleJarSocket
 import toolbox6.logging.LogTools
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -22,10 +25,10 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   */
 abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools { self =>
 
-  class ScalaJarTreeServletContext(jarTree: JarTree, ec: ExecutionContext) extends JarTreeServletContext {
-    override def servletConfig(): ServletConfig = self.getServletConfig
-    override def resolve(request: JarSeq): Future[ClassLoader] = jarTree.resolve(request)
-  }
+//  class ScalaJarTreeServletContext(jarTree: JarTree, ec: ExecutionContext) extends JarTreeServletContext {
+//    override def servletConfig(): ServletConfig = self.getServletConfig
+//    override def resolve(request: JarSeq): Future[ClassLoader] = jarTree.resolve(request)
+//  }
 
   val VoidProcessor : Processor = new Processor {
     override def service(req: HttpServletRequest, resp: HttpServletResponse): Unit = ()
@@ -42,34 +45,49 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
     stop = Cancelable.empty
   )
 
-  def jarTreeBootstrapConfig : JarTreeBootstrapConfig
+  def jarTreeBootstrapConfig : JarTreeBootstrapConfig[Processor, JarTreeServletContext]
 
-  override def init(config: ServletConfig): Unit = {
-    super.init(config)
+  override def init(): Unit = {
+    super.init()
+
+    val bootstrapConfig = jarTreeBootstrapConfig
 
     implicit val (sch, stopEC) = HygienicThread.createSchduler()
 
 
-    val bootstrapConfig = jarTreeBootstrapConfig
     import bootstrapConfig._
 
     val rt = JarTreeBootstrap
       .init[Processor, JarTreeServletContext](
       Config(
-        contextProvider = (jt, ctx) => new ScalaJarTreeServletContext(jt, sch),
+        contextProvider = { (jt, ctx) =>
+          new JarTreeServletContext {
+            override def servletConfig: ServletConfig = self.getServletConfig
+            override def jarTreeContext: JarTreeContext = ctx
+            override implicit val executionContext: ExecutionContext = sch
+            override def resolve(request: JarSeq): Future[ClassLoader] = jt.resolve(request)
+          }
+        },
         voidProcessor = VoidProcessor,
         name = name,
         dataPath = dataPath,
         version = version,
-        embeddedJars =
-          embeddedJars
-            .map({ jar =>
-              (
-                jar.key,
-                () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
-                )
-            }),
-        initialStartup = Some(startup.request[Processor, JarTreeServletContext]),
+        initializer = { () =>
+          val init = initializer()
+          import init._
+
+          Initializer(
+            embeddedJars =
+              embeddedJars
+                .map({ jar =>
+                  (
+                    jar.key,
+                    () => classOf[JarTreeServlet].getClassLoader.getResourceAsStream(jar.classpathResource)
+                  )
+                }),
+            startup = Some(startup)
+          )
+        },
         closer = _.close()
       )
     )
@@ -77,6 +95,7 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
     val stopManagement = setupManagement(
       name = name,
       jarTree = rt.jarTree,
+      jarCache = rt.jarCache,
       processorSocket = rt.processorSocket,
       webappVersion = self.getClass.getPackage.getImplementationVersion
     )
@@ -100,96 +119,21 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
     running.service(req, resp)
   }
 
-
-//  class JarTreeManagementImpl(
-//    jarTree: JarTree,
-//    processorSocket: SimpleJarSocket[Processor, JarTreeServletContext, ScalaJarTreeServletContext],
-//    webappVersion: String
-//  )(implicit
-//    executionContext: ExecutionContext
-//  ) extends JarTreeManagement {
-//    @throws(classOf[RemoteException])
-//    override def verifyCache(ids: Array[String]): Array[Int] = {
-//      HygienicThread.execute {
-
-//      }
-//    }
-//
-//    @throws(classOf[RemoteException])
-//    override def putCache(id: String, data: Array[Byte]): Unit = {
-//      HygienicThread.execute {
-
-//      }
-//    }
-//
-//    import boopickle.Default._
-//
-//    @throws(classOf[RemoteException])
-//    override def plug(request: Array[Byte]): Array[Byte] = {
-//      HygienicThread.execute {
-
-//      }
-//    }
-//
-//    @throws(classOf[RemoteException])
-//    override def query(): Array[Byte] = {
-//      HygienicThread.execute {
-//        RunTools.runByteArray {
-//          val bb = Pickle.intoBytes(
-
-//          )
-//          val ba = Array.ofDim[Byte](bb.remaining())
-//          bb.get(ba)
-//          ba
-//        }
-//      }
-//    }
-//  }
-
   def setupManagement(
     name: String,
     jarTree: JarTree,
+    jarCache: JarCache,
     processorSocket: SimpleJarSocket[Processor, JarTreeServletContext],
     webappVersion: String
   )(implicit
     executionContext: ExecutionContext
   ) : Cancelable
-//  = {
-//
-//    val instance = new JarTreeManagementImpl(
-//      jarTree,
-//      processorSocket,
-//      webappVersion
-//    )
-//
-//    val ccl = Thread.currentThread().getContextClassLoader
-//    val unbind = try {
-//      Thread.currentThread().setContextClassLoader(classOf[HttpServlet].getClassLoader)
-//
-//      ManagementTools.bind(
-//        existing = Seq(),
-//        path = JarTreeManagementUtils.bindingNamePath(name),
-//        name = JarTreeManagementUtils.MonitoringName,
-//        instance
-//      )
-//    } finally {
-//      Thread.currentThread().setContextClassLoader(ccl)
-//    }
-//
-//    CompositeCancelable(
-//      unbind,
-//      Cancelable({ () =>
-//        quietly {
-//          val om = OIDManager.getInstance()
-//          om.removeServerReference(
-//            om.getServerReference(instance)
-//          )
-//        }
-//      })
-//    )
-//
-//
-//  }
+
+
+}
+
+object JarTreeServlet {
+
 
 
 }

@@ -1,9 +1,10 @@
 package toolbox6.pickling
 
-import java.io.File
+import java.io.{File, InputStream}
 import java.nio.ByteBuffer
 
 import toolbox6.common.ByteBufferTools
+
 
 /**
   * Created by pappmar on 20/10/2016.
@@ -46,6 +47,13 @@ object PicklingTools extends boopickle.Base with
             file
           )
       )
+  }
+
+  def fromInputStream[T](data: () => InputStream)(implicit u: Pickler[T]) : T = {
+    Unpickle[T].fromBytes(
+      ByteBufferTools
+        .readInputStream(data)
+    )
   }
 
 }

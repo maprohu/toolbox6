@@ -2,8 +2,8 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
-import maven.modules.builder.MavenTools.ProjectDef
-import maven.modules.builder._
+import mvnmod.builder.MavenTools.ProjectDef
+import mvnmod.builder.{HasMavenCoordinates, MavenTools, Module, ModulePath}
 import toolbox6.jartree.api.JarKey
 import toolbox6.jartree.impl.JarTree
 

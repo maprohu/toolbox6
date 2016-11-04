@@ -2,25 +2,9 @@ package toolbox6.packaging
 
 import java.net.URLEncoder
 
-import maven.modules.builder._
-import mvnmod.poms.MavenCentralModule
+import mvnmod.builder.{HasMavenCoordinates, MavenCentralModule, MavenCoordinatesImpl}
 
 import scala.collection.immutable._
-import scala.xml.NodeBuffer
-
-/**
-  * Created by martonpapp on 01/10/16.
-  */
-object PackagingTools {
-
-
-  object Implicits extends HasMavenCoordinatesImplicits{
-
-
-  }
-
-
-}
 
 
 
@@ -62,7 +46,7 @@ object MavenHierarchy {
 
   implicit def fromCLK(clk: MavenCentralModule) : MavenHierarchy = {
     MavenHierarchy(
-      HasMavenCoordinates.key2maven(clk),
+      MavenCoordinatesImpl.key2maven(clk),
       clk.dependencies.map(fromCLK)
     )
   }

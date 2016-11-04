@@ -2,14 +2,12 @@ package toolbox6.jartree.packaging
 
 import java.io.File
 
-import maven.modules.builder.MavenTools.ProjectDef
-import maven.modules.builder._
-import mvnmod.poms.Repo
+import mvnmod.builder.MavenTools.ProjectDef
+import mvnmod.builder._
 import toolbox6.jartree.impl.JarTree
 import toolbox6.jartree.servlet.JarTreeServlet
 
 import scala.xml.{Elem, NodeSeq, XML}
-import toolbox6.packaging.PackagingTools.Implicits._
 
 
 /**
@@ -197,7 +195,7 @@ object JarTreeWarPackager {
               {
               container.deps.map({ (m:Module) =>
                 <dependency>
-                  {m.asPomCoordinates}
+                  {m.version.asPomCoordinates}
                   <scope>provided</scope>
                 </dependency>
               })
@@ -206,7 +204,7 @@ object JarTreeWarPackager {
           </dependencyManagement>
           <dependencies>
             {
-            input.runtime.asPomDependency
+            input.runtime.version.asPomDependency
             }
           </dependencies>
           <repositories>

@@ -4,14 +4,13 @@ import java.io.{FileInputStream, InputStream}
 import java.nio.charset.Charset
 import java.util.jar.JarFile
 
-import maven.modules.builder.{HasMavenCoordinates, MavenCoordinatesImpl, Module, NamedModule}
 import monix.execution.atomic.Atomic
+import mvnmod.builder.{HasMavenCoordinates, MavenCoordinatesImpl}
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.IOUtils
 import org.jboss.shrinkwrap.resolver.api.maven.Maven
 import toolbox6.jartree.api.{ClassRequest, JarKey}
 import toolbox6.jartree.impl.JarCache
-import toolbox6.packaging.{MavenHierarchy, PackagingTools}
 import upickle.Js
 
 import scala.collection.immutable._
@@ -47,7 +46,7 @@ object JarTreePackaging {
   }
 
   def getId(mavenIn: HasMavenCoordinates) : JarKey = {
-    val maven = PackagingTools.Implicits.toImpl(mavenIn)
+    val maven : MavenCoordinatesImpl = MavenCoordinatesImpl.toImpl(mavenIn)
     ManagedIdMap.transformAndExtract({ map =>
       map
         .get(maven)

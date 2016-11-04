@@ -107,12 +107,12 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-api</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-servletapi</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>

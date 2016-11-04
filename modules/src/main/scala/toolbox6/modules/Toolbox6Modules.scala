@@ -1,8 +1,8 @@
 package toolbox6.modules
 
 import maven.modules.builder._
-import maven.modules.utils.MavenCentralModule
 import mvnmod.modules.MvnmodModules
+import mvnmod.poms.MavenCentralModule
 
 
 /**
@@ -25,23 +25,6 @@ object Toolbox6Modules {
 //    )
   }
 
-  object JavaApi extends ScalaModule(
-    "javaapi"
-  ) {
-//    object R1 extends Release(
-//    )
-  }
-
-  object JavaImpl extends ScalaModule(
-    "javaimpl",
-    JavaApi,
-    mvn.`org.reactivestreams:reactive-streams:jar:1.0.0`
-  ) {
-//    object R1 extends Release(
-//      JavaApi.R1,
-//      mvn.`org.reactivestreams:reactive-streams:jar:1.0.0`
-//    )
-  }
 
   object Common extends ScalaModule(
     "common",
@@ -156,17 +139,24 @@ object JarTreeModules {
   object Api extends ScalaModule(
     "api"
   ) {
-//    object R2 extends Release(
-//      Toolbox6Modules.JavaApi.R1
-//    )
-//    object R1 extends Release(
-//      mvn.`org.glassfish:javax.json:jar:1.0.4`
-//    )
+    val Snapshot = snapshot
+
+    object R1 extends Release()
+  }
+
+  object ServletApi extends ScalaModule(
+    "servletapi",
+    Api.R1,
+    mvn.`javax.servlet:servlet-api:jar:2.5`
+  ) {
+    val Snapshot = snapshot
+
+    object R1 extends Release( Api.R1, mvn.`javax.servlet:servlet-api:jar:2.5` )
   }
 
   object Util extends ScalaModule(
     "util",
-    Api,
+    Api.R1,
 //    Toolbox6Modules.JavaImpl.R1,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
@@ -191,7 +181,7 @@ object JarTreeModules {
   object Impl extends ScalaModule(
     "impl",
     MvnmodModules.Builder,
-    Api,
+    Api.R1,
     Util,
     Toolbox6Modules.Logging,
     Wiring,
@@ -223,25 +213,11 @@ object JarTreeModules {
 //    )
   }
 
-  object ServletApi extends ScalaModule(
-    "servletapi",
-    Api,
-    mvn.`javax.servlet:servlet-api:jar:2.5`
-  ) {
-//    object R2 extends Release(
-//      Api.R2,
-//      mvn.`javax.servlet:servlet-api:jar:2.5`
-//    )
-//    object R1 extends Release(
-//      Api.R1,
-//      mvn.`javax.servlet:servlet-api:jar:2.5`
-//    )
-  }
 
   object Servlet extends ScalaModule(
     "servlet",
     Impl,
-    ServletApi,
+    ServletApi.R1,
     Toolbox6Modules.Logging,
     ManagementApi,
     Wiring,
@@ -288,8 +264,8 @@ object JarTreeModules {
 
   object Wiring extends ScalaModule(
     "wiring",
-    Api,
-    ServletApi,
+    Api.R1,
+    ServletApi.R1,
     Util,
     Toolbox6Modules.Logging,
     mvn.`io.monix:monix_2.11:jar:2.0.5`,
@@ -362,7 +338,7 @@ object JarTreeModules {
 
   object Akka extends ScalaModule(
     "akka",
-    ServletApi,
+    ServletApi.R1,
     Toolbox6Modules.Common,
     AkkaModules.Http,
     Toolbox6Modules.Logging
@@ -381,8 +357,8 @@ object JarTreeModules {
 
   object Testing extends ScalaModule(
     "testing",
-    Api,
-    ServletApi,
+    Api.R1,
+    ServletApi.R1,
     Packaging
   )
 
@@ -390,7 +366,7 @@ object JarTreeModules {
     "packaging",
     Toolbox6Modules.Modules,
     Toolbox6Modules.Packaging,
-    ServletApi,
+    ServletApi.R1,
     Util,
     Servlet,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,

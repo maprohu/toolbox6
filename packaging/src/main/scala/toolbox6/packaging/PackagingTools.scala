@@ -3,7 +3,7 @@ package toolbox6.packaging
 import java.net.URLEncoder
 
 import maven.modules.builder._
-import maven.modules.utils.MavenCentralModule
+import mvnmod.poms.MavenCentralModule
 
 import scala.collection.immutable._
 import scala.xml.NodeBuffer

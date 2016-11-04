@@ -9,6 +9,9 @@ import toolbox6.modules
 object RunToolbox6Release {
 
   val Releases = Seq[NamedModule#Release](
+    JarTreeModules.Api.R1,
+    JarTreeModules.ServletApi.R1
+
 //    Toolbox6Modules.Common.R1,
 //    Toolbox6Modules.Logging.R1,
 //

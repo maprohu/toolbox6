@@ -4,7 +4,7 @@ import java.io.File
 
 import maven.modules.builder.MavenTools.ProjectDef
 import maven.modules.builder._
-import maven.modules.utils.Repo
+import mvnmod.poms.Repo
 import toolbox6.jartree.impl.JarTree
 import toolbox6.jartree.servlet.JarTreeServlet
 

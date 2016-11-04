@@ -17,7 +17,6 @@
         <module>jartree</module>
         <module>akka</module>
         <module>ui</module>
-        <module>android</module>
         <module>gis</module>
         <module>scalajs</module>
         <module>modules</module>

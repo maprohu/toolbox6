@@ -151,9 +151,9 @@ object JarTree {
 class JarTree(
   val parentClassLoader: ClassLoader,
   val cache: JarCacheLike
-)(implicit
+)/*(implicit
   executionContext: ExecutionContext
-) extends ClassLoaderResolver with LazyLogging {
+)*/ extends ClassLoaderResolver with LazyLogging {
   type CaseClassLoaderKey = Seq[JarKey]
 
   class Holder(
@@ -167,6 +167,8 @@ class JarTree(
 
   override def resolve(
     jars: JarSeq
+  )(implicit
+    executionContext: ExecutionContext
   ) : Future[ClassLoader] = {
     val key = jars.jars
 

@@ -3,7 +3,7 @@ package toolbox6.jartree.api
 import java.io.File
 import java.nio.file.Path
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.immutable._
 
 
@@ -34,7 +34,11 @@ object ClassRequest {
 
 
 trait ClassLoaderResolver {
-  def resolve(request: JarSeq) : Future[ClassLoader]
+  def resolve(
+    request: JarSeq
+  )(implicit
+    executionContext: ExecutionContext
+  ) : Future[ClassLoader]
 }
 
 case class JarPlugResponse[+T](

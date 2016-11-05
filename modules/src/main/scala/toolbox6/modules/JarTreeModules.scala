@@ -49,7 +49,7 @@ object JarTreeModules {
   object Impl extends ScalaModule(
     "impl",
     MvnmodModules.Builder.R2,
-    Api.R1,
+    Api.Snapshot,
     Util.R1,
     Toolbox6Modules.Logging.R1,
     Wiring.R1,

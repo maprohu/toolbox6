@@ -31,35 +31,6 @@ class ParentLastUrlClassloader(
         super.loadClass(name, resolve)
       )
   }
-
-
-
-//  object realParent extends ClassLoader(self.getParent) {
-//    override def findClass(s: String): Class[_] = super.findClass(s)
-//  }
-//
-//  object childClassLoader extends URLClassLoader(
-//    urls.toArray,
-//    realParent
-//  ) {
-//    override def findClass(s: String): Class[_] = {
-//      try {
-//        super.findClass(s)
-//      } catch {
-//        case _ : ClassNotFoundException =>
-//          realParent.findClass(s)
-//      }
-//    }
-//  }
-//
-//  override def loadClass(s: String, b: Boolean): Class[_] = {
-//    try {
-//      childClassLoader.findClass(s)
-//    } catch {
-//      case _ : ClassNotFoundException =>
-//        super.loadClass(s, b)
-//    }
-//  }
 }
 
 class JarTreeClassLoader(

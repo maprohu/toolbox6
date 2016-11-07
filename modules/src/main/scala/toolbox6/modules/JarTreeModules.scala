@@ -19,7 +19,7 @@ object JarTreeModules {
 
   object ServletApi extends ScalaModule(
     "servletapi",
-    Api.R1,
+    Api.Snapshot,
     mvn.`javax.servlet:servlet-api:jar:2.5`
   ) {
     val Snapshot = snapshot
@@ -29,7 +29,7 @@ object JarTreeModules {
 
   object Util extends ScalaModule(
     "util",
-    Api.R1,
+    Api.Snapshot,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
@@ -48,13 +48,13 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
-    MvnmodModules.Builder.R2,
+    MvnmodModules.Builder.Snapshot,
     Api.Snapshot,
-    Util.R1,
+    Util.Snapshot,
     Toolbox6Modules.Logging.R1,
-    Wiring.R1,
-    Toolbox6Modules.Common.R1,
-    Toolbox6Modules.Pickling.R1,
+    Wiring.Snapshot,
+    Toolbox6Modules.Common.Snapshot,
+    Toolbox6Modules.Pickling.Snapshot,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`io.monix:monix-eval_2.11:jar:2.0.5`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
@@ -80,12 +80,12 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R1,
-    ServletApi.R1,
+    Impl.Snapshot,
+    ServletApi.Snapshot,
     Toolbox6Modules.Logging.R1,
-    ManagementApi.R1,
-    Wiring.R1,
-    Toolbox6Modules.Common.R1,
+    ManagementApi.Snapshot,
+    Wiring.Snapshot,
+    Toolbox6Modules.Common.Snapshot,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.5`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
@@ -120,9 +120,8 @@ object JarTreeModules {
 
   object Wiring extends ScalaModule(
     "wiring",
-    Api.R1,
-    ServletApi.R1,
-    Util.R1,
+    ServletApi.Snapshot,
+    Util.Snapshot,
     Toolbox6Modules.Logging.R1,
     mvn.`io.monix:monix_2.11:jar:2.0.5`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
@@ -144,7 +143,7 @@ object JarTreeModules {
 
   object ManagementApi extends ScalaModule(
     "managementapi",
-    Wiring.R1
+    Wiring.Snapshot
   ) {
     val Snapshot = snapshot
 
@@ -208,10 +207,10 @@ object JarTreeModules {
 
   object Testing extends ScalaModule(
     "testing",
-    Api.R1,
-    ServletApi.R1,
+    Api.Snapshot,
+    ServletApi.Snapshot,
     Packaging,
-    Impl.R1,
+    Impl.Snapshot,
     Toolbox6Modules.Common
   )
 

@@ -145,7 +145,7 @@ object JarTreeWarPackager {
           {coords.asPomCoordinates}
           <packaging>war</packaging>
           <build>
-            <finalName>{coords.artifactId}</finalName>
+            <finalName>{name}</finalName>
             <plugins>
               {
   //              <plugin>

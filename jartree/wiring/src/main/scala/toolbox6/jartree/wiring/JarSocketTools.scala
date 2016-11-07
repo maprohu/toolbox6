@@ -129,6 +129,7 @@ class SimpleJarSocket[T, CtxApi](
               resolver
                 .resolve(pr.jars)
             }
+            _ = { logger.info(s"creating: ${pr.className}")}
             plugger = {
               JarTreeTools
                 .instantiate[JarPlugger[T, CtxApi]](
@@ -206,10 +207,10 @@ class SimpleJarSocket[T, CtxApi](
 
   def stop() = {
     logger.info("clearing socket")
-    quietly { Await.result(clear(), 30.second) }
+    quietly { Await.result( clear(), 15.second) }
     logger.info("stopping socket processor")
     subject.onComplete()
-    quietly { Await.result(stopProcessor, 30.second) }
+    quietly { Await.result(stopProcessor, 15.second) }
     logger.info("socket stopped")
   }
 

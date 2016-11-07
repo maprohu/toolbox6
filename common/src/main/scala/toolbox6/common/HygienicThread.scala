@@ -36,6 +36,7 @@ object HygienicThread extends LazyLogging {
   }
 
   def createExecutionContext(maxSize: Int = 32) : (ExecutionContext, () => Unit) = {
+    logger.info("starting execution context")
     val pool = new ThreadPoolExecutor(
       0,
       maxSize,
@@ -45,10 +46,13 @@ object HygienicThread extends LazyLogging {
     val ec = ExecutionContext.fromExecutor(pool)
 
     val shut = () => {
+      logger.info("shutting down execution context")
+
       pool.shutdown()
-      if (!pool.awaitTermination(30, TimeUnit.SECONDS)) {
+      if (!pool.awaitTermination(15, TimeUnit.SECONDS)) {
+        logger.warn("execution context not stopped, forcing")
         pool.shutdownNow()
-        pool.awaitTermination(30, TimeUnit.SECONDS)
+        pool.awaitTermination(15, TimeUnit.SECONDS)
       }
       ()
     }

@@ -26,7 +26,7 @@ object JarTreeWarPackager {
 
   case class Input(
     name: String,
-    version : String = "1.0.0",
+    coords: HasMavenCoordinates,
     servletClassName : String,
     jars: Seq[HasMavenCoordinates],
     runtime: Module,
@@ -50,7 +50,7 @@ object JarTreeWarPackager {
       "install",
       preBuild = output.preBuild
     ){ dir =>
-      postProcessor(new File(dir, s"target/${name}.war"))
+      postProcessor(new File(dir, s"target/${coords.artifactId}.war"))
     }
   }
 
@@ -128,12 +128,13 @@ object JarTreeWarPackager {
 //          )
 //        })
 
-    val coords =
-      MavenCoordinatesImpl(
-        groupId = name,
-        artifactId = s"${name}-war",
-        version = version
-      )
+//    val coords =
+//      MavenCoordinatesImpl(
+//        groupId = name,
+//        artifactId = s"${name}-war",
+//        version = version
+//      )
+
 
     ProjectDef(
       coordinates = coords,
@@ -144,7 +145,7 @@ object JarTreeWarPackager {
           {coords.asPomCoordinates}
           <packaging>war</packaging>
           <build>
-            <finalName>{name}</finalName>
+            <finalName>{coords.artifactId}</finalName>
             <plugins>
               {
   //              <plugin>

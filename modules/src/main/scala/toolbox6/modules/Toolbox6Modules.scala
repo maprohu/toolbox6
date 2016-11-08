@@ -13,7 +13,7 @@ object Toolbox6Modules {
 
   object Modules extends ScalaModule(
     "modules",
-    MvnmodModules.Modules.R2,
+    MvnmodModules.Modules.Snapshot,
     MvnmodModules.Builder.R3
   ) {
     val Snapshot = snapshot
@@ -108,13 +108,9 @@ object Toolbox6Modules {
     "jms",
     Logging.R1,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
-    mvn.`io.monix:monix_2.11:jar:2.0.2`
+    mvn.`io.monix:monix_2.11:jar:2.0.6`
   ) {
-//    object R1 extends Release(
-//      Logging.R1,
-//      mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
-//      mvn.`io.monix:monix_2.11:jar:2.0.2`
-//    )
+    val Snapshot = snapshot
   }
 
   object Packaging extends ScalaModule(

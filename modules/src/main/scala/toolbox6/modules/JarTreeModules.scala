@@ -236,11 +236,13 @@ object JarTreeModules {
 
   object Akka extends ScalaModule(
     "akka",
-    ServletApi.R1,
-    Toolbox6Modules.Common.R1,
-    AkkaModules.Http,
+    ServletApi.R2,
+    Toolbox6Modules.Common.R2,
+    AkkaModules.Http.Snapshot,
     Toolbox6Modules.Logging.R1
   ) {
+    val Snapshot = snapshot
+
 //    object R2 extends Release(
 //      ServletApi.R2,
 //      Toolbox6Modules.Common.R2,

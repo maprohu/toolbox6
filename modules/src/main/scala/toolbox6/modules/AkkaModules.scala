@@ -16,6 +16,7 @@ object AkkaModules {
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`com.typesafe.akka:akka-slf4j_2.11:jar:2.3.15`
   ) {
+    val Snapshot = snapshot
   }
 
   object Json4s extends ScalaModule(
@@ -24,11 +25,7 @@ object AkkaModules {
     mvn.`org.json4s:json4s-core_2.11:jar:3.4.0`,
     mvn.`org.json4s:json4s-native_2.11:jar:3.4.0`
   ) {
-//    object R1 extends Release(
-//      mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
-//      mvn.`org.json4s:json4s-core_2.11:jar:3.4.0`,
-//      mvn.`org.json4s:json4s-native_2.11:jar:3.4.0`
-//    )
+    val Snapshot = snapshot
   }
 
 

@@ -14,7 +14,7 @@ object Toolbox6Modules {
   object Modules extends ScalaModule(
     "modules",
     MvnmodModules.Modules.Snapshot,
-    MvnmodModules.Builder.R3
+    MvnmodModules.Builder.Snapshot
   ) {
     val Snapshot = snapshot
 
@@ -110,7 +110,10 @@ object Toolbox6Modules {
     AkkaModules.Stream,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
     mvn.`io.monix:monix_2.11:jar:2.0.6`,
-    mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`
+    mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
+    mvn.`com.typesafe.akka:akka-camel_2.11:jar:2.3.15`,
+    mvn.`org.apache.camel:camel-jms:jar:2.18.0`,
+    mvn.`org.apache.camel:camel-core:jar:2.18.0`
   ) {
     val Snapshot = snapshot
   }

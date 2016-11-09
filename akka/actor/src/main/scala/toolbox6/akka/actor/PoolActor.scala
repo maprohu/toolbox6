@@ -206,7 +206,8 @@ object PoolActor extends StrictLogging {
           if (!r) {
             logger.warn("closing pool failed")
           }
-          r
+
+          ()
         })
       }
     }

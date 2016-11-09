@@ -107,8 +107,10 @@ object Toolbox6Modules {
   object Jms extends ScalaModule(
     "jms",
     Logging.R1,
+    AkkaModules.Stream,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
-    mvn.`io.monix:monix_2.11:jar:2.0.6`
+    mvn.`io.monix:monix_2.11:jar:2.0.6`,
+    mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`
   ) {
     val Snapshot = snapshot
   }

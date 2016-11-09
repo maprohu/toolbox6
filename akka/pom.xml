@@ -16,5 +16,7 @@
     <modules>
         <module>http</module>
         <module>json4s</module>
+        <module>stream</module>
+        <module>actor</module>
     </modules>
 </project>

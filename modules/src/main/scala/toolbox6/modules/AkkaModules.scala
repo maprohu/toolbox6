@@ -1,6 +1,7 @@
 package toolbox6.modules
 
 import mvnmod.builder.{ScalaModule, SubModuleContainer}
+import toolbox6.modules.Toolbox6Modules.Logging
 
 
 /**
@@ -9,6 +10,13 @@ import mvnmod.builder.{ScalaModule, SubModuleContainer}
 object AkkaModules {
 
   implicit val Container = SubModuleContainer(Toolbox6Modules.Root, "akka")
+
+  object Actor extends ScalaModule(
+    "actor",
+    Toolbox6Modules.Common.Snapshot,
+    Toolbox6Modules.Logging.R1,
+    mvn.`com.typesafe.akka:akka-actor_2.11:jar:2.3.15`
+  )
 
   object Http extends ScalaModule(
     "http",
@@ -27,6 +35,13 @@ object AkkaModules {
   ) {
     val Snapshot = snapshot
   }
+
+  object Stream extends ScalaModule(
+    "stream",
+    Actor,
+    mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
+    mvn.`io.monix:monix-execution_2.11:jar:2.0.6`
+  )
 
 
 }

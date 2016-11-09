@@ -47,6 +47,8 @@ object RunToolbox6 {
     JarTreeModules.Packaging,
     AkkaModules.Http,
     AkkaModules.Json4s,
+    AkkaModules.Stream,
+    AkkaModules.Actor,
     UiModules.Ast,
     UiModules.Swing,
     UiModules.Android,

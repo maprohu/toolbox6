@@ -67,7 +67,7 @@ object Toolbox6Modules {
 
   object Pickling extends ScalaModule(
     "pickling",
-    Common.R2,
+    Common.Snapshot,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
     val Snapshot = snapshot

@@ -2,9 +2,11 @@ package toolbox6.jms
 
 import akka.actor.{Actor, ActorRef, Props, Status}
 import akka.actor.Actor.Receive
-import akka.camel.{Oneway, Producer}
+import akka.camel.{CamelExtension, Oneway, Producer}
+import akka.util.Timeout
 
 import scala.concurrent.Promise
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -61,6 +63,16 @@ class CamelJmsSenderAckActor(
     super.postStop()
 
     promise.tryComplete(result)
+
+//    import context.dispatcher
+//    val camel = CamelExtension(context.system)
+//    implicit val timeout : Timeout = 10.seconds
+//      camel
+//        .deactivationFutureFor(self)
+//        .onComplete({ r =>
+//          println(r)
+//          promise.tryComplete(result)
+//        })
   }
 }
 

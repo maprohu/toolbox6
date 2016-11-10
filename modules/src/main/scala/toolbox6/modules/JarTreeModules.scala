@@ -62,13 +62,12 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
-    MvnmodModules.Builder.R3,
+    Toolbox6Modules.Pickling.Snapshot,
+    MvnmodModules.Builder.Snapshot,
     Api.R2,
     Util.R2,
     Toolbox6Modules.Logging.R1,
     Wiring.R2,
-    Toolbox6Modules.Common.R2,
-    Toolbox6Modules.Pickling.R2,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`io.monix:monix-eval_2.11:jar:2.0.6`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
@@ -107,12 +106,12 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R2,
+    Impl.Snapshot,
+    Toolbox6Modules.Common.Snapshot,
+    Wiring.R2,
     ServletApi.R2,
     Toolbox6Modules.Logging.R1,
     ManagementApi.R2,
-    Wiring.R2,
-    Toolbox6Modules.Common.R2,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.6`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
@@ -237,7 +236,7 @@ object JarTreeModules {
   object Akka extends ScalaModule(
     "akka",
     ServletApi.R2,
-    Toolbox6Modules.Common.R2,
+    Toolbox6Modules.Common.Snapshot,
     AkkaModules.Http.Snapshot,
     Toolbox6Modules.Logging.R1
   ) {

@@ -2,7 +2,7 @@ package toolbox6.jms
 
 import javax.jms.ConnectionFactory
 
-import akka.actor.{ActorSystem, PoisonPill, Props}
+import akka.actor.{ActorRefFactory, ActorSystem, PoisonPill, Props}
 import akka.camel.CamelExtension
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
@@ -21,15 +21,15 @@ import scala.concurrent.{Future, Promise}
 object JmsTools extends LazyLogging with LogTools {
 
   val ids = Atomic(0)
-  def nextId = ids.transformAndExtract({ id =>
-    (s"jms${id}", id+1)
+  def nextId(prefix: String) = ids.transformAndExtract({ id =>
+    (s"${prefix}${id}", id+1)
   })
 
   case class Config(
     jndiEnvironment: java.util.Properties,
     destination: String,
     connectionFactoryName: String = "weblogic.jms.ConnectionFactory",
-    componentId: String = nextId
+    componentId: String = nextId("jms")
   )
 
   def setup(
@@ -144,25 +144,46 @@ object JmsTools extends LazyLogging with LogTools {
 
   def source(
     config: Config,
-    bufferSize: Int = 1024,
+    bufferSize: Int = 1024 * 4,
     strategy: OverflowStrategy = OverflowStrategy.dropHead
   )(implicit
     actorSystem: ActorSystem
-  ) : Source[Any, _] = {
+  ) : Source[Any, Future[Unit]] = {
+    import config._
+
     Source
       .actorRef(bufferSize, strategy)
       .mapMaterializedValue({ ref =>
         val uri = setup(config)
+
+        val promise = Promise[Unit]()
 
         actorSystem.actorOf(
           Props(
             classOf[CamelJmsReceiverActor],
             CamelJmsReceiverActor.Config(
               uri = uri,
-              target = ref
+              target = ref,
+              promise = promise
+//              preStop = { () =>
+//                quietly {
+//                  teardown(componentId)
+//                }
+//              }
             )
-          )
+          ),
+          nextId("jmsToolsSource")
         )
+
+        import actorSystem.dispatcher
+        promise
+          .future
+          .andThen({
+            case _ =>
+              quietly {
+                teardown(componentId)
+              }
+          })
 
 
       })

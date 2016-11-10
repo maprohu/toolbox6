@@ -3,6 +3,7 @@ package toolbox6.jms
 import akka.actor.Actor.Receive
 import akka.actor.{ActorRef, Terminated}
 import akka.camel.{CamelExtension, CamelMessage, Consumer}
+import akka.event.Logging
 import akka.util.Timeout
 import org.apache.camel.{Exchange, Predicate}
 import org.apache.camel.model.{ProcessorDefinition, RouteDefinition}
@@ -17,6 +18,7 @@ import scala.concurrent.duration._
 class CamelJmsReceiverActor(
   config: Config
 ) extends Consumer {
+  val log = Logging(context.system, this)
   import context.dispatcher
   import config._
 
@@ -25,6 +27,7 @@ class CamelJmsReceiverActor(
 
   @scala.throws[Exception](classOf[Exception])
   override def postStop(): Unit = {
+    log.info(s"stopping jms receiver: ${config.uri}")
     stopping = true
     super.postStop()
   }
@@ -42,6 +45,7 @@ class CamelJmsReceiverActor(
   override def endpointUri: String = uri
 
   override def preStart(): Unit = {
+    log.info(s"starting jms receiver: ${config.uri} - ref: ${self}")
     super.preStart()
 
     context watch target
@@ -50,7 +54,7 @@ class CamelJmsReceiverActor(
   override def receive: Receive = {
     case msg: CamelMessage => target ! msg
     case _ : Terminated =>
-//      config.preStop()
+      log.info(s"target terminated: ${config.uri}")
 
       val camel = CamelExtension(context.system)
       implicit val timeout : Timeout = 10.seconds
@@ -66,7 +70,6 @@ object CamelJmsReceiverActor {
   case class Config(
     uri: String,
     target: ActorRef,
-//    preStop: () => Unit = () => (),
     promise : Promise[Unit] = Promise()
   )
 }

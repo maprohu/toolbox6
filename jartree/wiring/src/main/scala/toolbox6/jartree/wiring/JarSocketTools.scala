@@ -153,6 +153,11 @@ class SimpleJarSocket[T, CtxApi](
             logger.info(s"plugging complete: ${r.instance.request}")
             r
           })
+          .recover({
+            case ex =>
+              logger.error("error during pluggin", ex)
+              State(currentInstance, None)
+          })
       )
     })
     .foreach({ st =>

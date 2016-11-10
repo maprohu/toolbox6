@@ -110,11 +110,6 @@
             <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-logging</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.11</artifactId>
             <version>2.3.15</version>

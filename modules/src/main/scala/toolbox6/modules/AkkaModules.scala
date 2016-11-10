@@ -14,7 +14,6 @@ object AkkaModules {
   object Actor extends ScalaModule(
     "actor",
     Toolbox6Modules.Common.Snapshot,
-    Toolbox6Modules.Logging.R1,
     mvn.`com.typesafe.akka:akka-actor_2.11:jar:2.3.15`
   )
 

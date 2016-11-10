@@ -40,7 +40,7 @@ object Toolbox6Modules {
 
   object Common extends ScalaModule(
     "common",
-    Logging.R1,
+    Logging.Snapshot,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`io.monix:monix_2.11:jar:2.0.6`,
@@ -95,7 +95,8 @@ object Toolbox6Modules {
 
   object Logging extends ScalaModule(
     "logging",
-    mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
+    mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
+    mvn.`org.slf4j:jcl-over-slf4j:jar:1.7.21`
   ) {
     val Snapshot = snapshot
 
@@ -106,22 +107,21 @@ object Toolbox6Modules {
 
   object Jms extends ScalaModule(
     "jms",
-    Logging.R1,
     AkkaModules.Stream,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
     mvn.`io.monix:monix_2.11:jar:2.0.6`,
     mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
     mvn.`com.typesafe.akka:akka-camel_2.11:jar:2.3.15`,
-    mvn.`org.apache.camel:camel-jms:jar:2.18.0`,
-    mvn.`org.apache.camel:camel-core:jar:2.18.0`
+    mvn.`org.apache.camel:camel-jms:jar:2.13.4`,
+    mvn.`org.apache.camel:camel-core:jar:2.13.4`
   ) {
     val Snapshot = snapshot
   }
 
   object Packaging extends ScalaModule(
     "packaging",
-    MvnmodModules.Builder.R2,
-    Pickling.R2,
+    MvnmodModules.Builder.Snapshot,
+    Pickling.Snapshot,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.apache.maven.shared:maven-invoker:2.2`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`

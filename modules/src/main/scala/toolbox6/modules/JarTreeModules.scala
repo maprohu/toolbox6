@@ -40,7 +40,7 @@ object JarTreeModules {
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`commons-codec:commons-codec:jar:1.10`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`,
-    Toolbox6Modules.Logging.R1
+    Toolbox6Modules.Logging.Snapshot
   ) {
     val Snapshot = snapshot
 
@@ -65,9 +65,8 @@ object JarTreeModules {
     Toolbox6Modules.Pickling.Snapshot,
     MvnmodModules.Builder.Snapshot,
     Api.R2,
-    Util.R2,
-    Toolbox6Modules.Logging.R1,
-    Wiring.R2,
+    Util.Snapshot,
+    Wiring.Snapshot,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`io.monix:monix-eval_2.11:jar:2.0.6`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
@@ -108,10 +107,9 @@ object JarTreeModules {
     "servlet",
     Impl.Snapshot,
     Toolbox6Modules.Common.Snapshot,
-    Wiring.R2,
+    Wiring.Snapshot,
+    ManagementApi.Snapshot,
     ServletApi.R2,
-    Toolbox6Modules.Logging.R1,
-    ManagementApi.R2,
     mvn.`io.monix:monix-execution_2.11:jar:2.0.6`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
@@ -157,8 +155,7 @@ object JarTreeModules {
   object Wiring extends ScalaModule(
     "wiring",
     ServletApi.R2,
-    Util.R2,
-    Toolbox6Modules.Logging.R1,
+    Util.Snapshot,
     mvn.`io.monix:monix_2.11:jar:2.0.6`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
@@ -187,7 +184,7 @@ object JarTreeModules {
 
   object ManagementApi extends ScalaModule(
     "managementapi",
-    Wiring.R2
+    Wiring.Snapshot
   ) {
     val Snapshot = snapshot
 
@@ -237,8 +234,7 @@ object JarTreeModules {
     "akka",
     ServletApi.R2,
     Toolbox6Modules.Common.Snapshot,
-    AkkaModules.Http.Snapshot,
-    Toolbox6Modules.Logging.R1
+    AkkaModules.Http.Snapshot
   ) {
     val Snapshot = snapshot
 
@@ -265,11 +261,11 @@ object JarTreeModules {
 
   object Packaging extends ScalaModule(
     "packaging",
-    Toolbox6Modules.Modules.R1,
+    Toolbox6Modules.Modules.Snapshot,
     Toolbox6Modules.Packaging,
-    ServletApi.R1,
-    Util.R1,
-    Servlet.R1,
+    ServletApi.R2,
+    Util.Snapshot,
+    Servlet.Snapshot,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,

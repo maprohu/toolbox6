@@ -125,9 +125,11 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
         )
       }
 
-      new PrintWriter(versionFile) {
-        write(version.toString)
-        close
+      version.foreach { v =>
+        new PrintWriter(versionFile) {
+          write(v)
+          close
+        }
       }
 
       cache

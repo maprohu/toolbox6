@@ -6,9 +6,9 @@ import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import com.typesafe.scalalogging.LazyLogging
 import monix.execution.Cancelable
 import toolbox6.common.{HygienicThread, ManagementTools}
-import toolbox6.jartree.api._
+import toolbox6.jartree.api.{JarTreeContext, _}
 import toolbox6.jartree.impl.JarTreeBootstrap.{Config, Initializer}
-import toolbox6.jartree.impl._
+import toolbox6.jartree.impl.{JarTree, _}
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
 import toolbox6.jartree.wiring.SimpleJarSocket
 import toolbox6.logging.LogTools
@@ -47,17 +47,19 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
 
     import bootstrapConfig._
 
+    val contextProvider : (JarTree, JarTreeContext) => JarTreeServletContext = { (jt, ctx) =>
+        new JarTreeServletContext {
+          override def servletConfig: ServletConfig = self.getServletConfig
+          override def jarTreeContext: JarTreeContext = ctx
+          override implicit val executionContext: ExecutionContext = sch
+          override def resolve(request: JarSeq)(implicit executionContext: ExecutionContext): Future[ClassLoader] = jt.resolve(request)
+        }
+      }
+
     val rt = JarTreeBootstrap
       .init[Processor, JarTreeServletContext](
       Config(
-        contextProvider = { (jt, ctx) =>
-          new JarTreeServletContext {
-            override def servletConfig: ServletConfig = self.getServletConfig
-            override def jarTreeContext: JarTreeContext = ctx
-            override implicit val executionContext: ExecutionContext = sch
-            override def resolve(request: JarSeq)(implicit executionContext: ExecutionContext): Future[ClassLoader] = jt.resolve(request)
-          }
-        },
+        contextProvider = contextProvider,
         voidProcessor = VoidProcessor,
         name = name,
         dataPath = dataPath,
@@ -66,7 +68,7 @@ abstract class JarTreeServlet extends HttpServlet with LazyLogging with LogTools
           val init = initializer()
           import init._
 
-          Initializer(
+          Initializer[Processor, JarTreeServletContext](
             embeddedJars =
               embeddedJars
                 .map({ jar =>

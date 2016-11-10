@@ -1,6 +1,7 @@
 package toolbox6.jms
 
 import javax.jms.ConnectionFactory
+import javax.naming.InitialContext
 
 import akka.actor.{ActorRefFactory, ActorSystem, PoisonPill, Props}
 import akka.camel.CamelExtension
@@ -41,7 +42,11 @@ object JmsTools extends LazyLogging with LogTools {
     val camel = CamelExtension(actorSystem)
 
     val jndiRegistry =
-      new JndiRegistry(jndiEnvironment)
+      new JndiRegistry(
+        new InitialContext(
+          jndiEnvironment
+        )
+      )
 
     val resolver = new JndiDestinationResolver
     resolver.setJndiEnvironment(
@@ -71,7 +76,7 @@ object JmsTools extends LazyLogging with LogTools {
       .context
       .addComponent(componentId, jmsComponent)
 
-    s"${componentId}:noname?destinationName=${destination}"
+    s"${componentId}:${destination}?destinationName=${destination}"
   }
 
   def teardown(
@@ -154,26 +159,25 @@ object JmsTools extends LazyLogging with LogTools {
     Source
       .actorRef(bufferSize, strategy)
       .mapMaterializedValue({ ref =>
+        logger.info(s"starting source: ${config.destination}")
+
         val uri = setup(config)
 
         val promise = Promise[Unit]()
 
-        actorSystem.actorOf(
+        val camelRef = actorSystem.actorOf(
           Props(
             classOf[CamelJmsReceiverActor],
             CamelJmsReceiverActor.Config(
               uri = uri,
               target = ref,
               promise = promise
-//              preStop = { () =>
-//                quietly {
-//                  teardown(componentId)
-//                }
-//              }
             )
           ),
           nextId("jmsToolsSource")
         )
+
+        logger.info(s"started camel actor: ${camelRef}")
 
         import actorSystem.dispatcher
         promise

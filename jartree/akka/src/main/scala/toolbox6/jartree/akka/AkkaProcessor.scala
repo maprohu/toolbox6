@@ -28,25 +28,8 @@ abstract class AkkaProcessor(
 ) extends Processor with LazyLogging with LogTools with AkkaProcessor.Input { self =>
   logger.info("creating akka processor")
 
-  implicit val actorSystem = ActorSystem(
-    self.getClass.getName.replace('.', '_'),
-    ConfigFactory.parseString(
-      """
-        |akka {
-        |  loggers = ["akka.event.slf4j.Slf4jLogger"]
-        |  loglevel = "DEBUG"
-        |  logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
-        |  jvm-exit-on-fatal-error = false
-        |  actor {
-        |    default-dispatcher {
-        |      executor = "thread-pool-executor"
-        |    }
-        |  }
-        |}
-      """.stripMargin
-    ).withFallback(ConfigFactory.load()),
-    self.getClass.getClassLoader
-  )
+
+  implicit val actorSystem = AkkaProcessor.createActorSystem(self)
   implicit val materializer = ActorMaterializer()
 
   private val (createdRoute, stopRoute) = route(this)
@@ -90,6 +73,25 @@ abstract class AkkaProcessor(
 }
 
 object AkkaProcessor {
+  def createActorSystem(self: Any) = ActorSystem(
+    self.getClass.getSimpleName,
+    ConfigFactory.parseString(
+      """
+        |akka {
+        |  loggers = ["akka.event.slf4j.Slf4jLogger"]
+        |  loglevel = "DEBUG"
+        |  logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
+        |  jvm-exit-on-fatal-error = false
+        |  actor {
+        |    default-dispatcher {
+        |      executor = "thread-pool-executor"
+        |    }
+        |  }
+        |}
+      """.stripMargin
+    ).withFallback(ConfigFactory.load()),
+    self.getClass.getClassLoader
+  )
 
   trait Input {
     implicit val actorSystem : ActorSystem

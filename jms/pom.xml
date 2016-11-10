@@ -106,11 +106,6 @@
     <dependencies>
         <dependency>
             <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-logging</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>toolbox6</groupId>
             <artifactId>toolbox6-akka-stream</artifactId>
             <version>2-SNAPSHOT</version>
         </dependency>
@@ -137,12 +132,12 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jms</artifactId>
-            <version>2.18.0</version>
+            <version>2.13.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
-            <version>2.18.0</version>
+            <version>2.13.4</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

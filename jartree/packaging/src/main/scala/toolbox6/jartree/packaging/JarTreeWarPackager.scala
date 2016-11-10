@@ -15,10 +15,6 @@ import scala.xml.{Elem, NodeSeq, XML}
   */
 object JarTreeWarPackager {
 
-
-
-//  val JarsDirName = "jars"
-
   case class JarRef(
     jar: HasMavenCoordinates,
     classLoaderPath: String
@@ -56,84 +52,11 @@ object JarTreeWarPackager {
 
 
 
-//  case class Output(
-//    pom : Elem,
-//    preBuild : File => Unit
-//
-//  )
-
-//  val PackagesFromContainer = Seq(
-//    mvn.`javax.servlet:servlet-api:jar:2.5`,
-//    mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
-//    mvn.`com.oracle:wlthint3client:jar:10.3.6.0`,
-//    mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
-//  )
-
-//  def requestAndParamAndJars(
-//    startup: NamedModule,
-//    runClassName: String,
-//    runtime: NamedModule = JarTreeModules.Webapp
-//  ) = {
-//    val modulesInParent =
-//      PackagesFromContainer
-//        .map(p => p:MavenHierarchy)
-//        .flatMap(_.jars)
-//        .to[Set] ++
-//        (runtime:MavenHierarchy).jars
-//
-//    val runHierarchy =
-//      RunHierarchy(
-//        startup,
-//        None,
-//        runClassName
-//      ).forTarget(modulesInParent.contains)
-//
-//
-//    val embeddedJars =
-//      runHierarchy.jars
-//
-//    val runRequest = runHierarchy.request[JarPlugger[Processor, JarTreeServletContext]]
-//
-//    (runRequest, embeddedJars)
-//  }
 
   def process(
     input : Input
   ) : ProjectDef = {
     import input._
-
-//    val path =
-//      ModulePath(
-//        runtime,
-//        Some(
-//          ModulePath(
-//            container,
-//            None
-//          )
-//        )
-//      )
-//    val embeddedJars =
-//      startup
-//        .asModule
-//        .forTarget(
-//          path
-//        )
-//        .classPath
-//        .zipWithIndex
-//        .map({ case (maven, idx) =>
-//          (
-//            maven,
-//            s"${idx}_${maven.groupId}_${maven.artifactId}_${maven.version}${maven.classifier.map(c => s"_${c}").getOrElse("")}.jar",
-//            JarTreePackaging.getId(maven)
-//          )
-//        })
-
-//    val coords =
-//      MavenCoordinatesImpl(
-//        groupId = name,
-//        artifactId = s"${name}-war",
-//        version = version
-//      )
 
 
     ProjectDef(
@@ -147,20 +70,6 @@ object JarTreeWarPackager {
           <build>
             <finalName>{name}</finalName>
             <plugins>
-              {
-  //              <plugin>
-  //                <groupId>org.apache.maven.plugins</groupId>
-  //                <artifactId>maven-war-plugin</artifactId>
-  //                <version>2.6</version>
-  //                <configuration>
-  //                  <archive>
-  //                    <manifestEntries>
-  //                      <WebLogic-Application-Version>{version}</WebLogic-Application-Version>
-  //                    </manifestEntries>
-  //                  </archive>
-  //                </configuration>
-  //              </plugin>
-              }
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>

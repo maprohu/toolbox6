@@ -1,5 +1,6 @@
 package toolbox6.common
 
+import java.lang.reflect.Field
 import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
 
 import com.typesafe.scalalogging.LazyLogging
@@ -7,6 +8,7 @@ import monix.execution.{Cancelable, Scheduler, UncaughtExceptionReporter}
 import monix.execution.schedulers.{AsyncScheduler, ExecutionModel}
 
 import scala.concurrent.duration._
+import scala.concurrent.forkjoin.ThreadLocalRandom
 import scala.concurrent.{Await, ExecutionContext, Promise}
 
 /**
@@ -86,6 +88,26 @@ object HygienicThread extends LazyLogging {
 //  }
 //
 //  val cancelGlobal = Cancelable(() => stopGlobal())
+
+
+  val localRandom = {
+    val localRandomField: Field =
+      classOf[ThreadLocalRandom]
+        .getDeclaredField("localRandom")
+    localRandomField.setAccessible(true)
+    localRandomField
+      .get(null)
+      .asInstanceOf[ThreadLocal[ThreadLocalRandom]]
+  }
+
+  def safe[T](what: => T) = {
+    try {
+      what
+    } finally {
+      localRandom.remove()
+    }
+
+  }
 
 }
 

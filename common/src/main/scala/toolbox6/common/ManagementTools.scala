@@ -54,12 +54,12 @@ object ManagementTools extends LazyLogging with LogTools {
 
             c.unbind(name)
 
-            p
-              .reverse
-              .foreach {
-                case (c, n) =>
-                  c.destroySubcontext(n)
-              }
+//            p
+//              .reverse
+//              .foreach {
+//                case (c, n) =>
+//                  c.destroySubcontext(n)
+//              }
           } finally {
             ctx.close()
           }

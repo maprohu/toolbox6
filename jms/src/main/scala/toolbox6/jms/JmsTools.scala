@@ -1,6 +1,6 @@
 package toolbox6.jms
 
-import javax.jms.ConnectionFactory
+import javax.jms.{Connection, ConnectionFactory}
 import javax.naming.InitialContext
 
 import akka.actor.{ActorRefFactory, ActorSystem, PoisonPill, Props}
@@ -12,6 +12,7 @@ import monix.execution.atomic.Atomic
 import org.apache.camel.component.jms.JmsComponent
 import org.apache.camel.impl.JndiRegistry
 import org.springframework.jms.support.destination.JndiDestinationResolver
+import org.springframework.jndi.JndiLocatorSupport
 import toolbox6.logging.LogTools
 
 import scala.concurrent.{Future, Promise}
@@ -33,6 +34,22 @@ object JmsTools extends LazyLogging with LogTools {
     componentId: String = nextId("jms")
   )
 
+  def safeContex[T](what: => T) : T = {
+    val ccl = Thread.currentThread().getContextClassLoader
+
+    try {
+      Thread.currentThread().setContextClassLoader(
+        classOf[ConnectionFactory].getClassLoader
+      )
+
+      what
+    } finally {
+      Thread.currentThread().setContextClassLoader(
+        ccl
+      )
+    }
+  }
+
   def setup(
     config: Config
   )(implicit
@@ -41,26 +58,37 @@ object JmsTools extends LazyLogging with LogTools {
     import config._
     val camel = CamelExtension(actorSystem)
 
-    val jndiRegistry =
-      new JndiRegistry(
-        new InitialContext(
-          jndiEnvironment
-        )
-      )
-
-    val resolver = new JndiDestinationResolver
+    val resolver = new SafeDestinationResolver
     resolver.setJndiEnvironment(
       jndiEnvironment
     )
 
-    val connectionFactory =
-      jndiRegistry
-        .lookup(
-          connectionFactoryName
+    val connectionFactory = safeContex {
+      val jndiRegistry =
+        new JndiRegistry(
+          new InitialContext(
+            jndiEnvironment
+          )
         )
-        .asInstanceOf[ConnectionFactory]
 
-    jndiRegistry.close()
+
+      try {
+        val cf = jndiRegistry
+          .lookup(
+            connectionFactoryName
+          )
+          .asInstanceOf[ConnectionFactory]
+
+        new ConnectionFactory {
+          override def createConnection(): Connection =
+            safeContex(cf.createConnection())
+          override def createConnection(userName: String, password: String): Connection =
+            safeContex(cf.createConnection(userName, password))
+        }
+      } finally {
+        jndiRegistry.close()
+      }
+    }
 
     val jmsComponent = new JmsComponent(camel.context)
     jmsComponent

@@ -26,5 +26,6 @@
         <module>akka</module>
         <module>testing</module>
         <module>packaging</module>
+        <module>dummy</module>
     </modules>
 </project>

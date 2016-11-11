@@ -79,9 +79,12 @@ object JarTreeWarPackager {
                     <id>copy</id>
                     <phase>generate-resources</phase>
                     <goals>
+                      <goal>list</goal>
+                      <goal>tree</goal>
                       <goal>copy</goal>
                     </goals>
                     <configuration>
+                      <sort>true</sort>
                       <artifactItems>
                         {
                         jars.map({ jar =>

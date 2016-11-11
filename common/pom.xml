@@ -107,7 +107,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-logging</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

@@ -8,6 +8,7 @@ import akka.camel.CamelExtension
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import com.typesafe.scalalogging.LazyLogging
+import monix.execution.Cancelable
 import monix.execution.atomic.Atomic
 import org.apache.camel.component.jms.JmsComponent
 import org.apache.camel.impl.JndiRegistry
@@ -15,7 +16,10 @@ import org.springframework.jms.support.destination.JndiDestinationResolver
 import org.springframework.jndi.JndiLocatorSupport
 import toolbox6.logging.LogTools
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, Promise}
+import akka.pattern._
+import akka.util.Timeout
 
 /**
   * Created by pappmar on 09/11/2016.
@@ -221,5 +225,47 @@ object JmsTools extends LazyLogging with LogTools {
       })
   }
 
+  def unbounded(
+    config: Config
+  )(implicit
+    actorSystem: ActorSystem
+  ) : (Any => Future[Unit], Cancelable) = {
+    import config._
+    import actorSystem.dispatcher
+    implicit val timeout : Timeout = 15.seconds
+    val uri = setup(config)
+
+    val ref = actorSystem.actorOf(
+      Props(
+        classOf[CamelJmsSenderActor],
+        CamelJmsSenderActor.Config(
+          uri = uri
+        )
+      ),
+      nextId("jmsUnboundedSender")
+    )
+
+    val out = { msg:Any =>
+      ref
+        .ask(msg)
+        .map(_ => ())
+    }
+
+    val cancel = Cancelable({ () =>
+      Await.result(
+        gracefulStop(
+          ref,
+          15.seconds
+        ).andThen({
+          case _ =>
+            teardown(componentId)
+        }),
+        Duration.Inf
+      )
+    })
+
+
+    (out, cancel)
+  }
 
 }

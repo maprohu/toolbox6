@@ -112,7 +112,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-logging</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
@@ -122,11 +122,6 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>
-            <version>11.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-coverage</artifactId>
             <version>11.5</version>
         </dependency>
         <dependency>
@@ -142,6 +137,11 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-render</artifactId>
+            <version>11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-coverage-patched</artifactId>
             <version>11.5</version>
         </dependency>
         <dependency>

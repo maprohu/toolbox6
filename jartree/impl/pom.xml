@@ -112,7 +112,7 @@
         <dependency>
             <groupId>mvnmod</groupId>
             <artifactId>mvnmod-builder</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>

@@ -5,6 +5,7 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import akka.actor.FakeActorSystem
 import akka.http.scaladsl.server.RoutingSettings
 import com.typesafe.scalalogging.LazyLogging
+import monix.execution.Cancelable
 import toolbox6.akka.http.AkkaHttpTools
 import toolbox6.jartree.api.{JarPlugResponse, JarPlugger, PullParams}
 import toolbox6.jartree.servletapi.{JarTreeServletContext, Processor}
@@ -30,10 +31,12 @@ class DummyProcessorPlugger
     import params._
     AkkaHttpTools.clearCache
 
+    val prevClose = Cancelable(() => previous.close())
+
     Future.successful(
       JarPlugResponse(
         new DummyProcessor,
-        () => previous.close()
+        prevClose.cancel
       )
     )
   }

@@ -1,8 +1,8 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>toolbox6</groupId>
-    <artifactId>toolbox6-modules</artifactId>
-    <version>2-SNAPSHOT</version>
+    <artifactId>toolbox6-gis-util</artifactId>
+    <version>1.1</version>
     <packaging>jar</packaging>
     <build>
         <finalName>product</finalName>
@@ -105,14 +105,14 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>mvnmod</groupId>
-            <artifactId>mvnmod-modules</artifactId>
-            <version>1.4</version>
+            <groupId>org.orbisgis</groupId>
+            <artifactId>h2spatial-ext</artifactId>
+            <version>1.2.4</version>
         </dependency>
         <dependency>
-            <groupId>mvnmod</groupId>
-            <artifactId>mvnmod-builder</artifactId>
-            <version>1.5</version>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

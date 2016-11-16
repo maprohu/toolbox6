@@ -14,7 +14,7 @@ object Toolbox6Modules {
   object Modules extends ScalaModule(
     "modules",
     MvnmodModules.Modules.R4,
-    MvnmodModules.Builder.R5
+    MvnmodModules.Builder.Snapshot
   ) {
     val Snapshot = snapshot
 
@@ -169,7 +169,9 @@ object Toolbox6Modules {
     Pickling.R3,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.apache.maven.shared:maven-invoker:2.2`,
-    mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`
+    mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
+//    mvn.`org.docx4j:docx4j:jar:3.3.1`,
+    mvn.`org.docx4j:docx4j-ImportXHTML:jar:3.3.1`
   ) {
 //    object R1 extends Release(
 //      MavenModulesBuilder,

@@ -134,7 +134,7 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R4,
+    Impl.Snapshot,
     Toolbox6Modules.Common.R3,
     Wiring.R3,
     ManagementApi.R3,

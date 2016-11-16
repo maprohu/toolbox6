@@ -86,12 +86,21 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
         .fromFile[StartupRequest](startupFile)
     }
 
+    logger.info("runtime version: {}", version)
+
     val cache = if (
       version
         .forall({ v =>
-          Try(Source.fromFile(versionFile).mkString)
-            .toOption
-            .forall(_ != v)
+          val dirVersionOpt =
+            Try(Source.fromFile(versionFile).mkString)
+              .toOption
+
+          logger.info("data directory version: {}", dirVersionOpt)
+
+          dirVersionOpt
+            .forall({ dirVersion =>
+              dirVersion != v
+            })
         })
     ) {
       logger.info("deleting old data directory: {}", dataPath)
@@ -180,15 +189,6 @@ object JarTreeBootstrap extends LazyLogging with LogTools {
       )
     )
     processor = () => processorSocket.get()
-
-
-//    import rx.Ctx.Owner.Unsafe._
-//    val obs = processorSocket.dynamic.foreach({ p =>
-//      p.request.foreach({ r =>
-//        writeStartup(r)
-//      })
-//    })
-//    stopper += Cancelable(() => obs.kill())
 
 
     val startupRequest = readStartup

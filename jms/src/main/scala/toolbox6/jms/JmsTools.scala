@@ -3,7 +3,7 @@ package toolbox6.jms
 import javax.jms.{Connection, ConnectionFactory}
 import javax.naming.InitialContext
 
-import akka.actor.{ActorRefFactory, ActorSystem, PoisonPill, Props}
+import akka.actor.{ActorRef, ActorRefFactory, ActorSystem, PoisonPill, Props}
 import akka.camel.CamelExtension
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
@@ -17,7 +17,7 @@ import org.springframework.jndi.JndiLocatorSupport
 import toolbox6.logging.LogTools
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import akka.pattern._
 import akka.util.Timeout
 
@@ -179,14 +179,38 @@ object JmsTools extends LazyLogging with LogTools {
       .toMat(Sink.ignore)(Keep.right)
   }
 
+  case class ConnectionStatus(
+    activated: Future[Unit],
+    stopped: Future[Unit]
+  ) {
+    def merge(
+      other: ConnectionStatus
+    )(implicit
+      executionContext: ExecutionContext
+    ) = {
+      ConnectionStatus(
+        stopped =
+          Future
+            .sequence(Seq(stopped, other.stopped))
+            .map(_ => ()),
+        activated =
+          Future
+            .sequence(Seq(activated, other.activated))
+            .map(_ => ())
+      )
+    }
+  }
+
   def source(
     config: Config,
     bufferSize: Int = 1024 * 4,
     strategy: OverflowStrategy = OverflowStrategy.dropHead
   )(implicit
     actorSystem: ActorSystem
-  ) : Source[Any, Future[Unit]] = {
+  ) : Source[Any, ConnectionStatus] = {
     import config._
+    implicit val timeout : Timeout = 15.seconds
+
 
     Source
       .actorRef(bufferSize, strategy)
@@ -212,7 +236,7 @@ object JmsTools extends LazyLogging with LogTools {
         logger.info(s"started camel actor: ${camelRef}")
 
         import actorSystem.dispatcher
-        promise
+        val stopped = promise
           .future
           .andThen({
             case _ =>
@@ -221,7 +245,13 @@ object JmsTools extends LazyLogging with LogTools {
               }
           })
 
-
+        ConnectionStatus(
+          activated =
+            CamelExtension(actorSystem)
+              .activationFutureFor(camelRef)
+              .map(_ => ()),
+          stopped = stopped
+        )
       })
   }
 

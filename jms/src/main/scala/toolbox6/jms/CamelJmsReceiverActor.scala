@@ -64,6 +64,8 @@ class CamelJmsReceiverActor(
           .map(_ => ())
       )
       context stop self
+//    case other =>
+//      println(s"!!!!!!!!!!!!!!!! ${other}")
   }
 }
 object CamelJmsReceiverActor {

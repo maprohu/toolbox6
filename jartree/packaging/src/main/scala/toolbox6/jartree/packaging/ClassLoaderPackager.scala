@@ -11,12 +11,14 @@ import toolbox6.jartree.impl.JarTree
   * Created by pappmar on 03/11/2016.
   */
 object ClassLoaderPackager {
-  val EmbeddedKeyProvider = JarTree.embeddedKey _
+  type KeyProvider = HasMavenCoordinates => JarKey
+  val EmbeddedKeyProvider : KeyProvider = JarTree.embeddedKey _
+  val UploadedKeyProvider : KeyProvider = JarTreePackaging.getId _
 
   case class Input(
     module: Module,
     target: ModulePath,
-    keyProvider: HasMavenCoordinates => JarKey
+    keyProvider: KeyProvider
   )
 
   def run(

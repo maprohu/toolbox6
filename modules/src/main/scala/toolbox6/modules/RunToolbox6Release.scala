@@ -89,6 +89,7 @@ object RunToolbox6ReleaseInstall {
   def main(args: Array[String]): Unit = {
     RunToolbox6Release
       .Releases
+      .take(5)
       .reverse
       .foreach { r =>
         println(r.getClass.getName)

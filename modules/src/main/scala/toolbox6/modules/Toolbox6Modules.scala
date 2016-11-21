@@ -13,8 +13,8 @@ object Toolbox6Modules {
 
   object Modules extends ScalaModule(
     "modules",
-    MvnmodModules.Modules.R5,
-    MvnmodModules.Builder.R6
+    MvnmodModules.Modules.Snapshot,
+    MvnmodModules.Builder.Snapshot
   ) {
     val Snapshot = snapshot
 

@@ -70,7 +70,7 @@ object JarTreeModules {
   object Impl extends ScalaModule(
     "impl",
     Toolbox6Modules.Pickling.R3,
-    MvnmodModules.Builder.R6,
+    MvnmodModules.Common.R2,
     Api.R2,
     Util.R3,
     Wiring.R3,
@@ -145,7 +145,7 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R5,
+    Impl.Snapshot,
     Toolbox6Modules.Common.R3,
     Wiring.R3,
     ManagementApi.R3,

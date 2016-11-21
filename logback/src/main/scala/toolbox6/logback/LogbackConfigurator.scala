@@ -4,8 +4,8 @@ import java.io.File
 
 import ch.qos.logback.classic.layout.TTLLLayout
 import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.classic.{Level, LoggerContext}
-import ch.qos.logback.core.ConsoleAppender
+import ch.qos.logback.classic.{Level, LoggerContext, PatternLayout}
+import ch.qos.logback.core.{ConsoleAppender, CoreConstants}
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder
 import ch.qos.logback.core.rolling.{FixedWindowRollingPolicy, RollingFileAppender, SizeBasedTriggeringPolicy}
 import org.slf4j.{Logger, LoggerFactory}
@@ -18,7 +18,11 @@ object LogbackConfigurator {
   lazy val lc = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
 
   def createEncoder(lc: LoggerContext) = {
-    val layout: TTLLLayout = new TTLLLayout
+//    val layout: TTLLLayout = new TTLLLayout
+    val layout = new PatternLayout
+    layout.setPattern(
+      s"""%d{${CoreConstants.ISO8601_PATTERN}} [%thread] %-5level %logger{36} - %msg%n"""
+    )
     layout.setContext(lc)
     layout.start
 
@@ -44,7 +48,7 @@ object LogbackConfigurator {
     fa.setFile(new File(logdir, s"$name.log").getAbsolutePath)
 
     val tp = new SizeBasedTriggeringPolicy[ILoggingEvent]()
-    tp.setMaxFileSize("5MB")
+    tp.setMaxFileSize("20MB")
     tp.start()
 
     val rp = new FixedWindowRollingPolicy

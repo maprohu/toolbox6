@@ -76,8 +76,14 @@ object JarTree {
   def metaClassPath(
     module: Module
   ) : Seq[String] = {
+    metaClassPath(module.version)
+  }
+
+  def metaClassPath(
+    coords: HasMavenCoordinates
+  ) : Seq[String] = {
     Seq(
-      s"${moduleClassLoaderName(module.version)}.jartreemeta"
+      s"${moduleClassLoaderName(coords)}.jartreemeta"
     )
   }
 
@@ -87,9 +93,21 @@ object JarTree {
   )(implicit
     pickler: Pickler[T]
   ) = {
+    readMetaData(
+      module.version,
+      classLoader
+    )
+  }
+
+  def readMetaData[T](
+    coords: HasMavenCoordinates,
+    classLoader: ClassLoader
+  )(implicit
+    pickler: Pickler[T]
+  ) = {
     PicklingTools
       .fromInputStream[T]({ () =>
-      classLoader.getResourceAsStream(metaClassPath(module).mkString("/"))
+      classLoader.getResourceAsStream(metaClassPath(coords).mkString("/"))
     })
   }
 

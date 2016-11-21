@@ -254,81 +254,12 @@ object JarTreeBootstrapConfig {
     }
   }
 
-//  var verbose = true
-
-//  val ConfigFile = "jartreebootstrap.conf"
-//  val SuppressInitErrorSystemPropertyName = s"${getClass.getName}.suppressInitError"
-
-//  val RuntimeVersionAttribute = "runtimeVersion"
-//  val ConfigAttribute = "config"
-//  val ParamAttribute = "param"
-
-//  lazy val jconfig : Option[JarTreeBootstrapConfig] =
-//    try {
-//      val is =
-//        JarTreeBootstrapConfig
-//          .getClass
-//          .getClassLoader
-//          .getResourceAsStream(
-//            ConfigFile
-//          )
-//
-//      import boopickle.Default._
-//
-//      Some(
-//        Unpickle[JarTreeBootstrapConfig]
-//          .fromBytes(
-//            ByteBuffer
-//              .wrap(
-//                IOUtils
-//                  .toByteArray(
-//                    is
-//                  )
-//              )
-//          )
-//      )
-//    } catch {
-//      case ex : Throwable =>
-//        if (verbose && System.getProperty(SuppressInitErrorSystemPropertyName) == null) {
-//          ex.printStackTrace()
-//        }
-//        None
-//    }
-
-
-
-
-
 }
 
 case class EmbeddedJar(
   classpathResource: String,
   key: JarKey
 )
-
-//case class Startup(
-//  classLoader: Seq[JarKey],
-//  className: String
-//) {
-//  def request[T, C] = PlugRequest[T, C](
-//    ClassRequest[JarPlugger[T, C]](
-//      JarSeq(classLoader),
-//      className
-//    )
-//  )
-//}
-//
-//object Startup {
-//  import toolbox6.pickling.PicklingTools._
-//  implicit val pickler : PicklingTools.Pickler[Startup] = generatePickler[Startup]
-//
-//  def apply[T, C](
-//    request: PlugRequest[T, C]
-//  ) : Startup = Startup(
-//    request.request.jars.jars,
-//    request.request.className
-//  )
-//}
 
 case class JarTreeInitializer[T, C](
   embeddedJars: Seq[EmbeddedJar],

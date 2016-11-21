@@ -335,11 +335,11 @@ object JarTreeModules {
 
   object Packaging extends ScalaModule(
     "packaging",
-    Toolbox6Modules.Modules.R3,
+    Toolbox6Modules.Modules,
     Toolbox6Modules.Packaging,
     ServletApi.R2,
-    Util.R3,
-    Servlet.R3,
+    Util,
+    Servlet,
     mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
     mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,

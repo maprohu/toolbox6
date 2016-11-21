@@ -274,3 +274,21 @@ case class JarTreeBootstrapConfig[T, C](
   version : Option[String],
   initializer: () => JarTreeInitializer[T, C]
 )
+
+case class JarTreeBootstrapMeta[T, C] (
+  name: String,
+  dataPath: String,
+  logPath: String,
+  storagePath: Option[String],
+  version : Option[String],
+  initializer: JarTreeInitializer[T, C]
+) {
+  def toConfig = JarTreeBootstrapConfig[T, C](
+    name = name,
+    dataPath = dataPath,
+    logPath = logPath,
+    storagePath = storagePath,
+    version = version,
+    initializer = () => initializer
+  )
+}

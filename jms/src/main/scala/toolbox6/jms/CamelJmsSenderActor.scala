@@ -1,8 +1,9 @@
 package toolbox6.jms
 
-import akka.actor.{Actor, ActorRef, Props, Status}
+import akka.actor.{Actor, ActorRef, PoisonPill, Props, Status}
 import akka.actor.Actor.Receive
 import akka.camel.{CamelExtension, Oneway, Producer}
+import akka.event.Logging
 import akka.util.Timeout
 
 import scala.concurrent.Promise
@@ -33,6 +34,7 @@ object CamelJmsSenderActor {
 class CamelJmsSenderAckActor(
   config: CamelJmsSenderAckActor.Config
 ) extends Actor {
+  val log = Logging(context.system, this)
   import CamelJmsSenderAckActor._
   import config._
 
@@ -54,6 +56,20 @@ class CamelJmsSenderAckActor(
       result = Failure(f.cause)
 
       context stop self
+    case Complete =>
+      log.info("completing stream")
+
+      val camel = CamelExtension(context.system)
+      import context.dispatcher
+      implicit val timeout : Timeout = 15.seconds
+      for {
+        _ <- camel.activationFutureFor(jmsSender)
+        _ = jmsSender ! PoisonPill
+        _ <- camel.deactivationFutureFor(jmsSender)
+      } {
+        self ! PoisonPill
+      }
+
     case msg =>
       jmsSender forward msg
   }
@@ -84,5 +100,6 @@ object CamelJmsSenderAckActor {
   )
   case object Pull
   case object Ack
+  case object Complete
 
 }

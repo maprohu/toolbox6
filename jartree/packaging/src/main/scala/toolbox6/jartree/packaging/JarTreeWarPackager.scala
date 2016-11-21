@@ -119,6 +119,9 @@ object JarTreeWarPackager {
             {
             input.runtime.version.asPomDependency
             }
+            {
+            JarTree.metaModule(input.runtime).asPomDependency
+            }
           </dependencies>
           <repositories>
             {

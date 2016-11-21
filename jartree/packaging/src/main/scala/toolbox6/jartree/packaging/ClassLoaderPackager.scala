@@ -36,6 +36,37 @@ object ClassLoaderPackager {
     input: Input
   ) : ProjectDef = {
     import input._
+    createResource(
+      module,
+      preBuild = { resourceDir =>
+        JarTree
+          .writeMetaJarSeq(
+            module,
+            target,
+            resourceDir,
+            keyProvider
+          )
+      }
+    )
+  }
+
+  def createResource(
+    module: Module,
+    preBuild: File => Unit
+  ) : ProjectDef= {
+    create(
+      module,
+      preBuild = { file =>
+        val resourceDir = new File(file, "src/main/resources")
+        preBuild(resourceDir)
+      }
+    )
+  }
+
+  def create(
+    module: Module,
+    preBuild: File => Unit
+  ) : ProjectDef = {
 
 
     val coords =
@@ -53,17 +84,7 @@ object ClassLoaderPackager {
     ProjectDef(
       coords,
       pom,
-      preBuild = { file =>
-        val resourceDir = new File(file, "src/main/resources")
-
-        JarTree
-          .writeMetaJarSeq(
-            module,
-            target,
-            resourceDir,
-            keyProvider
-          )
-      }
+      preBuild = preBuild
     )
   }
 

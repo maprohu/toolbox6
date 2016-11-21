@@ -62,6 +62,8 @@ object JmsTools extends LazyLogging with LogTools {
     import config._
     val camel = CamelExtension(actorSystem)
 
+    logger.info("connecting to: {}", jndiEnvironment)
+
     val resolver = new SafeDestinationResolver
     resolver.setJndiEnvironment(
       jndiEnvironment
@@ -116,6 +118,7 @@ object JmsTools extends LazyLogging with LogTools {
   )(implicit
     actorSystem: ActorSystem
   ) = {
+    logger.info(s"removing component: ${componentId}")
     val camel = CamelExtension(actorSystem)
 
     camel
@@ -161,7 +164,7 @@ object JmsTools extends LazyLogging with LogTools {
                   ref = ref,
                   onInitMessage = CamelJmsSenderAckActor.Pull,
                   ackMessage = CamelJmsSenderAckActor.Ack,
-                  onCompleteMessage = PoisonPill
+                  onCompleteMessage = CamelJmsSenderAckActor.Complete
                 )
             )
 

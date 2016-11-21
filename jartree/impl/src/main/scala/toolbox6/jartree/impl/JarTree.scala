@@ -92,7 +92,7 @@ object JarTree {
     classLoader: ClassLoader
   )(implicit
     pickler: Pickler[T]
-  ) = {
+  ) : T = {
     readMetaData(
       module.version,
       classLoader
@@ -104,7 +104,7 @@ object JarTree {
     classLoader: ClassLoader
   )(implicit
     pickler: Pickler[T]
-  ) = {
+  ) : T = {
     PicklingTools
       .fromInputStream[T]({ () =>
       classLoader.getResourceAsStream(metaClassPath(coords).mkString("/"))

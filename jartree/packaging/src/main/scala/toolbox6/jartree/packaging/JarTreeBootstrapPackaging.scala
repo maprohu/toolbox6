@@ -10,12 +10,4 @@ object JarTreeBootstrapPackaging {
 }
 
 
-case class JatTreeBootstrapMeta[T, C] (
-  name: String,
-  dataPath: String,
-  logPath: String,
-  storagePath: Option[String],
-  version : Option[String],
-  initializer: JarTreeInitializer[T, C]
-)
 

@@ -18,6 +18,11 @@ object JarTreeModules {
     object R1 extends Release()
   }
 
+  object Common extends ScalaModule(
+    "common"
+
+  )
+
   object ServletApi extends ScalaModule(
     "servletapi",
     Api.R2,

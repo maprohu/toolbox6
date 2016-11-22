@@ -33,6 +33,7 @@ object RunToolbox6 {
     Toolbox6Modules.StateMachine,
     Toolbox6Modules.Docs,
     JarTreeModules.Api,
+    JarTreeModules.Common,
     JarTreeModules.Util,
     JarTreeModules.Impl,
     JarTreeModules.ServletApi,

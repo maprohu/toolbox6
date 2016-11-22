@@ -15,6 +15,7 @@
     </build>
     <modules>
         <module>api</module>
+        <module>common</module>
         <module>util</module>
         <module>impl</module>
         <module>servletapi</module>

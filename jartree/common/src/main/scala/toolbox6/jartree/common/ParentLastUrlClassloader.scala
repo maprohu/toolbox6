@@ -1,7 +1,6 @@
-package toolbox6.jartree.impl
+package toolbox6.jartree.common
 
 import java.net.{URL, URLClassLoader}
-import java.util
 
 import scala.util.Try
 

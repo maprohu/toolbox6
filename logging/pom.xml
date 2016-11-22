@@ -4,6 +4,9 @@
     <artifactId>toolbox6-logging</artifactId>
     <version>2-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <organization>
+        <name>toolbox6</name>
+    </organization>
     <build>
         <finalName>product</finalName>
         <plugins>

@@ -38,7 +38,7 @@ object RunToolbox6 {
     JarTreeModules.Impl,
     JarTreeModules.ServletApi,
     JarTreeModules.Servlet,
-    JarTreeModules.Webapp,
+//    JarTreeModules.Webapp,
     JarTreeModules.Wiring,
     JarTreeModules.ManagementApi,
 //    JarTreeModules.ManagementUtils,

@@ -141,6 +141,12 @@
             <groupId>org.geotools</groupId>
             <artifactId>gt-render</artifactId>
             <version>11.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.geotools</groupId>
+                    <artifactId>gt-coverage</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>

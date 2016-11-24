@@ -20,7 +20,6 @@
         <module>impl</module>
         <module>servletapi</module>
         <module>servlet</module>
-        <module>webapp</module>
         <module>wiring</module>
         <module>managementapi</module>
         <module>client</module>

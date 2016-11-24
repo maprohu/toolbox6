@@ -75,7 +75,7 @@ object JarTreeModules {
   object Impl extends ScalaModule(
     "impl",
     Toolbox6Modules.Pickling.R3,
-    MvnmodModules.Common.R2,
+    MvnmodModules.Common.Snapshot,
     Api.R2,
     Util.R3,
     Wiring.R3,
@@ -209,20 +209,20 @@ object JarTreeModules {
     )
   }
 
-  object Webapp extends ScalaModule(
-    "webapp",
-    Servlet.R1,
-    mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
-  ) {
-//    object R2 extends Release(
-//      Servlet.R2,
-//      mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
-//    )
-//    object R1 extends Release(
-//      Servlet.R1,
-//      mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
-//    )
-  }
+//  object Webapp extends ScalaModule(
+//    "webapp",
+//    Servlet.R1,
+//    mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
+//  ) {
+////    object R2 extends Release(
+////      Servlet.R2,
+////      mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
+////    )
+////    object R1 extends Release(
+////      Servlet.R1,
+////      mvn.`ch.qos.logback:logback-classic:jar:1.1.7`
+////    )
+//  }
 
   object Wiring extends ScalaModule(
     "wiring",

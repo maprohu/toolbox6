@@ -75,7 +75,7 @@ object JarTreeModules {
   object Impl extends ScalaModule(
     "impl",
     Toolbox6Modules.Pickling.R3,
-    MvnmodModules.Common.Snapshot,
+    MvnmodModules.Common.R3,
     Api.R2,
     Util.R3,
     Wiring.R3,

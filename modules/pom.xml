@@ -110,12 +110,12 @@
         <dependency>
             <groupId>mvnmod</groupId>
             <artifactId>mvnmod-modules</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>mvnmod</groupId>
             <artifactId>mvnmod-builder</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.7</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

@@ -129,7 +129,8 @@ object Toolbox6Modules {
   object Logging extends ScalaModule(
     "logging",
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
-    mvn.`org.slf4j:jcl-over-slf4j:jar:1.7.21`
+    mvn.`org.slf4j:jcl-over-slf4j:jar:1.7.21`,
+    mvn.`org.slf4j:log4j-over-slf4j:jar:1.7.21`
   ) {
     val Snapshot = snapshot
 

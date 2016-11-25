@@ -80,7 +80,7 @@ object JarTreeModules {
     Util.R3,
     Wiring.R3,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
-    mvn.`io.monix:monix-eval_2.11:jar:2.0.6`,
+    mvn.`io.monix:monix-eval_2.11:jar:2.1.1`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
     mvn.`commons-io:commons-io:jar:2.5`
   ) {
@@ -162,12 +162,12 @@ object JarTreeModules {
 
   object Servlet extends ScalaModule(
     "servlet",
-    Impl.R6,
-    Toolbox6Modules.Common.R3,
-    Wiring.R3,
+    Impl.Snapshot,
+    Toolbox6Modules.Common.Snapshot,
+    Wiring.Snapshot,
     ManagementApi.R3,
     ServletApi.R2,
-    mvn.`io.monix:monix-execution_2.11:jar:2.0.6`,
+    mvn.`io.monix:monix-execution_2.11:jar:2.1.1`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
   ) {
     val Snapshot = snapshot
@@ -249,7 +249,7 @@ object JarTreeModules {
     "wiring",
     ServletApi.R2,
     Util.R3,
-    mvn.`io.monix:monix_2.11:jar:2.0.6`,
+    mvn.`io.monix:monix_2.11:jar:2.1.1`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {

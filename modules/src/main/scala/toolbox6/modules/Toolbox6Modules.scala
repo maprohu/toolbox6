@@ -63,7 +63,7 @@ object Toolbox6Modules {
     Logging.R2,
     mvn.`commons-io:commons-io:jar:2.5`,
     mvn.`com.lihaoyi:scalarx_2.11:jar:0.3.1`,
-    mvn.`io.monix:monix_2.11:jar:2.0.6`,
+    mvn.`io.monix:monix_2.11:jar:2.1.1`,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`
   ) {
     val Snapshot = snapshot

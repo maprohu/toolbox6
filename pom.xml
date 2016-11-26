@@ -25,6 +25,7 @@
         <module>common</module>
         <module>pickling</module>
         <module>jms</module>
+        <module>ssh</module>
         <module>logging</module>
         <module>logback</module>
         <module>packaging</module>

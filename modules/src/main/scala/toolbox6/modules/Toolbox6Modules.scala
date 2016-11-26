@@ -225,6 +225,13 @@ object Toolbox6Modules {
     mvn.`com.lihaoyi:scalatex-site_2.11:jar:0.3.6`
   )
 
+  object Ssh extends ScalaModule(
+    "ssh",
+    Logging,
+    mvn.`com.lihaoyi:ammonite-ops_2.11:jar:0.8.0`,
+    mvn.`com.jcraft:jsch:jar:0.1.54`
+  )
+
 
 
 }

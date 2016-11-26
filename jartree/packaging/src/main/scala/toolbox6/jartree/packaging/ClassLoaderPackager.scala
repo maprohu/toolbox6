@@ -58,6 +58,7 @@ object ClassLoaderPackager {
       module,
       preBuild = { file =>
         val resourceDir = new File(file, "src/main/resources")
+        resourceDir.mkdirs()
         preBuild(resourceDir)
       }
     )

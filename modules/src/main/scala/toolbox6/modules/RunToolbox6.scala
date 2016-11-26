@@ -27,6 +27,7 @@ object RunToolbox6 {
     Toolbox6Modules.Common,
     Toolbox6Modules.Pickling,
     Toolbox6Modules.Jms,
+    Toolbox6Modules.Ssh,
     Toolbox6Modules.Logging,
     Toolbox6Modules.Logback,
     Toolbox6Modules.Packaging,

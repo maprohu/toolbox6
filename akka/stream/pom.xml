@@ -110,7 +110,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-akka-actor</artifactId>
-            <version>1.1</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>io.monix</groupId>
             <artifactId>monix-execution_2.11</artifactId>
-            <version>2.0.6</version>
+            <version>2.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>

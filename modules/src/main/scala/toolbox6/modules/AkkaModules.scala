@@ -13,7 +13,7 @@ object AkkaModules {
 
   object Actor extends ScalaModule(
     "actor",
-    Toolbox6Modules.Common.R3,
+    Toolbox6Modules.Common.Snapshot,
     mvn.`com.typesafe.akka:akka-actor_2.11:jar:2.3.15`
   ) {
     val Snapshot = snapshot
@@ -61,9 +61,9 @@ object AkkaModules {
 
   object Stream extends ScalaModule(
     "stream",
-    Actor.R1,
+    Actor.Snapshot,
     mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
-    mvn.`io.monix:monix-execution_2.11:jar:2.0.6`
+    mvn.`io.monix:monix-execution_2.11:jar:2.1.1`
   ) {
     val Snapshot = snapshot
 

@@ -74,11 +74,11 @@ object JarTreeModules {
 
   object Impl extends ScalaModule(
     "impl",
-    Toolbox6Modules.Pickling.R3,
+    Toolbox6Modules.Pickling.Snapshot,
     MvnmodModules.Common.R3,
     Api.R2,
     Util.R3,
-    Wiring.R3,
+    Wiring.Snapshot,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,
     mvn.`io.monix:monix-eval_2.11:jar:2.1.1`,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`,
@@ -165,7 +165,7 @@ object JarTreeModules {
     Impl.Snapshot,
     Toolbox6Modules.Common.Snapshot,
     Wiring.Snapshot,
-    ManagementApi.R3,
+    ManagementApi.Snapshot,
     ServletApi.R2,
     mvn.`io.monix:monix-execution_2.11:jar:2.1.1`,
     mvn.`com.lihaoyi:upickle_2.11:jar:0.4.2`
@@ -284,7 +284,7 @@ object JarTreeModules {
 
   object ManagementApi extends ScalaModule(
     "managementapi",
-    Wiring.R3
+    Wiring.Snapshot
   ) {
     val Snapshot = snapshot
 

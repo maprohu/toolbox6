@@ -93,7 +93,7 @@ object Toolbox6Modules {
 
   object Pickling extends ScalaModule(
     "pickling",
-    Common.R3,
+    Common.Snapshot,
     mvn.`me.chrons:boopickle_2.11:jar:1.2.4`
   ) {
     val Snapshot = snapshot
@@ -145,9 +145,9 @@ object Toolbox6Modules {
 
   object Jms extends ScalaModule(
     "jms",
-    AkkaModules.Stream.R2,
+    AkkaModules.Stream.Snapshot,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
-    mvn.`io.monix:monix_2.11:jar:2.0.6`,
+    mvn.`io.monix:monix_2.11:jar:2.1.1`,
     mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
     mvn.`com.typesafe.akka:akka-camel_2.11:jar:2.3.15`,
     mvn.`org.apache.camel:camel-jms:jar:2.13.4`,

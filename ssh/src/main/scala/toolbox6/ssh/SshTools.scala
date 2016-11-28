@@ -1,6 +1,6 @@
 package toolbox6.ssh
 
-import java.io.{File, FileInputStream, InputStream, OutputStream}
+import java.io._
 
 import ammonite.ops.Path
 import com.jcraft.jsch._
@@ -66,19 +66,40 @@ object SshTools extends StrictLogging with LogTools  {
     cmd: String
   )(implicit
     session: Session
-  ) = {
-    println(s"running: ${cmd}")
+  ) : (Int, Array[Byte], Array[Byte])= {
+    logger.info(s"running: ${cmd}")
     val channel = session.openChannel("exec").asInstanceOf[ChannelExec]
     try {
       channel.setCommand(cmd)
       channel.setInputStream(null)
-      channel.setErrStream(System.err)
+      val ebos = new ByteArrayOutputStream()
+      channel.setErrStream(ebos)
       val in = channel.getInputStream
       channel.connect()
 
-      copy(in, System.out)
+      val bos = new ByteArrayOutputStream()
+      copy(in, bos)
+      val ba = bos.toByteArray
+//      System.out.write(ba)
 
-      channel.getExitStatus
+      (channel.getExitStatus, ba, ebos.toByteArray)
+    } finally {
+      channel.disconnect()
+    }
+  }
+
+  def execValue[T](
+    cmd: String,
+    proc: (ChannelExec) => T
+  )(implicit
+    session: Session
+  ) : T = {
+    val channel = session.openChannel("exec").asInstanceOf[ChannelExec]
+    try {
+      logger.info(s"exec: ${cmd}")
+      channel.setCommand(cmd)
+      channel.connect()
+      proc(channel)
     } finally {
       channel.disconnect()
     }
@@ -92,7 +113,7 @@ object SshTools extends StrictLogging with LogTools  {
   ) = {
     val channel = session.openChannel("exec").asInstanceOf[ChannelExec]
     try {
-      println(cmd)
+      logger.info(s"exec: ${cmd}")
       channel.setCommand(cmd)
       val out = channel.getOutputStream
       val in = channel.getInputStream
@@ -132,12 +153,12 @@ object SshTools extends StrictLogging with LogTools  {
       s"scp -t ${to}",
       { (ch, in, out) =>
         def check = {
-          println(in.read())
+          logger.info(s"scp check: ${in.read()}")
         }
         check
 
         val cmd = s"C0644 ${from.length()} ${to.reverse.takeWhile(_ != '/').reverse}\n"
-        print(cmd)
+        logger.info(s"scp cmd: ${cmd}")
         out.write(cmd.getBytes)
         out.flush()
         check

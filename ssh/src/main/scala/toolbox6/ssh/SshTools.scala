@@ -80,9 +80,31 @@ object SshTools extends StrictLogging with LogTools  {
       val bos = new ByteArrayOutputStream()
       copy(in, bos)
       val ba = bos.toByteArray
-//      System.out.write(ba)
+      //      System.out.write(ba)
 
       (channel.getExitStatus, ba, ebos.toByteArray)
+    } finally {
+      channel.disconnect()
+    }
+  }
+
+  def commandInteractive(
+    cmd: String
+  )(implicit
+    session: Session
+  ) : Int = {
+    logger.info(s"running: ${cmd}")
+    val channel = session.openChannel("exec").asInstanceOf[ChannelExec]
+    try {
+      channel.setCommand(cmd)
+      channel.setInputStream(null)
+      channel.setErrStream(System.err)
+      val in = channel.getInputStream
+      channel.connect()
+
+      copy(in, System.out)
+
+      channel.getExitStatus
     } finally {
       channel.disconnect()
     }
@@ -149,6 +171,20 @@ object SshTools extends StrictLogging with LogTools  {
   )(implicit
     session: Session
   ) = {
+    scpStream(
+      () => new FileInputStream(from),
+      from.length(),
+      to
+    )
+  }
+
+  def scpStream(
+    from: () => InputStream,
+    length: Long,
+    to: String
+  )(implicit
+    session: Session
+  ) = {
     exec(
       s"scp -t ${to}",
       { (ch, in, out) =>
@@ -157,12 +193,12 @@ object SshTools extends StrictLogging with LogTools  {
         }
         check
 
-        val cmd = s"C0644 ${from.length()} ${to.reverse.takeWhile(_ != '/').reverse}\n"
+        val cmd = s"C0644 ${length} ${to.reverse.takeWhile(_ != '/').reverse}\n"
         logger.info(s"scp cmd: ${cmd}")
         out.write(cmd.getBytes)
         out.flush()
         check
-        val fis = new FileInputStream(from)
+        val fis = from()
         copy(fis, out)
         fis.close()
         out.write(0)

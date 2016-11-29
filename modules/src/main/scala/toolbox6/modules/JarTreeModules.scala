@@ -75,7 +75,7 @@ object JarTreeModules {
   object Impl extends ScalaModule(
     "impl",
     Toolbox6Modules.Pickling.Snapshot,
-    MvnmodModules.Common.R3,
+    MvnmodModules.Common.Snapshot,
     Api.R2,
     Util.R3,
     Wiring.Snapshot,
@@ -336,8 +336,8 @@ object JarTreeModules {
   object Akka extends ScalaModule(
     "akka",
     ServletApi.R2,
-    Toolbox6Modules.Common.R3,
-    AkkaModules.Http.R1
+    Toolbox6Modules.Common.Snapshot,
+    AkkaModules.Http.Snapshot
   ) {
     val Snapshot = snapshot
 

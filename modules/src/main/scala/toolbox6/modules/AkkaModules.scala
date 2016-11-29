@@ -26,7 +26,7 @@ object AkkaModules {
 
   object Http extends ScalaModule(
     "http",
-    Actor.R1,
+    Actor.Snapshot,
     Toolbox6Modules.Logging.R2,
     mvn.`com.typesafe.akka:akka-http-experimental_2.11:jar:2.0.5`,
     mvn.`com.typesafe.scala-logging:scala-logging_2.11:jar:3.4.0`,

@@ -12,8 +12,6 @@ import monix.execution.Cancelable
 import monix.execution.atomic.Atomic
 import org.apache.camel.component.jms.JmsComponent
 import org.apache.camel.impl.JndiRegistry
-import org.springframework.jms.support.destination.JndiDestinationResolver
-import org.springframework.jndi.JndiLocatorSupport
 import toolbox6.logging.LogTools
 
 import scala.concurrent.duration._

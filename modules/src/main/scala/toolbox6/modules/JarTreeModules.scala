@@ -2,6 +2,7 @@ package toolbox6.modules
 
 import mvnmod.builder.{MavenCentralModule, ScalaModule, SubModuleContainer}
 import mvnmod.modules.MvnmodModules
+import toolbox6.modules.Toolbox6Modules.Logging
 /**
   * Created by pappmar on 04/11/2016.
   */
@@ -18,10 +19,20 @@ object JarTreeModules {
     object R1 extends Release()
   }
 
+
+//  object Meta extends ScalaModule(
+//    "meta",
+//    MvnmodModules.Common.R3
+//  ) {
+//    val Snapshot = snapshot
+//  }
+
   object Common extends ScalaModule(
     "common"
 
-  )
+  ) {
+    val Snapshot = snapshot
+  }
 
   object ServletApi extends ScalaModule(
     "servletapi",

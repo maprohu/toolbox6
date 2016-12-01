@@ -10,6 +10,7 @@ import monix.execution.schedulers.{AsyncScheduler, ExecutionModel}
 import scala.concurrent.duration._
 import scala.concurrent.forkjoin.ThreadLocalRandom
 import scala.concurrent.{Await, ExecutionContext, Promise}
+import scala.util.DynamicVariable
 
 /**
   * Created by martonpapp on 09/07/16.
@@ -62,8 +63,6 @@ object HygienicThread extends LazyLogging {
     (ec, shut)
   }
 
-//  lazy private val (globalExecutionContext, globalStopper) = createExecutionContext()
-
   def createSchduler() : (Scheduler, () => Unit) = {
     val (ec, stopper) = createExecutionContext()
     val sch = AsyncScheduler(
@@ -77,17 +76,6 @@ object HygienicThread extends LazyLogging {
     (sch, stopper)
   }
 
-//  object Implicits extends LazyLogging {
-//
-//    implicit lazy val global: Scheduler =
-//
-//  }
-
-//  def stopGlobal() = {
-//    globalStopper()
-//  }
-//
-//  val cancelGlobal = Cancelable(() => stopGlobal())
 
 
   val localRandom = {
@@ -104,8 +92,75 @@ object HygienicThread extends LazyLogging {
     try {
       what
     } finally {
+      listThreadLocals
       localRandom.remove()
     }
+
+  }
+
+  def listThreadLocals = {
+    val thread = Thread.currentThread
+    val threadLocalsField = classOf[Thread].getDeclaredField("threadLocals")
+    val inheritableThreadLocalsField = classOf[Thread].getDeclaredField("inheritableThreadLocals")
+
+    listThreadLocalsField(
+      thread,
+      threadLocalsField
+    )
+    listThreadLocalsField(
+      thread,
+      inheritableThreadLocalsField
+    )
+  }
+
+
+  def listThreadLocalsField(
+    thread: Thread,
+    threadLocalsField: Field
+  )= {
+    threadLocalsField.setAccessible(true)
+    val threadLocals = threadLocalsField.get(thread)
+
+    if (threadLocals != null) {
+      val threadLocalMapKlazz = Class.forName("java.lang.ThreadLocal$ThreadLocalMap")
+      val tableField = threadLocalMapKlazz.getDeclaredField("table")
+      tableField.setAccessible(true)
+
+      val table = tableField.get(threadLocals)
+
+      val threadLocalCount = java.lang.reflect.Array.getLength(table)
+
+      var i: Int = 0
+      while (i < threadLocalCount) {
+        val entry = java.lang.reflect.Array.get(table, i)
+        if (entry != null) {
+          val valueField = entry.getClass.getDeclaredField("value")
+          valueField.setAccessible(true)
+          val value = valueField.get(entry)
+
+          val referent =
+            entry
+              .asInstanceOf[java.lang.ref.WeakReference[ThreadLocal[_]]]
+              .get()
+
+          if (value != null) {
+            //          logger.info(s"thread local: ${referent} -> ${value.getClass} - ${value}")
+
+            if (referent == null) {
+              logger.info(s"cleaning field with null referent: ${value}")
+              valueField.set(entry, null)
+            } else if (referent.getClass.getClassLoader == classOf[DynamicVariable[_]].getClassLoader) {
+              logger.info(s"cleaning field with scala classloader: ${value.getClass} - ${value}")
+              valueField.set(entry, null)
+            }
+          }
+        }
+        i += 1
+      }
+
+    }
+
+
 
   }
 

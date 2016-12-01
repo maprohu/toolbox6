@@ -1,6 +1,7 @@
 package toolbox6.jartree.common
 
 import java.net.{URL, URLClassLoader}
+import java.security.{AccessControlContext, ProtectionDomain}
 
 import scala.util.Try
 
@@ -13,7 +14,10 @@ import scala.util.Try
 class ParentLastUrlClassloader(
   urls: Seq[URL],
   parent: ClassLoader
-) extends URLClassLoader(urls.toArray, parent) { self =>
+) extends URLClassLoader(
+  urls.toArray,
+  parent
+) { self =>
 
   override def loadClass(name: String, resolve: Boolean): Class[_] = {
     Option(findLoadedClass(name))

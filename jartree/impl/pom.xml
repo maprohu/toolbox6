@@ -110,12 +110,12 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-pickling</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>mvnmod</groupId>
             <artifactId>mvnmod-common</artifactId>
-            <version>2-SNAPSHOT</version>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>toolbox6</groupId>

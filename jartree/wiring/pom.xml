@@ -115,7 +115,7 @@
         <dependency>
             <groupId>toolbox6</groupId>
             <artifactId>toolbox6-jartree-util</artifactId>
-            <version>1.3</version>
+            <version>2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.monix</groupId>

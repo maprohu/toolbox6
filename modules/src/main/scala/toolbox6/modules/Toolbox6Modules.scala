@@ -7,14 +7,16 @@ import mvnmod.modules.MvnmodModules
 /**
   * Created by martonpapp on 29/08/16.
   */
+
+
 object Toolbox6Modules {
 
   implicit val Root = RootModuleContainer("toolbox6")
 
   object Modules extends ScalaModule(
     "modules",
-    MvnmodModules.Modules.R7,
-    MvnmodModules.Builder.R8
+    MvnmodModules.Modules.Snapshot,
+    MvnmodModules.Builder.Snapshot
   ) {
     val Snapshot = snapshot
 

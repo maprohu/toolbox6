@@ -1,11 +1,11 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>toolbox8</groupId>
-    <artifactId>toolbox8-leveldb</artifactId>
+    <groupId>toolbox6</groupId>
+    <artifactId>toolbox6-builders</artifactId>
     <version>2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <organization>
-        <name>toolbox8</name>
+        <name>toolbox6</name>
     </organization>
     <build>
         <finalName>product</finalName>
@@ -109,23 +109,8 @@
     <dependencies>
         <dependency>
             <groupId>toolbox6</groupId>
-            <artifactId>toolbox6-logging</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.iq80.leveldb</groupId>
-            <artifactId>leveldb</artifactId>
-            <version>0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>io.monix</groupId>
-            <artifactId>monix-execution_2.11</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>2.11.8</version>
+            <artifactId>toolbox6-modules</artifactId>
+            <version>2-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <repositories> </repositories>

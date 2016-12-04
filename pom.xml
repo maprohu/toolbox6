@@ -31,5 +31,6 @@
         <module>packaging</module>
         <module>statemachine</module>
         <module>docs</module>
+        <module>builders</module>
     </modules>
 </project>

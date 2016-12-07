@@ -386,19 +386,6 @@ object JarTreeModules {
     mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.2`,
     mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
   ) {
-//    object R1 extends Release(
-//      Toolbox6Modules.Modules,
-//      Toolbox6Modules.Packaging.R1,
-//      ServletApi.R2,
-//      Util.R2,
-//      Servlet.R2,
-//      mvn.`org.scala-lang.modules:scala-xml_2.11:jar:1.0.6`,
-//      mvn.`org.scala-sbt:io_2.11:jar:1.0.0-M3`,
-//      mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,
-//      mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.2`,
-//      mvn.`org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.2`,
-//      mvn.`com.oracle:wlfullclient:jar:10.3.6.0`
-//    )
   }
 
   object Dummy extends ScalaModule(

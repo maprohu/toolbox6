@@ -58,6 +58,10 @@ object Toolbox6Modules {
     )
   }
 
+  object Tools extends ScalaModule(
+    "tools"
+  )
+
   object Environment extends ScalaModule(
     "environment"
   ) {

@@ -35,6 +35,11 @@ object build_toolbox6_modules extends mvnmod.builder.ModuleBuilder(
   "./modules"
 )
            
+object build_toolbox6_tools extends mvnmod.builder.ModuleBuilder(
+  toolbox6.modules.Place.RootPath,
+  "./tools"
+)
+           
 object build_toolbox6_environment extends mvnmod.builder.ModuleBuilder(
   toolbox6.modules.Place.RootPath,
   "./environment"

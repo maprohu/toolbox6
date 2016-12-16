@@ -60,39 +60,49 @@ object JmsTools extends LazyLogging with LogTools {
     import config._
     val camel = CamelExtension(actorSystem)
 
-    logger.info("connecting to: {}", jndiEnvironment)
+    logger.info(s"connecting to: ${jndiEnvironment}")
 
     val resolver = new SafeDestinationResolver
     resolver.setJndiEnvironment(
       jndiEnvironment
     )
 
-    val connectionFactory = safeContex {
-      val jndiRegistry =
-        new JndiRegistry(
-          new InitialContext(
-            jndiEnvironment
-          )
-        )
+    val connectionFactory =
+      new ConnectionFactory {
+        def cf = {
+          safeContex {
+            logger.info(s"connecting to: ${jndiEnvironment}")
 
+            val jndiRegistry =
+              new JndiRegistry(
+                new InitialContext(
+                  jndiEnvironment
+                )
+              )
 
-      try {
-        val cf = jndiRegistry
-          .lookup(
-            connectionFactoryName
-          )
-          .asInstanceOf[ConnectionFactory]
+            try {
+              logger.info(s"looking up connection factory: ${connectionFactoryName}")
+              val foundCf = jndiRegistry
+                .lookup(
+                  connectionFactoryName
+                )
+                .asInstanceOf[ConnectionFactory]
 
-        new ConnectionFactory {
-          override def createConnection(): Connection =
-            safeContex(cf.createConnection())
-          override def createConnection(userName: String, password: String): Connection =
-            safeContex(cf.createConnection(userName, password))
+              logger.info(s"connectionFactory found: ${foundCf}")
+
+              foundCf
+            } finally {
+              jndiRegistry.close()
+            }
+          }
         }
-      } finally {
-        jndiRegistry.close()
+
+        override def createConnection(): Connection =
+          safeContex(cf.createConnection())
+        override def createConnection(userName: String, password: String): Connection =
+          safeContex(cf.createConnection(userName, password))
       }
-    }
+
 
     val jmsComponent = new JmsComponent(camel.context)
     jmsComponent

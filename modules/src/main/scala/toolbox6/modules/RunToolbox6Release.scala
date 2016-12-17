@@ -107,7 +107,7 @@ object RunToolbox6ReleaseInstall {
   def main(args: Array[String]): Unit = {
     RunToolbox6Release
       .Releases
-      .take(13)
+      .take(21)
       .reverse
       .foreach { r =>
         println(r.getClass.getName)

@@ -19,13 +19,15 @@ import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import akka.pattern._
 import akka.util.Timeout
 
+import scala.util.Try
+
 /**
   * Created by pappmar on 09/11/2016.
   */
 object JmsTools extends LazyLogging with LogTools {
 
   val ids = Atomic(0)
-  def nextId(prefix: String) = ids.transformAndExtract({ id =>
+  def nextId(prefix: String) = ids.transformAndExtract[String]({ id =>
     (s"${prefix}${id}", id+1)
   })
 
@@ -69,7 +71,27 @@ object JmsTools extends LazyLogging with LogTools {
 
     val connectionFactory =
       new ConnectionFactory {
-        def cf = {
+        val currentConnectionFactory = Atomic(Option.empty[ConnectionFactory])
+
+        def withCurrentConnectionFactory[T](fn: ConnectionFactory => T) = {
+          currentConnectionFactory
+            .transformAndExtract[Try[T]]({ optionalConnectionFactory =>
+              val result = Try {
+                val cf =
+                  optionalConnectionFactory
+                    .getOrElse({
+                      lookupConnectionFactory
+                    })
+
+                (fn(cf), Some(cf))
+              }
+
+              (result.map(_._1), result.map(_._2).getOrElse(None))
+            })
+            .get
+        }
+
+        def lookupConnectionFactory = {
           safeContex {
             logger.info(s"connecting to: ${jndiEnvironment}")
 
@@ -98,9 +120,9 @@ object JmsTools extends LazyLogging with LogTools {
         }
 
         override def createConnection(): Connection =
-          safeContex(cf.createConnection())
+          safeContex(withCurrentConnectionFactory(_.createConnection()))
         override def createConnection(userName: String, password: String): Connection =
-          safeContex(cf.createConnection(userName, password))
+          safeContex(withCurrentConnectionFactory(_.createConnection(userName, password)))
       }
 
 

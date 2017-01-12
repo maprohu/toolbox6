@@ -35,7 +35,8 @@ trait DocsApi
 
   def l(fn: self.type => String)(implicit main: Main) = {
     val name = fn(this)
-    main.lnk(name, s"../${ID}/index.html#${munge(name)}")
+//    main.lnk(name, s"../${ID}/index.html#${munge(name)}")
+    main.lnk(name, s"${ID}.html#${munge(name)}")
   }
 
   implicit class FragHelper(val sc: StringContext) {
@@ -59,6 +60,9 @@ trait DocsApi
     def doc : DocString = new DocString(str)
     def link = {
       a(href := str)(str)
+    }
+    def local = {
+      a(href := s"#$str")(str)
     }
   }
 

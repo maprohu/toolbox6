@@ -20,6 +20,10 @@ object Toolbox6Modules {
   ) {
     val Snapshot = snapshot
 
+    object R11 extends Release(
+      MvnmodModules.Modules.R9,
+      MvnmodModules.Builder.R10
+    )
     object R10 extends Release(
       MvnmodModules.Modules.R9,
       MvnmodModules.Builder.R10

@@ -10,6 +10,11 @@ object RunToolbox6Release {
 
   val Releases = Seq[NamedModule#Release](
 
+
+
+    GisModules.Geotools.R2,
+    Toolbox6Modules.Modules.R11,
+
     Toolbox6Modules.Modules.R10,
 
     JarTreeModules.Common.R2,

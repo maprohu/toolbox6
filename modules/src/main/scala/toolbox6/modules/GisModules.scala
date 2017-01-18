@@ -27,7 +27,7 @@ object GisModules {
   object Geotools extends ScalaModule(
     "geotools",
     Util.R1,
-    Toolbox6Modules.Logging.R2,
+    Toolbox6Modules.Logging.R3,
     mvn.`org.geotools:gt-opengis:jar:11.5`,
     mvn.`org.geotools:gt-main:jar:11.5`,
     mvn.`org.geotools:gt-referencing:jar:11.5`,

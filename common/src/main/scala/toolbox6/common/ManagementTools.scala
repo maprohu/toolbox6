@@ -21,10 +21,11 @@ object ManagementTools extends LazyLogging with LogTools {
     name: String,
     instance: T
   ): Cancelable = {
-    def root(c: Context) = existing
-      .foldLeft(c)( (acc, elem) =>
-      acc.lookup(elem).asInstanceOf[Context]
-    )
+    def root(c: Context) =
+      existing
+        .foldLeft(c)( (acc, elem) =>
+          acc.lookup(elem).asInstanceOf[Context]
+        )
 
     val ctx = new InitialContext()
 
@@ -33,7 +34,12 @@ object ManagementTools extends LazyLogging with LogTools {
       val container =
         path
           .foldLeft(root(ctx))({ (acc, elem) =>
-            acc.createSubcontext(elem)
+            try {
+              acc.createSubcontext(elem)
+            } catch {
+              case _ : Throwable =>
+                acc.lookup(elem).asInstanceOf[Context]
+            }
           })
 
       container

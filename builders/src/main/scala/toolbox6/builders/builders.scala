@@ -210,4 +210,9 @@ object build_toolbox6_scalajs_analyzer extends mvnmod.builder.ModuleBuilder(
   "./scalajs/analyzer"
 )
            
+object build_toolbox6_sandbox extends mvnmod.builder.ModuleBuilder(
+  toolbox6.modules.Place.RootPath,
+  "./sandbox"
+)
+           
        

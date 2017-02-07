@@ -66,7 +66,8 @@ object RunToolbox6 {
     GisModules.Geotools,
 //    ScalajsModules.Shared,
 //    ScalajsModules.Server,
-    ScalajsModules.Analyzer
+    ScalajsModules.Analyzer,
+    Toolbox6Modules.Sandbox
 
 //    Servlet25Modules.SingleApi,
 //    Servlet25Modules.RunApi,

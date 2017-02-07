@@ -288,6 +288,12 @@ object Toolbox6Modules {
     mvn.`com.jcraft:jsch:jar:0.1.54`
   )
 
+  object Sandbox extends ScalaModule(
+    "sandbox",
+    mvn.`org.apache.hadoop:hadoop-hdfs:jar:2.7.3`,
+
+  )
+
 
 
 }

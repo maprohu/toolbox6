@@ -291,6 +291,7 @@ object Toolbox6Modules {
   object Sandbox extends ScalaModule(
     "sandbox",
     mvn.`org.apache.hadoop:hadoop-hdfs:jar:2.7.3`,
+    mvn.`org.apache.hadoop:hadoop-common:jar:2.7.3`
 
   )
 

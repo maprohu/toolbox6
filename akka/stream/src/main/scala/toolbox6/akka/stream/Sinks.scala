@@ -9,7 +9,7 @@ import scala.concurrent.Future
 /**
   * Created by pappmar on 09/11/2016.
   */
-class Sinks {
+object Sinks {
 
 //  def materialized[In, Mat](
 //    fn: () => (Sink[In, Future[Unit]], Mat)
@@ -44,6 +44,27 @@ class Sinks {
 //      })
 //      .toMat(Sink.ignore)(Keep.both)
 //  }
+
+
+
+  def monitoring() : Sink[Any, Monitoring] = {
+    Flow[Any]
+      .zipMat(
+        Sources
+          .singleMaterializedValue(() => new MonitoringImpl)
+          .prefixAndTail(1)
+          .flatMapConcat({
+            case (Seq(monitoring), _) =>
+              Source.repeat(monitoring)
+          })
+      )(Keep.right)
+      .to(
+        Sink.foreach({
+          case (_, mon) =>
+            mon.onMessage()
+        })
+      )
+  }
 
 }
 

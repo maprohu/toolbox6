@@ -33,16 +33,16 @@ class HistoryBuffer[T <: AnyRef](
     if (full) {
       val (left, right) =
         buffer
+          .view
           .splitAt(next)
 
       right
-        .iterator
-        .++(left.iterator)
+        .++(left)
         .toVector
         .asInstanceOf[Iterable[T]]
     } else {
       buffer
-        .iterator
+        .view
         .take(next)
         .toVector
         .asInstanceOf[Iterable[T]]

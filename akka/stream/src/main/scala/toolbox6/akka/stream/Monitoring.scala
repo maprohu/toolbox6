@@ -73,11 +73,18 @@ class MonitoringImpl extends Monitoring {
   }
 
   override def create(periodMillis: Long, historySize: Int): MonitoringInstance = {
-    new MonitoringInstanceImpl(periodMillis, historySize) {
-      override def stop: Unit = {
-        instances.transform(_.filterNot(_ == this))
+    val instance =
+      new MonitoringInstanceImpl(periodMillis, historySize) {
+        override def stop: Unit = {
+          instances.transform(_.filterNot(_ == this))
+        }
       }
-    }
+
+    instances.transform({ is =>
+      is :+ instance
+    })
+
+    instance
   }
 }
 

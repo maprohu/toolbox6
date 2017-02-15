@@ -21,10 +21,21 @@ trait MonitoringInstance {
   def stop: Unit
 }
 
+case class CommonMonitoringStatus(
+  perMinute: MonitoringStatus,
+  perHour: MonitoringStatus
+)
+
 case class CommonMonitoring(
   perMinute: MonitoringInstance,
   perHour: MonitoringInstance
-)
+) {
+  def query =
+    CommonMonitoringStatus(
+      perMinute = perMinute.query,
+      perHour = perHour.query
+    )
+}
 
 object Monitoring {
   val DefaultHistorySize = 10

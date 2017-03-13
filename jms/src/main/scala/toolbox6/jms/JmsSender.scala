@@ -41,9 +41,22 @@ object JmsSender extends LazyLogging with LogTools {
 
   type Headers = Map[String, String]
 
+  case class TextWithHeaders(
+    text: String,
+    headers: Headers
+  )
+
   def textWithHeaders[T](fn: T => String) : Creator[(T, Headers)] = { (session, item) =>
     val msg = session.createTextMessage(fn(item._1))
     item._2.foreach({
+      case (key, value) => msg.setStringProperty(key, value)
+    })
+    msg
+  }
+
+  val TextWithHeadersCreator : Creator[TextWithHeaders] = { (session, item) =>
+    val msg = session.createTextMessage(item.text)
+    item.headers.foreach({
       case (key, value) => msg.setStringProperty(key, value)
     })
     msg

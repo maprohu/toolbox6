@@ -120,11 +120,6 @@ object build_toolbox6_jartree_servletapi extends mvnmod.builder.ModuleBuilder(
   "./jartree/servletapi"
 )
            
-object build_toolbox6_jartree_servlet extends mvnmod.builder.ModuleBuilder(
-  toolbox6.modules.Place.RootPath,
-  "./jartree/servlet"
-)
-           
 object build_toolbox6_jartree_wiring extends mvnmod.builder.ModuleBuilder(
   toolbox6.modules.Place.RootPath,
   "./jartree/wiring"

@@ -19,7 +19,6 @@
         <module>util</module>
         <module>impl</module>
         <module>servletapi</module>
-        <module>servlet</module>
         <module>wiring</module>
         <module>managementapi</module>
         <module>client</module>

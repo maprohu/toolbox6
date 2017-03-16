@@ -78,6 +78,11 @@ object AkkaModules {
   ) {
     val Snapshot = snapshot
 
+    object R4 extends Release(
+      Actor.R2,
+      mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
+      mvn.`io.monix:monix-execution_2.11:jar:2.1.1`
+    )
     object R3 extends Release(
       Actor.R2,
       mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,

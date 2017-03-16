@@ -10,6 +10,9 @@ object RunToolbox6Release {
 
   val Releases = Seq[NamedModule#Release](
 
+    Toolbox6Modules.Jms.R6,
+    AkkaModules.Stream.R4,
+
     Toolbox6Modules.Jms.R5,
 
 

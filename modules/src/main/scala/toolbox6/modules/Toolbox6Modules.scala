@@ -183,7 +183,7 @@ object Toolbox6Modules {
 
   object Jms extends ScalaModule(
     "jms",
-    AkkaModules.Stream.Snapshot,
+    AkkaModules.Stream.R4,
     mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
     mvn.`io.monix:monix_2.11:jar:2.1.1`,
     mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
@@ -193,6 +193,15 @@ object Toolbox6Modules {
   ) {
     val Snapshot = snapshot
 
+    object R6 extends Release(
+      AkkaModules.Stream.R4,
+      mvn.`javax.jms:jms-api:jar:1.1-rev-1`,
+      mvn.`io.monix:monix_2.11:jar:2.1.1`,
+      mvn.`com.typesafe.akka:akka-stream-experimental_2.11:jar:2.0.5`,
+      mvn.`com.typesafe.akka:akka-camel_2.11:jar:2.3.15`,
+      mvn.`org.apache.camel:camel-jms:jar:2.13.4`,
+      mvn.`org.apache.camel:camel-core:jar:2.13.4`
+    )
     object R5 extends Release(
       AkkaModules.Stream.R3,
       mvn.`javax.jms:jms-api:jar:1.1-rev-1`,

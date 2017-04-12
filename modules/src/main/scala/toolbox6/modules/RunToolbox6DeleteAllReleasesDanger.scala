@@ -1,6 +1,5 @@
 package toolbox6.modules
 
-import sbt.io.IO
 
 import scala.io.StdIn
 import ammonite.ops._

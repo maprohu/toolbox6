@@ -78,6 +78,7 @@ object LogbackConfigurator {
   def reset() = {
     val rootLogger = lc.getLogger(Logger.ROOT_LOGGER_NAME)
     rootLogger.detachAndStopAllAppenders()
+    lc.reset()
   }
   def configStdout() = {
     val ca: ConsoleAppender[ILoggingEvent] = new ConsoleAppender[ILoggingEvent]
